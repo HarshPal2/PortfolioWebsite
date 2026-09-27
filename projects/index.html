@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project 001 — Harsh Portfolio</title>
+  <meta name="description" content="Editorial project showcase featuring architectural 3D spatial design.">
+
+  <!-- Custom & Web Fonts: GFS Didot (Headings) & Belleza (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Belleza&family=GFS+Didot&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/alyamama/index.css">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="is-loading">
+
+  <!-- Parallax Scene Stage -->
+  <div id="parallax-scene" class="parallax-scene">
+
+    <!-- Layer 1: 3D PC Canvas Background -->
+    <div class="parallax-layer layer-bg" data-depth="0.08">
+      <div class="video-wrapper">
+        <canvas id="project-canvas" class="bg-video active-video"></canvas>
+      </div>
+    </div>
+
+    <!-- Layer 2: Monitor Screen Content Viewport (Aligned 1:1 with Canvas 3D PC) -->
+    <div class="parallax-layer layer-screen" data-depth="0.08">
+      <div id="monitor-screen-stage" class="monitor-screen-stage">
+        <div class="monitor-content-viewport is-loading">
+
+          <!-- Project Page Loading Intro Overlay (Inside Monitor Screen Panel) -->
+          <div id="project-loading-overlay" class="project-loading-overlay">
+            <!-- Layer 1: Screen Wallpaper -->
+            <div class="loading-wallpaper-layer">
+              <img src="../Media/1314645.jpg" alt="Wallpaper Background" class="loading-wallpaper-img">
+            </div>
+
+            <!-- Layer 2: 25% Black Transparent Film -->
+            <div class="loading-dark-film"></div>
+
+            <!-- Layer 3: Loading / Introductory Text UI -->
+            <div class="loading-ui-container">
+              <div class="loading-ui-content">
+                <span class="loading-subtitle">Loading</span>
+                <h1 class="loading-title">Projects</h1>
+                <div class="loading-line-indicator">
+                  <div class="loading-line-bar"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 12-Column Editorial Grid Container -->
+          <div class="editorial-container">
+            <div class="editorial-layout">
+
+              <!-- Left Column: Editorial Hierarchical Navigation -->
+              <nav class="editorial-nav" aria-label="Project Categories Navigation">
+                <!-- Category 1: CASE STUDY -->
+                <div class="nav-category-group">
+                  <h2 class="nav-category-title">CASE STUDY</h2>
+                  <ul class="nav-project-list">
+                    <li class="nav-project-item">
+                      <button class="nav-project-btn active" data-project="glusight">
+                        <span class="active-dot">●</span>
+                        <span class="project-name">GluSight</span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Category 2: VISUALS -->
+                <div class="nav-category-group">
+                  <h2 class="nav-category-title">VISUALS</h2>
+                  <ul class="nav-project-list">
+                    <li class="nav-project-item">
+                      <button class="nav-project-btn" data-project="cabin-in-woods">
+                        <span class="active-dot">●</span>
+                        <span class="project-name">Cabin in Woods</span>
+                      </button>
+                    </li>
+                    <li class="nav-project-item">
+                      <button class="nav-project-btn" data-project="product-renders">
+                        <span class="active-dot">●</span>
+                        <span class="project-name">Product Renders</span>
+                      </button>
+                    </li>
+                    <li class="nav-project-item">
+                      <button class="nav-project-btn" data-project="biophilic-interior">
+                        <span class="active-dot">●</span>
+                        <span class="project-name">Biophilic Interior</span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Category 3: GRAPHICS -->
+                <div class="nav-category-group">
+                  <h2 class="nav-category-title">GRAPHICS</h2>
+                  <ul class="nav-project-list">
+                    <li class="nav-project-item">
+                      <button class="nav-project-btn" data-project="contemporary-aipan">
+                        <span class="active-dot">●</span>
+                        <span class="project-name">Contemporary Aipan</span>
+                      </button>
+                    </li>
+                    <li class="nav-project-item">
+                      <button class="nav-project-btn" data-project="poster">
+                        <span class="active-dot">●</span>
+                        <span class="project-name">Poster</span>
+                      </button>
+                    </li>
+                    <li class="nav-project-item">
+                      <button class="nav-project-btn" data-project="bookmark">
+                        <span class="active-dot">●</span>
+                        <span class="project-name">Bookmark</span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </nav>
+
+              <!-- Right Column: Scrollable GluSight Editorial Case Study -->
+              <main class="editorial-main-content">
+                <!-- GluSight Dedicated Art-Directed Case Study -->
+                <article id="glusight-case-study" class="glusight-case-study" aria-label="GluSight Case Study">
+
+                  <!-- CASE STUDY INTRO: Independent Two-Column Composition -->
+                  <section class="case-study-intro" id="cs-intro">
+                    <!-- LEFT COLUMN: Intro Content + The Opportunity Heading -->
+                    <div class="intro-content">
+                      <div class="intro-overview-block">
+                        <h1 class="cs-hero-title">GluSight</h1>
+                        <div class="cs-rule"></div>
+                        <h2 class="cs-hook-statement">A calmer, more informed way to live with diabetes.</h2>
+                        <p class="cs-lead-text">
+                          GluSight is a concept for a continuous glucose monitoring experience that turns complex data into clear guidance, helping users feel more in control of their health.
+                        </p>
+
+                        <!-- Metadata Row -->
+                        <div class="cs-meta-strip">
+                          <div class="meta-col">
+                            <span class="meta-label">DISCIPLINE</span>
+                            <span class="meta-val">Medical UX/UI</span>
+                          </div>
+                          <div class="meta-col">
+                            <span class="meta-label">TIMELINE</span>
+                            <span class="meta-val">2026 — 2026</span>
+                          </div>
+                          <div class="meta-col">
+                            <span class="meta-label">ROLE</span>
+                            <span class="meta-val">Research &amp; User Interface</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Opportunity Heading continuing naturally down the left column -->
+                      <div class="intro-opportunity-block">
+                        <div class="cs-tag-row">
+                          <span class="cs-num">01</span>
+                          <span class="cs-tag">THE OPPORTUNITY</span>
+                        </div>
+                        <h2 class="cs-section-heading">More than<br> a Number</h2>
+                        <div class="cs-rule"></div>
+                        <p class="cs-opportunity-intro">
+                          Glucose readings provide valuable information, but a number alone doesn't explain what it means, what caused the change, or what to do next.
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: The Hero Image -->
+                    <div class="intro-visual-block">
+                      <div class="hero-image-wrap">
+                        <img src="Media/GluSight/glusight_hero_full.jpg" alt="GluSight continuous glucose biosensor disc on stone pedestal and mobile phone interface" class="cs-hero-img">
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- Opportunity Section Details (Sketchbook Photo + Insights) -->
+                  <section class="cs-section cs-section-opportunity-details" id="cs-opportunity-details">
+                    <!-- Editorial Spread: Sketchbook Photo + 4 Research Insights -->
+                    <div class="opportunity-composition">
+                      <figure class="sketchbook-figure">
+                        <video src="Media/Problem.mp4" class="cs-sketch-img cs-sketch-video" autoplay muted loop playsinline></video>
+                        <figcaption class="cs-figure-caption">
+                          Need for clear, contextual guidance mapping emotional friction during acute glucose spikes.
+                        </figcaption>
+                      </figure>
+
+                      <div class="insights-editorial-grid">
+                        <div class="insight-entry">
+                          <span class="insight-num">01</span>
+                          <h3 class="insight-title">Reactive behaviour</h3>
+                          <p class="insight-desc">Users often respond after changes occur rather than anticipating them.</p>
+                        </div>
+                        <div class="insight-entry">
+                          <span class="insight-num">02</span>
+                          <h3 class="insight-title">Cognitive overload</h3>
+                          <p class="insight-desc">Data without clear context can create confusion and anxiety.</p>
+                        </div>
+                        <div class="insight-entry">
+                          <span class="insight-num">03</span>
+                          <h3 class="insight-title">Unpredictability</h3>
+                          <p class="insight-desc">Glucose changes are uncertain and can feel difficult to manage.</p>
+                        </div>
+                        <div class="insight-entry">
+                          <span class="insight-num">04</span>
+                          <h3 class="insight-title">Tracking isn't intervention</h3>
+                          <p class="insight-desc">Existing systems focus on recording rather than helping users decide what to do next.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- 03 — THE PROCESS -->
+                  <section class="cs-section cs-section-process" id="cs-process">
+                    <div class="process-header">
+                      <div class="cs-tag-row">
+                        <span class="cs-num">02</span>
+                        <span class="cs-tag">THE PROCESS</span>
+                      </div>
+                      <h2 class="cs-section-heading">From Insight<br>to Interface</h2>
+                      <div class="cs-rule"></div>
+                      <p class="cs-process-intro">
+                        The process focused on understanding user needs, exploring possible solutions through sketches and iterations, and refining a simple, reassuring interface.
+                      </p>
+                    </div>
+
+                    <!-- Multi-Scale Equal 3-Column UI Screens Showcase -->
+                    <div class="process-editorial-gallery ui-screens-showcase">
+                      <figure class="process-figure ui-screen-card">
+                        <div class="ui-screen-frame">
+                          <img src="Media/GluSight/glusight_process_wireframes_notebook.png" alt="GluSight Log Meal interface screen" class="process-img">
+                        </div>
+                        <figcaption class="process-caption">
+                          <strong class="screen-label">Meal Logging</strong>
+                          <span>Contextual dietary input to correlate meals with glycemic response.</span>
+                        </figcaption>
+                      </figure>
+
+                      <figure class="process-figure ui-screen-card">
+                        <div class="ui-screen-frame">
+                          <img src="Media/GluSight/glusight_process_ui_screens.png" alt="GluSight Live Glucose Reading and Prediction Graph screen" class="process-img">
+                        </div>
+                        <figcaption class="process-caption">
+                          <strong class="screen-label">Real-Time Telemetry</strong>
+                          <span>Continuous readings with proactive 2-hour trajectory prediction.</span>
+                        </figcaption>
+                      </figure>
+
+                      <figure class="process-figure ui-screen-card">
+                        <div class="ui-screen-frame">
+                          <img src="Media/GluSight/glusight_process_visual_direction.png" alt="GluSight Settings and Health Setup screen" class="process-img">
+                        </div>
+                        <figcaption class="process-caption">
+                          <strong class="screen-label">Settings &amp; Alerts</strong>
+                          <span>Personalized thresholds and gentle proactive notification controls.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+                  </section>
+
+                  <!-- 04 — THE SOLUTION -->
+                  <section class="cs-section cs-section-solution" id="cs-solution">
+                    <div class="solution-header">
+                      <div class="cs-tag-row">
+                        <span class="cs-num">03</span>
+                        <span class="cs-tag">THE SOLUTION</span>
+                      </div>
+                      <h2 class="cs-section-heading">Calmm, Clarity &amp;<br>Contextual Guidance</h2>
+                      <div class="cs-rule"></div>
+                      <h3 class="cs-solution-statement">
+                        Transforming continuous biometric telemetry into proactive daily reassurance.
+                      </h3>
+                    </div>
+
+                    <!-- Solution Hero Showcase -->
+                    <div class="solution-composition">
+                      <div class="solution-main-ui">
+                        <div class="phone-frame-mockup">
+                          <img src="Media/GluSight/glusight_phone_ui_screen.png" alt="GluSight Mobile Application High-Fidelity Interface" class="solution-phone-img">
+                        </div>
+                      </div>
+
+                      <div class="solution-details-block">
+                        <div class="solution-detail-card">
+                          <div class="detail-text">
+                            <span class="detail-label">01 / CONTEXTUAL GUIDANCE</span>
+                            <h4 class="detail-title">Calm, Actionable Alerts</h4>
+                            <p class="detail-desc">Notifications are designed around context rather than raw glucose thresholds, helping users understand why a change matters and what they can do next without adding unnecessary anxiety.</p>
+                          </div>
+                        </div>
+
+                        <div class="solution-detail-card">
+                          <div class="detail-text">
+                            <span class="detail-label">02 / ANTICIPATORY TELEMETRY</span>
+                            <h4 class="detail-title">Predictive Trajectory Mapping</h4>
+                            <p class="detail-desc">Instead of isolated numbers, GluSight plots dynamic two-hour forecast curves, replacing sudden alarms with gentle proactive recommendations.</p>
+                          </div>
+                        </div>
+
+                        <div class="solution-detail-card">
+                          <div class="detail-text">
+                            <span class="detail-label">03 / CONTEXTUAL LOGGING</span>
+                            <h4 class="detail-title">Cause &amp; Effect Correlation</h4>
+                            <p class="detail-desc">Rapid meal, exercise, and insulin logging directly connects real-world actions with physiological response, eliminating self-blame and guesswork.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                </article>
+
+                <!-- Cabin in the Woods Dedicated Editorial Architectural Showcase -->
+                <article id="cabin-case-study" class="cabin-case-study editorial-article" aria-label="Cabin in the Woods Visual Showcase" style="display: none;">
+
+                  <!-- SPREAD 01: ASYMMETRIC OPENING SPREAD (Cols 1-5 Text / Cols 6-12 Hero Visual) -->
+                  <section class="editorial-spread spread-opening grid-12">
+                    <div class="opening-text-col span-5">
+                      <div class="editorial-folio-tag">
+                        <span class="folio-no">NO. 01</span>
+                        <span class="folio-cat">VISUALS &mdash; ARCHITECTURAL CGI</span>
+                      </div>
+                      <h1 class="editorial-hero-title">Cabin in the Woods</h1>
+                      <div class="editorial-rule"></div>
+                      <h2 class="editorial-hook">An architectural visualization study exploring stillness, materiality, and light in an ancient woodland.</h2>
+                      <p class="editorial-lead">
+                        An architectural visualization study exploring how a small woodland retreat can feel integrated with its surrounding landscape rather than placed within it.
+                      </p>
+
+                      <!-- Metadata Strip with Fine Hairlines -->
+                      <div class="editorial-meta-grid">
+                        <div class="meta-item">
+                          <span class="meta-label">DISCIPLINE</span>
+                          <span class="meta-val">Architectural CGI</span>
+                        </div>
+                        <div class="meta-item">
+                          <span class="meta-label">TIMELINE</span>
+                          <span class="meta-val">2026</span>
+                        </div>
+                        <div class="meta-item">
+                          <span class="meta-label">ROLE</span>
+                          <span class="meta-val">Environment &amp; Lighting</span>
+                        </div>
+                        <div class="meta-item">
+                          <span class="meta-label">MEDIUM</span>
+                          <span class="meta-val">Blender Cycles &amp; Substance</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Master Hero Perspective (Span 7) -->
+                    <div class="opening-visual-col span-7">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-hero">
+                          <img src="Media/Cabin/cabin_hero.jpg" alt="Cabin in the Woods architectural master perspective" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 01 ]</span>
+                          <span class="caption-desc">Filtered morning sunlight establishes a quiet relationship between the cabin and the forest.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+                  </section>
+
+                  <!-- SPREAD 02: OFFSET PHILOSOPHY SPREAD (Cols 1-4 Margin Note / Cols 5-12 Pull Quote) -->
+                  <section class="editorial-spread spread-statement grid-12">
+                    <div class="statement-label-col span-4">
+                      <div class="folio-indicator">
+                        <span class="folio-no">02</span>
+                        <span class="folio-title">SPATIAL CONTEXT</span>
+                      </div>
+                      <div class="editorial-hairline"></div>
+                      <p class="statement-subtext">The dialogue between crafted timber structures and organic landscape.</p>
+                    </div>
+                    <div class="statement-quote-col span-8">
+                      <blockquote class="editorial-large-quote">
+                        &ldquo;The design focuses on the relationship between built form and nature, using weathered timber, a steep pitched roof, decorative detailing, and a restrained material palette to give the cabin a distinct sense of character.&rdquo;
+                      </blockquote>
+                    </div>
+                  </section>
+
+                  <!-- SPREAD 03: ASYMMETRIC SCALE CONTRAST (Dominant Tall 7 Cols / Offset Macro 5 Cols) -->
+                  <section class="editorial-spread spread-asymmetric-duo grid-12">
+                    <!-- Left: Dominant Tall Foliage Canopy (Span 7) -->
+                    <div class="duo-dominant-col span-7">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-tall">
+                          <img src="Media/Cabin/cabin_detail_canopy.jpg" alt="Morning sun filtering through maple leaves onto timber siding" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 02 ]</span>
+                          <span class="caption-desc">Diffuse morning sunlight filtered through layered maple leaves, casting soft shadows across weathered timber siding.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+
+                    <!-- Right: Offset Handcrafted Frieze Detail (Span 5) -->
+                    <div class="duo-offset-col span-5">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-square">
+                          <img src="Media/Cabin/cabin_detail_gable.jpg" alt="Pitched roof gable and handcrafted decorative floral frieze" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 03 ]</span>
+                          <span class="caption-desc">Decorative floral frieze and steep timber gable reinforcing rustic authenticity.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+                  </section>
+
+                  <!-- SPREAD 04: FULL-BLEED CINEMATIC MOTION (Span 12) -->
+                  <section class="editorial-spread spread-cinema grid-12" id="cabin-film-trigger-section">
+                    <div class="cinema-card-col span-12">
+                      <div class="cabin-film-card">
+                        <div class="cabin-film-bg-preview">
+                          <img src="Media/Cabin/cabin_hero.jpg" alt="Cinematic Film Preview" class="film-bg-img">
+                          <div class="film-bg-gradient"></div>
+                        </div>
+                        <button class="cabin-film-trigger" id="cabin-film-btn" aria-label="Watch Cabin in the Woods Cinematic Film">
+                          <div class="film-trigger-content">
+                            <div class="film-badge-row">
+                              <span class="film-num">01 / FILM</span>
+                              <span class="film-duration">CINEMATIC PRESENTATION</span>
+                            </div>
+                            <h3 class="film-title">Watch the House</h3>
+                            <p class="film-subtitle">An immersive motion journey through light, shadow, and stillness.</p>
+                            <div class="film-action-link">
+                              <span class="film-play-icon">▶</span>
+                              <span class="film-action-text">PLAY FILM &rarr;</span>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- SPREAD 05: TACTILE ARCHITECTURAL STUDIES (Span 6 / Span 6 Offset) -->
+                  <section class="editorial-spread spread-tactile-duo grid-12">
+                    <div class="tactile-col span-6">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-landscape">
+                          <img src="Media/Cabin/cabin_detail_windows.jpg" alt="Diamond leaded glazing and timber entrance doorway" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 04 ]</span>
+                          <span class="caption-desc">Diamond-patterned leaded glazing framed within the weathered facade.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+                    <div class="tactile-col span-6">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-landscape">
+                          <img src="Media/Cabin/cabin_detail_porch.jpg" alt="Weathered timber porch railing and mossy forest floor" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 05 ]</span>
+                          <span class="caption-desc">Weathered timber porch detailing transitioning into the forest floor.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+                  </section>
+
+                  <!-- SPREAD 06: EDITORIAL COLOPHON & OUTRO (Span 12 Centered) -->
+                  <footer class="editorial-colophon">
+                    <div class="colophon-inner">
+                      <div class="colophon-rule"></div>
+                      <p class="colophon-quote">
+                        &ldquo;A quiet dialogue between structure, shadow, and nature.&rdquo;
+                      </p>
+                      <span class="colophon-folio">VISUALS &mdash; HARSH PORTFOLIO &copy; 2026</span>
+                    </div>
+                  </footer>
+
+                </article>
+
+                <!-- Product Renders Dedicated Editorial Showcase -->
+                <article id="product-renders-case-study" class="product-renders-case-study editorial-article" aria-label="Product Renders Visual Showcase" style="display: none;">
+
+                  <!-- SPREAD 01: ASYMMETRIC OPENING SPREAD (Cols 1-5 Text / Cols 6-12 Hero Visual) -->
+                  <section class="editorial-spread spread-opening grid-12">
+                    <div class="opening-text-col span-5">
+                      <div class="editorial-folio-tag">
+                        <span class="folio-no">NO. 02</span>
+                        <span class="folio-cat">VISUALS &mdash; 3D LOOKDEV &amp; MATERIALITY</span>
+                      </div>
+                      <h1 class="editorial-hero-title">Product Renders</h1>
+                      <div class="editorial-rule"></div>
+                      <h2 class="editorial-hook">A curated collection of 3D look-development, hard-surface detailing, and photorealistic material studies.</h2>
+                      <p class="editorial-lead">
+                        Exploring the intersection of industrial form, physical light behavior, and tactile material response through precise shader construction and studio lighting choreography.
+                      </p>
+
+                      <!-- Metadata Strip with Fine Hairlines -->
+                      <div class="editorial-meta-grid">
+                        <div class="meta-item">
+                          <span class="meta-label">DISCIPLINE</span>
+                          <span class="meta-val">3D LookDev &amp; Lighting</span>
+                        </div>
+                        <div class="meta-item">
+                          <span class="meta-label">TIMELINE</span>
+                          <span class="meta-val">2025 &mdash; 2026</span>
+                        </div>
+                        <div class="meta-item">
+                          <span class="meta-label">ROLE</span>
+                          <span class="meta-val">3D Artist &amp; Stylist</span>
+                        </div>
+                        <div class="meta-item">
+                          <span class="meta-label">MEDIUM</span>
+                          <span class="meta-val">Blender Cycles &amp; Substance</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Master Hero Perspective (Span 7) -->
+                    <div class="opening-visual-col span-7">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-hero">
+                          <img src="Media/Product Renders/harsh-pal-finalrender.jpg" alt="Polaroid camera 3D look-development on wet pavement with foliage reflections" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 01 ]</span>
+                          <span class="caption-desc">High-fidelity 3D look-development of the olive green Polaroid Now resting on weathered wet ground.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+                  </section>
+
+                  <!-- SPREAD 02: OFFSET PHILOSOPHY SPREAD (Cols 1-4 Margin Note / Cols 5-12 Pull Quote) -->
+                  <section class="editorial-spread spread-statement grid-12">
+                    <div class="statement-label-col span-4">
+                      <div class="folio-indicator">
+                        <span class="folio-no">02</span>
+                        <span class="folio-title">SHADING PHILOSOPHY</span>
+                      </div>
+                      <div class="editorial-hairline"></div>
+                      <p class="statement-subtext">The tangible relationship between light, micro-roughness, and material memory.</p>
+                    </div>
+                    <div class="statement-quote-col span-8">
+                      <blockquote class="editorial-large-quote">
+                        &ldquo;Look-development is not merely about achieving photorealism—it is the craft of giving digital objects physical memory, tactile friction, and a sense of tangible reality.&rdquo;
+                      </blockquote>
+                    </div>
+                  </section>
+
+                  <!-- SPREAD 03: ASYMMETRIC MATERIAL CONTRAST (Ceramic Light 7 Cols / Macro Polymer 5 Cols) -->
+                  <section class="editorial-spread spread-asymmetric-duo grid-12">
+                    <!-- Left: Handcrafted Ceramic Lighthouse (Span 7) -->
+                    <div class="duo-dominant-col span-7">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-square">
+                          <img src="Media/Product Renders/1Psed.png" alt="Handcrafted ceramic lighthouse candleholder with flame and dappled leaf shadows" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 02 ]</span>
+                          <span class="caption-desc">Handcrafted ceramic lighthouse candleholder exploring translucent subsurface scattering and ambient flame warmth.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+
+                    <!-- Right: Micro-surface Macro LookDev (Span 5) -->
+                    <div class="duo-offset-col span-5">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-square">
+                          <img src="Media/Product Renders/harsh-pal-image0001.jpg" alt="Macro 3D render showcasing micro polymer roughness and optical lens coatings" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 03 ]</span>
+                          <span class="caption-desc">Micro-surface look-development capturing molded polymer grain, recessed typography, and coated glass elements.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+                  </section>
+
+                  <!-- SPREAD 04: FULL WIDESCREEN CINEMA & MOTION TURNTABLE (Span 12) -->
+                  <section class="editorial-spread spread-cinema-duo grid-12" id="product-film-trigger-section">
+                    <div class="cinema-widescreen-col span-12">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-widescreen">
+                          <img src="Media/Product Renders/img (9).png" alt="Atmospheric widescreen product look-development scene" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 04 ]</span>
+                          <span class="caption-desc">Atmospheric widescreen look-development integrating directional lighting with nuanced surface reflectivity.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+
+                    <!-- Cinematic Motion Presentation Card (Span 12) -->
+                    <div class="cinema-card-col span-12">
+                      <div class="cabin-film-card product-film-card">
+                        <div class="cabin-film-bg-preview">
+                          <img src="Media/Product Renders/harsh-pal-finalrender.jpg" alt="Product Motion Turntable Preview" class="film-bg-img">
+                          <div class="film-bg-gradient"></div>
+                        </div>
+                        <button class="cabin-film-trigger" id="product-film-btn" aria-label="Watch Product Motion Breakdown">
+                          <div class="film-trigger-content">
+                            <div class="film-badge-row">
+                              <span class="film-num">02 / FILM</span>
+                              <span class="film-duration">TURNTABLE PRESENTATION</span>
+                            </div>
+                            <h3 class="film-title">Watch Turntable Motion</h3>
+                            <p class="film-subtitle">Dynamic 360° motion study exploring specular rolloff, Fresnel, and real-time roughness.</p>
+                            <div class="film-action-link">
+                              <span class="film-play-icon">▶</span>
+                              <span class="film-action-text">PLAY MOTION &rarr;</span>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- SPREAD 05: ASYMMETRIC SPATIAL & SCULPTURAL COMPOSITION (Portrait 5 Cols / Sculptural 7 Cols) -->
+                  <section class="editorial-spread spread-spatial-duo grid-12">
+                    <div class="spatial-portrait-col span-5">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-tall">
+                          <img src="Media/Product Renders/img (11).png" alt="Vertical spatial product lighting study with architectural contrast" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 06 ]</span>
+                          <span class="caption-desc">Vertical spatial lighting study exploring architectural contrast and specular highlights.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+                    <div class="spatial-sculptural-col span-7">
+                      <figure class="editorial-figure">
+                        <div class="editorial-img-wrap frame-landscape">
+                          <img src="Media/Product Renders/img (3).jpg" alt="Sculptural product study examining geometric curvature and directional highlights" class="editorial-img">
+                        </div>
+                        <figcaption class="editorial-caption">
+                          <span class="caption-idx">[ 07 ]</span>
+                          <span class="caption-desc">Sculptural product study examining geometric curvature and directional studio highlights.</span>
+                        </figcaption>
+                      </figure>
+                    </div>
+                  </section>
+
+                  <!-- SPREAD 06: EDITORIAL COLOPHON & OUTRO -->
+                  <footer class="editorial-colophon">
+                    <div class="colophon-inner">
+                      <div class="colophon-rule"></div>
+                      <p class="colophon-quote">
+                        &ldquo;A continuous inquiry into form, light, and the tangible soul of synthetic surfaces.&rdquo;
+                      </p>
+                      <span class="colophon-folio">VISUALS &mdash; HARSH PORTFOLIO &copy; 2026</span>
+                    </div>
+                  </footer>
+
+                </article>
+
+                <!-- Fallback Standard Project View (For other projects) -->
+                <div id="standard-project-view" class="standard-project-view" style="display: none;">
+                  <header class="editorial-header">
+                    <span class="editorial-section-label" id="project-section-label">Visuals</span>
+                    <h1 class="editorial-title" id="project-title">Project Title</h1>
+                  </header>
+
+                  <div class="editorial-content-grid">
+                    <aside class="editorial-meta">
+                      <div class="meta-group">
+                        <span class="meta-label">Discipline</span>
+                        <span class="meta-value" id="project-discipline">—</span>
+                      </div>
+                      <div class="meta-group">
+                        <span class="meta-label">Timeline</span>
+                        <span class="meta-value" id="project-timeline">—</span>
+                      </div>
+                      <div class="meta-group">
+                        <span class="meta-label">Role</span>
+                        <span class="meta-value" id="project-role">—</span>
+                      </div>
+                      <div class="meta-group">
+                        <span class="meta-label">Medium</span>
+                        <span class="meta-value" id="project-medium">—</span>
+                      </div>
+                    </aside>
+
+                    <article class="editorial-body">
+                      <p class="lead-paragraph" id="project-lead">—</p>
+                      <div class="body-columns">
+                        <p class="body-paragraph" id="project-p1">—</p>
+                        <p class="body-paragraph" id="project-p2">—</p>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+              </main>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Fullscreen Cinematic Video Experience Overlay -->
+  <div id="cinematic-video-modal" class="cinematic-video-modal" aria-hidden="true">
+    <!-- Fade to black curtain -->
+    <div class="cinematic-black-curtain" id="cinematic-curtain"></div>
+
+    <!-- Video player container -->
+    <div class="cinematic-video-container" id="cinematic-video-container">
+      <video id="cinematic-video-element" class="cinematic-video-player" playsinline preload="auto">
+        <source src="Media/TreeHouseWithout.mp4" type="video/mp4">
+        Your browser does not support HTML5 video.
+      </video>
+      
+      <!-- Discreet Exit Button -->
+      <button class="cinematic-close-btn" id="cinematic-close-btn" aria-label="Exit Cinematic Film">
+        <span class="close-label">ESC / RETURN</span>
+        <span class="close-icon">&times;</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Parallax.js Library by Matthew Wagerfield -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/parallax/3.1.0/parallax.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

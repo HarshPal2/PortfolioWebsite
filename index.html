@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harsh — Visual Designer & 3D Artist</title>
+  <meta name="description"
+    content="Portfolio of Harsh, a visual designer and 3D artist creating experiences through emotions, motion, and storytelling.">
+
+  <!-- Fonts: GFS Didot (Headline), Belleza (Body), Alyamama, Playfair Display & Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Belleza&family=GFS+Didot&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/alyamama/index.css">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Instant Pre-Render Check (Prevents Freedom Splash Flash on Reload/Subsequent Visits/Return from Projects) -->
+  <script>
+    try {
+      if (localStorage.getItem('portfolioIntroCompleted') === 'true' || 
+          sessionStorage.getItem('returnFromProjects') === 'true' ||
+          sessionStorage.getItem('returnFromProjectsToLiving') === 'true') {
+        document.documentElement.classList.add('intro-completed');
+      }
+    } catch (e) { }
+  </script>
+</head>
+
+<body>
+
+  <!-- Parallax Scene Stage -->
+  <div id="parallax-scene" class="parallax-scene">
+
+    <!-- Layer 1: Background Sequence Canvas -->
+    <div class="parallax-layer layer-bg" data-depth="0.08">
+      <div class="video-wrapper">
+        <canvas id="sequence-canvas" class="bg-video active-video"></canvas>
+        <canvas id="sequence-canvas-secondary" class="bg-video"></canvas>
+      </div>
+    </div>
+
+    <!-- Layer 2: Backdrop Overlay -->
+    <div class="parallax-layer layer-backdrop" data-depth="0.12">
+      <div class="fullscreen-backdrop-rect"></div>
+    </div>
+
+    <!-- Layer 3: Interactive Objects Overlay -->
+    <div class="parallax-layer layer-interactive" data-depth="0.08">
+      <div id="interactive-stage" class="interactive-stage"></div>
+    </div>
+
+    <!-- Freedom Text Intro Splash -->
+    <div id="freedom-splash" class="freedom-splash">
+      <h1 class="freedom-splash-text">Freedom</h1>
+    </div>
+
+    <!-- Minimal Architectural UI Overlay -->
+    <div id="ui-container" class="ui-container">
+
+      <!-- Layer 3: Navigation Header -->
+      <div class="parallax-layer layer-nav" data-depth="0.18">
+        <header class="top-header stagger-1">
+          <nav class="nav-bar">
+            <a href="#home" class="nav-link active" data-nav="home">Home</a>
+            <a href="#projects" class="nav-link" data-nav="projects">Projects</a>
+            <a href="#blog" class="nav-link" data-nav="blog">Blog</a>
+            <a href="#about-me" class="nav-link" data-nav="about-me">About Me</a>
+            <a href="#contact" class="nav-link" data-nav="contact">Contact</a>
+          </nav>
+        </header>
+      </div>
+
+      <!-- Left & Right Viewport Indicators -->
+      <div class="side-indicator side-indicator-left"></div>
+      <div class="side-indicator side-indicator-right"></div>
+
+      <!-- Layer 4: Editorial Title ("Freedom") -->
+      <div class="parallax-layer layer-title" data-depth="0.26">
+        <div class="freedom-title stagger-2">
+          <h1>Freedom</h1>
+        </div>
+      </div>
+
+      <!-- Layer 5: Main Content (Headline, Sub-headline, Orange Accent & Tagline) -->
+      <div class="parallax-layer layer-main" data-depth="0.35">
+        <!-- Main Home Content Area (Visible on Living Room) -->
+        <main class="hero-main living-main about-main" id="living-main" aria-label="Home Introduction">
+          <div class="about-block living-block">
+            <!-- Headline -->
+            <div class="headline-wrapper stagger-3">
+              <h2 class="main-headline living-headline">
+                I’m <strong class="highlight-name">Harsh</strong>,<br>
+                a visual designer<br>
+                and 3D artist.
+              </h2>
+            </div>
+
+            <!-- Supporting Text -->
+            <p class="sub-headline living-sub-headline stagger-4">
+              I create experiences through<br>
+              emotions, motion, and storytelling
+            </p>
+
+            <!-- Orange Accent Line (Global Signature Design Element) -->
+            <div class="orange-accent-line stagger-4"></div>
+
+            <!-- Manifesto / Tagline -->
+            <div class="tagline-wrapper stagger-4">
+              <p class="tagline">
+                CURIOUS BY NATURE.<br>
+                EXPERIMENTAL BY CHOICE.
+              </p>
+            </div>
+          </div>
+        </main>
+
+        <!-- Bedroom / Projects Introduction -->
+        <section class="bedroom-main" id="bedroom-main" aria-label="Projects Introduction">
+          <div class="bedroom-block">
+            <!-- Heading -->
+            <div class="headline-wrapper stagger-3">
+              <h2 class="main-headline bedroom-headline">
+                A place to explore.
+              </h2>
+            </div>
+
+            <!-- Body -->
+            <p class="sub-headline bedroom-sub-headline stagger-4">
+              From constructed worlds to digital experiences, my work moves between disciplines, ideas, and ways of seeing without staying in one place for too long.
+            </p>
+
+            <!-- Orange Accent Line -->
+            <div class="orange-accent-line stagger-4"></div>
+
+            <!-- Explore Projects Button -->
+            <div class="bedroom-cta-wrapper stagger-4">
+              <button type="button" class="explore-projects-btn" id="explore-projects-btn">
+                <span>Explore Projects</span>
+                <span class="btn-arrow" aria-hidden="true">→</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Kitchen / Blog Introduction -->
+        <section class="kitchen-main" id="kitchen-main" aria-label="Blog Introduction">
+          <div class="kitchen-block">
+            <!-- Heading -->
+            <div class="headline-wrapper stagger-3">
+              <h2 class="main-headline kitchen-headline">
+                Reflections &amp; Explorations.
+              </h2>
+            </div>
+
+            <!-- Body -->
+            <p class="sub-headline kitchen-sub-headline stagger-4">
+              Writings on spatial design, real-time technology, and creative experiments.
+            </p>
+
+            <!-- Orange Accent Line -->
+            <div class="orange-accent-line stagger-4"></div>
+
+            <!-- Descriptor -->
+            <div class="kitchen-descriptor-wrap stagger-4">
+              <span class="kitchen-descriptor">Coming Soon · Essays &amp; Notes</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Pool Room / About Me Introduction -->
+        <section class="pool-main" id="pool-main" aria-label="About Me">
+          <div class="pool-block">
+            <!-- Heading -->
+            <div class="headline-wrapper stagger-3">
+              <h2 class="main-headline pool-headline">
+                A little about me.
+              </h2>
+            </div>
+
+            <!-- Body -->
+            <p class="sub-headline pool-sub-headline stagger-4">
+              I’m Harsh, a designer and 3D artist interested in creating environments and experiences that sit between the physical and digital.
+            </p>
+
+            <!-- Orange Accent Line -->
+            <div class="orange-accent-line stagger-4"></div>
+
+            <!-- Supporting Paragraph -->
+            <p class="pool-supporting-text stagger-4">
+              My work moves between 3D environments, visualisation, interaction design, and immersive experiences. I’m interested in not only building a space, but shaping how someone experiences it—and how technology can make that interaction more meaningful.
+            </p>
+
+            <!-- Small Supporting Descriptor -->
+            <div class="pool-descriptor-wrap stagger-4">
+              <span class="pool-descriptor">Designer · 3D Artist · Experience Builder</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Office / Contact Introduction -->
+        <section class="office-main" id="office-main" aria-label="Contact Introduction">
+          <div class="office-block">
+            <!-- Heading -->
+            <div class="headline-wrapper stagger-3">
+              <h2 class="main-headline office-headline">
+                Ideas are better shared.
+              </h2>
+            </div>
+
+            <!-- Body -->
+            <p class="sub-headline office-sub-headline stagger-4">
+              Have an idea, a project, or simply something worth exploring? Let’s open the door and see where it leads.
+            </p>
+
+            <!-- Orange Accent Line -->
+            <div class="orange-accent-line stagger-4"></div>
+
+            <!-- Get in Touch Button -->
+            <div class="office-cta-wrapper stagger-4">
+              <button type="button" class="explore-projects-btn contact-intro-btn" id="contact-intro-btn">
+                <span>Get in Touch</span>
+                <span class="btn-arrow" aria-hidden="true">→</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Layer 7: Footer & Social Links -->
+      <div class="parallax-layer layer-footer" data-depth="0.22">
+        <footer class="bottom-footer">
+          <div class="footer-center stagger-6">
+            <span class="powered-text">POWERED BY IMAGINATION</span>
+          </div>
+
+          <div class="footer-socials stagger-6">
+            <!-- LinkedIn Icon -->
+            <a href="https://www.linkedin.com/in/harsh-pal-42b174205/" target="_blank" rel="Linkedin Profile of Harsh"
+              class="social-icon icon-linkedin" aria-label="LinkedIn Profile">
+              <img src="Media/LinkedinLogo.png" alt="LinkedIn">
+            </a>
+
+            <!-- ArtStation / Creative Profile Icon -->
+            <a href="https://www.artstation.com/harshpal" target="_blank" rel="Artstation portfolio of Harsh"
+              class="social-icon icon-artstation" aria-label="ArtStation Profile">
+              <img src="Media/ArtstationLogo.jpg" alt="ArtStation">
+            </a>
+          </div>
+        </footer>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Contact Me Editorial Interface Modal -->
+  <div id="contact-modal" class="contact-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Contact Harsh">
+    <div class="contact-modal-backdrop" id="contact-modal-backdrop"></div>
+    <div class="contact-modal-container">
+      <div class="contact-modal-card">
+        <button type="button" class="contact-modal-close" id="contact-modal-close" aria-label="Close Contact Interface">
+          <span aria-hidden="true">✕</span>
+        </button>
+
+        <div class="contact-card-header">
+          <div class="contact-tag-row">
+            <span class="contact-tag-num">04</span>
+            <span class="contact-tag-title">CONTACT ME</span>
+          </div>
+          <h2 class="contact-headline">Let's connect.</h2>
+          <div class="contact-accent-line"></div>
+          <p class="contact-subhead">
+            Have a project in mind, an inquiry, or want to collaborate? Feel free to reach out directly or connect through my social profiles.
+          </p>
+        </div>
+
+        <div class="contact-card-grid">
+          <!-- Column 1: Direct Message Form -->
+          <div class="contact-form-column">
+            <form id="contact-form" class="contact-form">
+              <div class="contact-input-group">
+                <label for="contact-name" class="contact-label">Name</label>
+                <input type="text" id="contact-name" name="name" class="contact-input" placeholder="Your name" required autocomplete="name">
+              </div>
+
+              <div class="contact-input-group">
+                <label for="contact-email" class="contact-label">Email</label>
+                <input type="email" id="contact-email" name="email" class="contact-input" placeholder="Your email address" required autocomplete="email">
+              </div>
+
+              <div class="contact-input-group">
+                <label for="contact-message" class="contact-label">Message</label>
+                <textarea id="contact-message" name="message" class="contact-textarea" rows="4" placeholder="Tell me about your project, idea, or inquiry..." required></textarea>
+              </div>
+
+              <button type="submit" class="contact-submit-btn" id="contact-submit-btn">
+                <span>Send Message</span>
+                <span class="btn-arrow" aria-hidden="true">→</span>
+              </button>
+
+              <div class="contact-form-status" id="contact-form-status" aria-live="polite"></div>
+            </form>
+          </div>
+
+          <!-- Column 2: Direct Channels -->
+          <div class="contact-channels-column">
+            <div class="contact-channels-title">Direct Channels</div>
+
+            <div class="contact-channel-cards">
+              <!-- LinkedIn -->
+              <a href="https://www.linkedin.com/in/harsh-pal-42b174205/" target="_blank" rel="noopener noreferrer" class="contact-channel-card">
+                <div class="channel-icon-wrap">
+                  <img src="Media/LinkedinLogo.png" alt="LinkedIn">
+                </div>
+                <div class="channel-info">
+                  <span class="channel-name">LinkedIn</span>
+                  <span class="channel-desc">Professional Profile &amp; Inquiries</span>
+                </div>
+                <span class="channel-arrow" aria-hidden="true">↗</span>
+              </a>
+
+              <!-- ArtStation -->
+              <a href="https://www.artstation.com/harshpal" target="_blank" rel="noopener noreferrer" class="contact-channel-card">
+                <div class="channel-icon-wrap">
+                  <img src="Media/ArtstationLogo.jpg" alt="ArtStation">
+                </div>
+                <div class="channel-info">
+                  <span class="channel-name">ArtStation</span>
+                  <span class="channel-desc">3D Works &amp; Visual Projects</span>
+                </div>
+                <span class="channel-arrow" aria-hidden="true">↗</span>
+              </a>
+            </div>
+
+            <div class="contact-location-note">
+              <span class="location-dot"></span>
+              <span>Based in India &bull; Available for Visual Design &amp; 3D Art</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parallax.js Library by Matthew Wagerfield -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/parallax/3.1.0/parallax.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
