@@ -48,7 +48,7 @@
   }
 
   const pcImage = new Image();
-  pcImage.src = '../Media/BedroomToPCScreen/BedtoPC0075.jpg';
+  pcImage.src = '/Media/BedroomToPCScreen/BedtoPC0075.jpg';
 
   let parallaxInstance = null;
 
@@ -349,14 +349,14 @@
     if (cabinFilmBtn) {
       cabinFilmBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        openCinematic('Media/TreeHouseWithout.mp4');
+        openCinematic('/projects/Media/TreeHouseWithout.mp4');
       });
     }
 
     if (productFilmBtn) {
       productFilmBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        openCinematic('Media/Product Renders/vid.mp4');
+        openCinematic('/projects/Media/Product Renders/vid.mp4');
       });
     }
 
