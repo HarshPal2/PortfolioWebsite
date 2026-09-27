@@ -167,6 +167,9 @@ body {
   justify-content: center;
   background: transparent;
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity;
 }
 
 .freedom-splash-text {
@@ -350,28 +353,6 @@ body {
   opacity: 1;
 }
 
-/* --- Left & Right Side Viewport Indicators --- */
-.side-indicator {
-  position: fixed;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 120px;
-  background-color: rgba(255, 255, 255, 0.4);
-  border-radius: 4px;
-  z-index: 20;
-  pointer-events: none;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
-
-.side-indicator-left {
-  left: 28px;
-}
-
-.side-indicator-right {
-  right: 28px;
-}
-
 /* --- Top Right Editorial Title --- */
 .freedom-title {
   position: absolute;
@@ -390,14 +371,21 @@ body {
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
 }
 
-/* --- Main Home / Living Content Area --- */
+/* --- Main Home / Living Content Area (Centered Overlay) --- */
 .about-main,
 .living-main {
   position: absolute;
-  top: 27%;
-  left: 29%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 20;
-  max-width: 520px;
+  max-width: 540px;
+  width: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .about-block,
@@ -405,6 +393,8 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 500px;
 }
 
 .living-cta-wrapper {
@@ -436,7 +426,14 @@ body {
 }
 
 .ui-container.projects-mode .about-main,
-.ui-container.projects-mode .living-main,
+.ui-container.projects-mode .living-main {
+  opacity: 0 !important;
+  transform: translate(-50%, calc(-50% - 12px));
+  pointer-events: none;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .ui-container.projects-mode .bottom-footer {
   opacity: 0 !important;
   transform: translateY(-12px);
@@ -929,11 +926,6 @@ body {
     font-size: 60px;
   }
 
-  .about-main,
-  .living-main {
-    left: 22%;
-  }
-
   .bedroom-main,
   .kitchen-main,
   .pool-main,
@@ -977,13 +969,6 @@ body {
     font-size: 48px;
   }
 
-  .about-main,
-  .living-main {
-    top: 25%;
-    left: 12%;
-    max-width: 80%;
-  }
-
   .bedroom-main,
   .kitchen-main,
   .pool-main,
@@ -1016,15 +1001,14 @@ body {
     padding: 10px 22px;
     font-size: 16px;
   }
-
-  .side-indicator {
-    display: none;
-  }
 }
 
 @media (max-width: 600px) {
   .about-main,
-  .living-main,
+  .living-main {
+    max-width: 92%;
+  }
+
   .bedroom-main,
   .kitchen-main,
   .pool-main,

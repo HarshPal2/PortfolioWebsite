@@ -14,6 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const navLinks = document.querySelectorAll('.nav-link');
   const roomTitleEl = document.querySelector('.freedom-title h1');
 
+  // --- Entrance Sequence Timing Constants (Configurable) ---
+  const FREEDOM_DISPLAY_DURATION = 1000; // Duration (ms) Freedom title stays fully visible before fading
+  const FREEDOM_FADE_DURATION = 800;    // Duration (ms) for Freedom title to smoothly fade out to 0 opacity
+
   let hasRevealed = false;
   let isScrollLocked = false;
   let currentRoom = 'living';
@@ -1485,16 +1489,21 @@ document.addEventListener('DOMContentLoaded', () => {
       drawFrameToCanvas(activeCanvas, entranceFrames[0]);
     }
 
+    // 1. "Freedom" appears and remains clearly visible for approximately 1 second
     setTimeout(() => {
+      // 2. "Freedom" fades out smoothly over FREEDOM_FADE_DURATION
       if (freedomSplash) {
+        freedomSplash.style.transition = `opacity ${FREEDOM_FADE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;
         freedomSplash.classList.add('fade-out');
       }
 
+      // 3. After the fade-out completes, the Entrance sequence starts
       setTimeout(() => {
         if (freedomSplash) {
           freedomSplash.style.display = 'none';
         }
 
+        // 4. Entrance video sequence plays normally
         playImageSequence(activeCanvas, entranceFrames, 0, entranceFrames.length - 1, () => {
           try {
             localStorage.setItem('portfolioIntroCompleted', 'true');
@@ -1505,10 +1514,11 @@ document.addEventListener('DOMContentLoaded', () => {
           if (livingBaseFrame) {
             drawFrameToCanvas(activeCanvas, livingBaseFrame);
           }
+          // 5. Entrance text appears centered over the video / living room
           revealUI();
         });
-      }, 500);
-    }, 500);
+      }, FREEDOM_FADE_DURATION);
+    }, FREEDOM_DISPLAY_DURATION);
   }
 
   // --- Global Escape Key Navigation (Return to About Me / Living) ---
