@@ -158,15 +158,19 @@ body {
   transition: transform 2.4s cubic-bezier(0.25, 1, 0.35, 1) !important;
 }
 
-/* --- Freedom Text Intro Splash --- */
+/* --- Freedom Text Intro Splash (Full Viewport Centered Overlay) --- */
 .freedom-splash {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   pointer-events: none;
+  z-index: 9999;
   opacity: 1;
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity;
@@ -180,6 +184,9 @@ body {
   letter-spacing: -2px;
   text-align: center;
   line-height: 1;
+  margin: 0;
+  padding: 0;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
 }
 
 .freedom-splash.fade-out {
