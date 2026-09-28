@@ -49,56 +49,188 @@ document.addEventListener('DOMContentLoaded', () => {
     'pool_office': { folder: 'Media/Pool_Office/', prefix: 'PoolToOffice', count: 75 }
   };
 
+  // --- WebP Support Detection ---
+  const supportsWebP = (() => {
+    try {
+      const elem = document.createElement('canvas');
+      if (elem.getContext && elem.getContext('2d')) {
+        return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+      }
+    } catch (e) {}
+    return false;
+  })();
+  const imgExt = supportsWebP ? '.webp' : '.jpg';
+  console.log(`[AssetEngine] WebP supported: ${supportsWebP} (using format ${imgExt})`);
+
+  // --- In-Memory Frame Cache & LRU Eviction Policy ---
   const frameCache = {};
+  const cacheAccessTimes = {};
+  const MAX_CACHED_SEQUENCES = 6; // Keep RAM usage bounded and predictable
 
   function pad4(n) {
     return String(n).padStart(4, '0');
   }
 
+  function pruneCache() {
+    const keys = Object.keys(frameCache);
+    if (keys.length <= MAX_CACHED_SEQUENCES) return;
+
+    // Never evict entrance, current room connections, or current active sequence
+    const protectedKeys = new Set(['entrance']);
+    if (BackgroundAssetQueue._roomAdjacency[currentRoom]) {
+      BackgroundAssetQueue._roomAdjacency[currentRoom].forEach((k) => protectedKeys.add(k));
+    }
+
+    const evictCandidates = keys
+      .filter((k) => !protectedKeys.has(k))
+      .sort((a, b) => (cacheAccessTimes[a] || 0) - (cacheAccessTimes[b] || 0));
+
+    if (evictCandidates.length > 0) {
+      const toEvict = evictCandidates[0];
+      delete frameCache[toEvict];
+    }
+  }
+
   function preloadSequence(key) {
+    cacheAccessTimes[key] = Date.now();
     if (frameCache[key]) return frameCache[key];
+
     const seq = sequences[key];
     if (!seq) return [];
+
     const frames = [];
     for (let i = 1; i <= seq.count; i++) {
       const img = new Image();
-      img.src = `${seq.folder}${seq.prefix}${pad4(i)}.jpg`;
+      const baseSrc = `${seq.folder}${seq.prefix}${pad4(i)}`;
+      img.src = `${baseSrc}${imgExt}`;
+      if (supportsWebP) {
+        // Fallback to .jpg if .webp somehow fails to load
+        img.addEventListener('error', () => {
+          if (img.src.endsWith('.webp')) {
+            img.src = `${baseSrc}.jpg`;
+          }
+        }, { once: true });
+      }
       frames.push(img);
     }
+
     frameCache[key] = frames;
+    pruneCache();
     return frames;
   }
 
-  // Preload all sequence frames upfront into memory
-  Object.keys(sequences).forEach((k) => preloadSequence(k));
+  // --- Progressive Background Asset Queue ---
+  // Loads non-critical sequences in small, throttled batches during idle time.
+  // Prioritizes outgoing transitions from currentRoom. Never chokes the main thread.
+  const BackgroundAssetQueue = {
+    _queue: [],
+    _activeLoading: 0,
+    _concurrency: 3, // at most 3 images loading concurrently
+    _isPaused: false,
+    _hasStarted: false,
+
+    _roomAdjacency: {
+      'living': ['living_bedroom', 'living_office', 'living_kitchen', 'living_pool'],
+      'bedroom': ['bedroom_pc', 'bedroom_kitchen', 'office_bedroom', 'pool_bedroom', 'living_bedroom'],
+      'kitchen': ['bedroom_kitchen', 'office_kitchen', 'kitchen_pool', 'living_kitchen'],
+      'poolroom': ['pool_bedroom', 'kitchen_pool', 'pool_office', 'living_pool'],
+      'office': ['living_office', 'office_bedroom', 'office_kitchen', 'pool_office']
+    },
+
+    start() {
+      if (this._hasStarted) return;
+      this._hasStarted = true;
+      this.reprioritize(currentRoom);
+      this._pump();
+    },
+
+    pause() {
+      this._isPaused = true;
+    },
+
+    resume() {
+      this._isPaused = false;
+      this._pump();
+    },
+
+    reprioritize(room) {
+      const adjacent = this._roomAdjacency[room] || [];
+      const allKeys = Object.keys(sequences).filter((k) => k !== 'entrance');
+      // Priority: adjacent sequences first, then remaining sequences
+      const priorityOrder = [...adjacent, ...allKeys.filter((k) => !adjacent.includes(k))];
+
+      const newQueue = [];
+      priorityOrder.forEach((seqKey) => {
+        const seq = sequences[seqKey];
+        if (!seq) return;
+        const cached = frameCache[seqKey];
+        if (cached && cached.every((img) => img.complete && img.naturalWidth > 0)) {
+          return;
+        }
+        for (let i = 1; i <= seq.count; i++) {
+          newQueue.push({ seqKey, index: i });
+        }
+      });
+
+      this._queue = newQueue;
+      this._pump();
+    },
+
+    _pump() {
+      if (this._isPaused) return;
+
+      while (this._activeLoading < this._concurrency && this._queue.length > 0) {
+        const item = this._queue.shift();
+        const seq = sequences[item.seqKey];
+        if (!seq) continue;
+
+        if (!frameCache[item.seqKey]) {
+          preloadSequence(item.seqKey);
+        }
+
+        const img = frameCache[item.seqKey][item.index - 1];
+        if (!img || (img.complete && img.naturalWidth > 0)) {
+          continue;
+        }
+
+        this._activeLoading++;
+        const onDone = () => {
+          this._activeLoading--;
+          this._pump();
+        };
+
+        if (typeof img.decode === 'function') {
+          img.decode().then(onDone).catch(onDone);
+        } else {
+          img.addEventListener('load', onDone, { once: true });
+          img.addEventListener('error', onDone, { once: true });
+        }
+      }
+    }
+  };
 
   // ---------------------------------------------------------------------------
   // Critical Asset Preloader
   // Ensures every required image is in the browser's decoded cache before the
-  // entrance animation begins. Progress is logged to the console as:
-  //   [Preloader] 25 / 102  (no visual progress bar — preserves minimalist aesthetic)
+  // entrance animation begins. Progress is logged and shown via the Freedom loading indicator.
   // ---------------------------------------------------------------------------
   const AssetLoader = {
     _totalCritical: 0,
     _loadedCritical: 0,
     _onComplete: null,
+    _indicatorEl: null,
+    _percentEl: null,
+    _indicatorRevealTimer: null,
 
-    /**
-     * Attempt to fully decode a single Image element.
-     * Uses img.decode() when available (guarantees GPU-decoded pixel data),
-     * falls back to onload/onerror otherwise.
-     * Resolves immediately if the image is already cached & decoded.
-     */
     _decodeImage(img) {
       return new Promise((resolve) => {
-        // Already in browser cache and decoded
         if (img.complete && img.naturalWidth > 0) {
           resolve();
           return;
         }
 
         if (typeof img.decode === 'function') {
-          img.decode().then(resolve).catch(resolve); // catch = broken image, still resolve
+          img.decode().then(resolve).catch(resolve);
         } else {
           const done = () => resolve();
           img.addEventListener('load', done, { once: true });
@@ -106,50 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     },
-
-    /**
-     * Preload an ordered list of Image sources.
-     * @param {string[]} urls   Absolute or root-relative URL strings
-     * @param {function} onProgress   Called after each image resolves
-     * @returns {Image[]} The created Image elements (also stored in browser cache)
-     */
-    _loadUrls(urls, onProgress) {
-      return urls.map((url) => {
-        const img = new Image();
-        img.src = url;
-        this._decodeImage(img).then(() => {
-          this._loadedCritical++;
-          console.log(`[Preloader] ${this._loadedCritical} / ${this._totalCritical}`);
-          if (onProgress) onProgress(this._loadedCritical, this._totalCritical);
-          if (this._loadedCritical >= this._totalCritical && this._onComplete) {
-            const cb = this._onComplete;
-            this._onComplete = null; // fire once
-            cb();
-          }
-        });
-        return img;
-      });
-    },
-
-    /**
-     * Build the list of critical URLs and start parallel loading.
-     * Critical = must be ready before the entrance animation plays.
-     *
-     * Priority order:
-     *   1. All 100 entrance frames  (the animation itself)
-     *   2. Living room base frame   (first frame shown after entrance completes)
-     *   3. Media/Cross.png          (interactive cursor overlay)
-     *
-     * Non-critical sequences (all other rooms) are already being fetched by
-     * the preloadSequence() loop above; they'll continue loading in the
-     * background while the entrance plays.
-     *
-     * @param {function} onComplete  Called exactly once when all critical assets are ready
-     */
-    // DOM refs for the loading indicator (populated lazily on first use)
-    _indicatorEl: null,
-    _percentEl: null,
-    _indicatorRevealTimer: null,
 
     _getIndicator() {
       if (!this._indicatorEl) {
@@ -160,14 +248,10 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     _updateIndicator(loaded, total) {
-      const pct = Math.round((loaded / total) * 100);
+      const pct = Math.min(100, Math.round((loaded / total) * 100));
       if (this._percentEl) this._percentEl.textContent = `${pct}%`;
     },
 
-    /**
-     * Fade the loading indicator out gracefully before Freedom itself fades.
-     * Returns a promise that resolves after the fade-out animation.
-     */
     fadeOutIndicator() {
       return new Promise((resolve) => {
         if (this._indicatorRevealTimer) {
@@ -178,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!el) { resolve(); return; }
         el.classList.add('is-fading-out');
         el.classList.remove('is-visible');
-        setTimeout(resolve, 450); // matches CSS transition duration
+        setTimeout(resolve, 450);
       });
     },
 
@@ -186,69 +270,60 @@ document.addEventListener('DOMContentLoaded', () => {
       const entranceSeq = sequences['entrance'];
       const livingSeq   = sequences['living_bedroom'];
 
-      // Build URL lists
-      const entranceUrls = [];
-      for (let i = 1; i <= entranceSeq.count; i++) {
-        entranceUrls.push(`${entranceSeq.folder}${entranceSeq.prefix}${pad4(i)}.jpg`);
-      }
+      // Preload ONLY entrance frames + living base + Cross.png
+      const entranceFrames = preloadSequence('entrance');
+      const livingFrames   = preloadSequence('living_bedroom');
 
-      // Living room base frame = first frame of living_bedroom sequence
-      const livingBaseUrl = `${livingSeq.folder}${livingSeq.prefix}${pad4(1)}.jpg`;
+      const livingBaseImg = livingFrames[0];
 
-      const criticalUrls = [
-        ...entranceUrls,
-        livingBaseUrl,
-        'Media/Cross.png',
+      const crossImg = new Image();
+      crossImg.src = 'Media/Cross.png';
+
+      const criticalItems = [
+        ...entranceFrames,
+        livingBaseImg,
+        crossImg
       ];
 
-      this._totalCritical  = criticalUrls.length;
+      this._totalCritical  = criticalItems.length;
       this._loadedCritical = 0;
       this._onComplete     = onComplete;
 
-      console.log(`[Preloader] Starting — ${this._totalCritical} critical assets to load`);
+      console.log(`[Preloader] Starting — ${this._totalCritical} critical assets to load (Format: ${imgExt})`);
 
-      // Reveal the loading indicator after a short delay.
-      // On fast connections it will never appear; on slow ones it provides feedback.
+      // Reveal indicator after short delay on slower connections
       this._indicatorRevealTimer = setTimeout(() => {
         const el = this._getIndicator();
         if (el) el.classList.add('is-visible');
       }, 500);
 
-      // Use already-created Image elements from frameCache when available,
-      // otherwise create new ones (Cross.png / living base frame).
-      const entranceFrames = frameCache['entrance'] || [];
-      const livingFrames   = frameCache['living_bedroom'] || [];
-
+      // Batch decoding: 6 images at a time to prevent main thread stall
+      let idx = 0;
+      let activeDecodes = 0;
+      const concurrency = 6;
       let resolved = 0;
-      const checkDone = () => {
-        resolved++;
-        this._loadedCritical = resolved;
-        this._updateIndicator(resolved, this._totalCritical);
-        console.log(`[Preloader] ${resolved} / ${this._totalCritical}`);
-        if (resolved >= this._totalCritical && this._onComplete) {
-          const cb = this._onComplete;
-          this._onComplete = null;
-          cb();
+
+      const pump = () => {
+        while (activeDecodes < concurrency && idx < criticalItems.length) {
+          const item = criticalItems[idx++];
+          activeDecodes++;
+          this._decodeImage(item).then(() => {
+            activeDecodes--;
+            resolved++;
+            this._loadedCritical = resolved;
+            this._updateIndicator(resolved, this._totalCritical);
+            console.log(`[Preloader] ${resolved} / ${this._totalCritical}`);
+            if (resolved >= this._totalCritical && this._onComplete) {
+              const cb = this._onComplete;
+              this._onComplete = null;
+              cb();
+            } else {
+              pump();
+            }
+          });
         }
       };
-
-      // Wire decode promises onto the already-started Image objects in frameCache
-      entranceFrames.forEach((img) => {
-        this._decodeImage(img).then(checkDone);
-      });
-
-      // Living base (first frame of living_bedroom)
-      const livingBaseImg = livingFrames[0] || (() => {
-        const img = new Image();
-        img.src = livingBaseUrl;
-        return img;
-      })();
-      this._decodeImage(livingBaseImg).then(checkDone);
-
-      // Cross.png (not part of any sequence cache)
-      const crossImg = new Image();
-      crossImg.src = 'Media/Cross.png';
-      this._decodeImage(crossImg).then(checkDone);
+      pump();
     },
   };
 
@@ -368,6 +443,16 @@ document.addEventListener('DOMContentLoaded', () => {
     'reviews': 'poolroom',
     'contact': 'office'
   };
+
+  function getRoomFromHash() {
+    try {
+      const hash = window.location.hash.replace(/^#/, '').toLowerCase().trim();
+      if (!hash) return null;
+      if (navToRoom[hash]) return navToRoom[hash];
+      if (['living', 'bedroom', 'kitchen', 'poolroom', 'office'].includes(hash)) return hash;
+    } catch (e) {}
+    return null;
+  }
 
   const roomTitles = {
     'living': 'Freedom',
@@ -630,18 +715,31 @@ document.addEventListener('DOMContentLoaded', () => {
       const startIdx = conn.reverse ? frames.length - 1 : 0;
       const endIdx = conn.reverse ? 0 : frames.length - 1;
 
+      BackgroundAssetQueue.pause();
       playImageSequence(activeCanvas, frames, startIdx, endIdx, () => {
         currentRoom = destRoom;
 
         const baseFrame = getRoomBaseFrame(destRoom);
         if (baseFrame) {
-          drawFrameToCanvas(activeCanvas, baseFrame);
+          if (baseFrame.complete && baseFrame.naturalWidth > 0) {
+            drawFrameToCanvas(activeCanvas, baseFrame);
+          } else {
+            const onBaseReady = () => drawFrameToCanvas(activeCanvas, baseFrame);
+            baseFrame.addEventListener('load', onBaseReady, { once: true });
+          }
         }
 
         updateRoomTitle(destRoom);
 
         const destNav = roomToNav[destRoom];
         updateActiveNav(destNav);
+
+        // Keep URL hash synchronized cleanly
+        try {
+          if (destNav && window.location.hash !== `#${destNav}`) {
+            window.history.replaceState(null, '', `#${destNav}`);
+          }
+        } catch (e) {}
 
         if (uiContainer) {
           updateUIRoomState(destRoom);
@@ -658,6 +756,8 @@ document.addEventListener('DOMContentLoaded', () => {
             InteractiveObjectManager.setInteractiveEnabled(true);
           }
           isScrollLocked = false;
+          BackgroundAssetQueue.reprioritize(destRoom);
+          BackgroundAssetQueue.resume();
           if (onComplete) onComplete();
         });
       });
@@ -1494,6 +1594,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     isScrollLocked = false;
+
+    if (typeof BackgroundAssetQueue !== 'undefined') {
+      BackgroundAssetQueue.reprioritize(currentRoom);
+      BackgroundAssetQueue.start();
+    }
   }
 
   // ==========================================================================
@@ -1676,10 +1781,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ------------------------------------------------------------------------
-    // PATH 2: Subsequent Visit / Normal Browser Refresh (Living Room)
+    // PATH 2: Subsequent Visit / Normal Browser Refresh / Direct Room Hash
     // ------------------------------------------------------------------------
-    const livingBaseFrames = preloadSequence('living_bedroom');
-    const livingBaseFrame = livingBaseFrames[0];
+    const targetRoom = getRoomFromHash() || 'living';
 
     if (isIntroCompleted) {
       if (freedomSplash) {
@@ -1687,30 +1791,32 @@ document.addEventListener('DOMContentLoaded', () => {
         freedomSplash.classList.add('fade-out');
       }
 
-      currentRoom = 'living';
-      updateRoomTitle('living');
-      updateActiveNav('home');
+      currentRoom = targetRoom;
+      updateRoomTitle(targetRoom);
+      const activeNav = roomToNav[targetRoom] || 'home';
+      updateActiveNav(activeNav);
 
       if (uiContainer) {
-        updateUIRoomState('living');
+        updateUIRoomState(targetRoom);
         uiContainer.classList.remove('ui-hidden');
       }
 
-      const drawLivingAndReveal = () => {
-        if (livingBaseFrame) {
-          drawFrameToCanvas(activeCanvas, livingBaseFrame);
+      const baseFrame = getRoomBaseFrame(targetRoom);
+      const drawRoomAndReveal = () => {
+        if (baseFrame) {
+          drawFrameToCanvas(activeCanvas, baseFrame);
         }
         revealUI();
       };
 
-      if (livingBaseFrame && livingBaseFrame.complete && livingBaseFrame.naturalWidth > 0) {
-        drawLivingAndReveal();
-      } else if (livingBaseFrame) {
-        if (typeof livingBaseFrame.decode === 'function') {
-          livingBaseFrame.decode().then(drawLivingAndReveal).catch(drawLivingAndReveal);
+      if (baseFrame && baseFrame.complete && baseFrame.naturalWidth > 0) {
+        drawRoomAndReveal();
+      } else if (baseFrame) {
+        if (typeof baseFrame.decode === 'function') {
+          baseFrame.decode().then(drawRoomAndReveal).catch(drawRoomAndReveal);
         } else {
-          livingBaseFrame.onload = drawLivingAndReveal;
-          livingBaseFrame.onerror = drawLivingAndReveal;
+          baseFrame.onload = drawRoomAndReveal;
+          baseFrame.onerror = drawRoomAndReveal;
         }
       } else {
         revealUI();
@@ -1756,11 +1862,17 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {
               console.warn('Unable to write to localStorage:', e);
             }
-            if (livingBaseFrame) {
-              drawFrameToCanvas(activeCanvas, livingBaseFrame);
+            const livingBase = getRoomBaseFrame('living');
+            if (livingBase) {
+              drawFrameToCanvas(activeCanvas, livingBase);
             }
-            // Entrance text appears centered over the living room
-            revealUI();
+            if (targetRoom && targetRoom !== 'living') {
+              currentRoom = 'living';
+              revealUI();
+              navigateToRoom(targetRoom);
+            } else {
+              revealUI();
+            }
           });
         }, FREEDOM_FADE_DURATION);
       });
@@ -1805,6 +1917,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentRoom !== 'living' && !isScrollLocked && hasRevealed) {
         navigateToRoom('living');
       }
+    }
+  });
+
+  // --- URL Hash Change Navigation (Back / Forward Browser Buttons) ---
+  window.addEventListener('hashchange', () => {
+    if (isScrollLocked || !hasRevealed) return;
+    const destRoom = getRoomFromHash();
+    if (destRoom && destRoom !== currentRoom) {
+      if (typeof isContactInterfaceOpen === 'function' && isContactInterfaceOpen()) {
+        closeContactInterface();
+      }
+      navigateToRoom(destRoom);
     }
   });
 
