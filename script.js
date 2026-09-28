@@ -146,6 +146,42 @@ document.addEventListener('DOMContentLoaded', () => {
      *
      * @param {function} onComplete  Called exactly once when all critical assets are ready
      */
+    // DOM refs for the loading indicator (populated lazily on first use)
+    _indicatorEl: null,
+    _percentEl: null,
+    _indicatorRevealTimer: null,
+
+    _getIndicator() {
+      if (!this._indicatorEl) {
+        this._indicatorEl = document.getElementById('freedom-loading-indicator');
+        this._percentEl   = document.getElementById('freedom-loading-percent');
+      }
+      return this._indicatorEl;
+    },
+
+    _updateIndicator(loaded, total) {
+      const pct = Math.round((loaded / total) * 100);
+      if (this._percentEl) this._percentEl.textContent = `${pct}%`;
+    },
+
+    /**
+     * Fade the loading indicator out gracefully before Freedom itself fades.
+     * Returns a promise that resolves after the fade-out animation.
+     */
+    fadeOutIndicator() {
+      return new Promise((resolve) => {
+        if (this._indicatorRevealTimer) {
+          clearTimeout(this._indicatorRevealTimer);
+          this._indicatorRevealTimer = null;
+        }
+        const el = this._getIndicator();
+        if (!el) { resolve(); return; }
+        el.classList.add('is-fading-out');
+        el.classList.remove('is-visible');
+        setTimeout(resolve, 450); // matches CSS transition duration
+      });
+    },
+
     loadCriticalAssets(onComplete) {
       const entranceSeq = sequences['entrance'];
       const livingSeq   = sequences['living_bedroom'];
@@ -171,6 +207,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       console.log(`[Preloader] Starting — ${this._totalCritical} critical assets to load`);
 
+      // Reveal the loading indicator after a short delay.
+      // On fast connections it will never appear; on slow ones it provides feedback.
+      this._indicatorRevealTimer = setTimeout(() => {
+        const el = this._getIndicator();
+        if (el) el.classList.add('is-visible');
+      }, 500);
+
       // Use already-created Image elements from frameCache when available,
       // otherwise create new ones (Cross.png / living base frame).
       const entranceFrames = frameCache['entrance'] || [];
@@ -180,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const checkDone = () => {
         resolved++;
         this._loadedCritical = resolved;
+        this._updateIndicator(resolved, this._totalCritical);
         console.log(`[Preloader] ${resolved} / ${this._totalCritical}`);
         if (resolved >= this._totalCritical && this._onComplete) {
           const cb = this._onComplete;
@@ -207,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
       this._decodeImage(crossImg).then(checkDone);
     },
   };
+
 
   // --- Canvas Image Renderer ---
   function drawFrameToCanvas(canvas, img) {
@@ -766,10 +811,9 @@ document.addEventListener('DOMContentLoaded', () => {
     init() {
       this.stage = document.getElementById('interactive-stage');
       this.createTooltip();
-      if (currentActiveFrameImg) {
-        drawFrameToCanvas(getActiveCanvas(), currentActiveFrameImg);
-      }
-      this.renderObjects();
+      // Start fully disabled — do not render any objects or accept any input
+      // until the entrance sequence has completely finished (revealUI is called).
+      this.setInteractiveEnabled(false);
     },
 
     createTooltip() {
@@ -1009,44 +1053,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let uiDone = false;
         let backdropDone = false;
+        let animationStarted = false;
+
+        // Hard-cap safety net: if animation never completes (e.g. decode failure
+        // on last frame, RAF issue), force navigation after 10 seconds.
+        // This guarantees isScrollLocked never gets permanently stuck.
+        let safetyTimer = null;
+        const armSafetyTimeout = () => {
+          if (action.type === 'url' && action.url) {
+            safetyTimer = setTimeout(() => {
+              console.warn('[Transition] Safety timeout fired — forcing navigation');
+              navigateUrl(action.url);
+            }, 10000); // 10s absolute maximum for the entire animation
+          }
+        };
 
         const startAnim = () => {
           if (!uiDone || !backdropDone) return;
+          if (animationStarted) return; // prevent double-fire
+          animationStarted = true;
+          armSafetyTimeout();
+
           const activeCanvas = getActiveCanvas();
 
-          playImageSequence(activeCanvas, frames, 0, frames.length - 1, () => {
-            // Test Mode: Hold the last frame of the animation
-            if (action.type === 'hold') {
-              return;
-            }
+          // Pre-verify the last frame is decoded so the sequence won't
+          // freeze waiting for the final frame right before navigation.
+          const lastFrame = frames[frames.length - 1];
+          const doPlay = () => {
+            playImageSequence(activeCanvas, frames, 0, frames.length - 1, () => {
+              if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
 
-            // URL Navigation (e.g. /projects page navigation)
-            if (action.type === 'url' && action.url) {
-              navigateUrl(action.url);
-              return;
-            }
-
-            if (action.type === 'navigate' && action.targetRoom) {
-              navigateToRoom(action.targetRoom);
-              return;
-            }
-
-            // Standalone interaction animation return
-            setTimeout(() => {
-              const baseFrame = getRoomBaseFrame(currentRoom);
-              if (baseFrame) {
-                drawFrameToCanvas(activeCanvas, baseFrame);
+              // Test Mode: Hold the last frame of the animation
+              if (action.type === 'hold') {
+                return;
               }
 
-              InteractiveObjectManager.renderObjects();
-              fadeBackdropIn();
-              fadeUIIn(() => {
-                InteractiveObjectManager.setInteractiveEnabled(true);
-                isScrollLocked = false;
-              });
-            }, 400);
-          });
-        };
+              // URL Navigation (e.g. /projects page navigation)
+              if (action.type === 'url' && action.url) {
+                navigateUrl(action.url);
+                return;
+              }
+
+              if (action.type === 'navigate' && action.targetRoom) {
+                navigateToRoom(action.targetRoom);
+                return;
+              }
+
+              // Standalone interaction animation return
+              setTimeout(() => {
+                const baseFrame = getRoomBaseFrame(currentRoom);
+                if (baseFrame) {
+                  drawFrameToCanvas(activeCanvas, baseFrame);
+                }
+                InteractiveObjectManager.renderObjects();
+                fadeBackdropIn();
+                fadeUIIn(() => {
+                  InteractiveObjectManager.setInteractiveEnabled(true);
+                  isScrollLocked = false;
+                });
+              }, 400);
+            });
+          }; // end doPlay
+
+          // Pre-decode the final frame before playback starts.
+          // If the last frame hasn't finished downloading yet, wait for it first.
+          // This prevents the sequence from stalling on the very last frame.
+          if (lastFrame && lastFrame.complete && lastFrame.naturalWidth > 0) {
+            doPlay();
+          } else if (lastFrame && typeof lastFrame.decode === 'function') {
+            lastFrame.decode().then(doPlay).catch(doPlay);
+          } else if (lastFrame) {
+            const onLastFrameReady = () => doPlay();
+            lastFrame.addEventListener('load', onLastFrameReady, { once: true });
+            lastFrame.addEventListener('error', onLastFrameReady, { once: true });
+          } else {
+            doPlay();
+          }
+        }; // end startAnim
 
         fadeUIOut(() => {
           uiDone = true;
@@ -1060,6 +1143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return;
       }
+
 
       if (action.type === 'url' && action.url) {
         navigateUrl(action.url);
@@ -1650,33 +1734,36 @@ document.addEventListener('DOMContentLoaded', () => {
     function onAssetsReady() {
       console.log('[Preloader] All critical assets ready — starting entrance');
 
-      // Fade Freedom out smoothly
-      if (freedomSplash) {
-        freedomSplash.style.transition = `opacity ${FREEDOM_FADE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;
-        freedomSplash.classList.add('fade-out');
-      }
-
-      // After Freedom has fully faded, begin the entrance animation
-      setTimeout(() => {
+      // Step 1: Fade loading indicator out first (graceful cascade)
+      AssetLoader.fadeOutIndicator().then(() => {
+        // Step 2: Fade Freedom out smoothly
         if (freedomSplash) {
-          freedomSplash.style.display = 'none';
+          freedomSplash.style.transition = `opacity ${FREEDOM_FADE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+          freedomSplash.classList.add('fade-out');
         }
 
-        // Entrance video sequence plays — all frames already decoded, no stuttering
-        playImageSequence(activeCanvas, entranceFrames, 0, entranceFrames.length - 1, () => {
-          try {
-            localStorage.setItem('portfolioIntroCompleted', 'true');
-            document.documentElement.classList.add('intro-completed');
-          } catch (e) {
-            console.warn('Unable to write to localStorage:', e);
+        // Step 3: After Freedom has fully faded, begin the entrance animation
+        setTimeout(() => {
+          if (freedomSplash) {
+            freedomSplash.style.display = 'none';
           }
-          if (livingBaseFrame) {
-            drawFrameToCanvas(activeCanvas, livingBaseFrame);
-          }
-          // Entrance text appears centered over the living room
-          revealUI();
-        });
-      }, FREEDOM_FADE_DURATION);
+
+          // Entrance video sequence plays — all frames already decoded, no stuttering
+          playImageSequence(activeCanvas, entranceFrames, 0, entranceFrames.length - 1, () => {
+            try {
+              localStorage.setItem('portfolioIntroCompleted', 'true');
+              document.documentElement.classList.add('intro-completed');
+            } catch (e) {
+              console.warn('Unable to write to localStorage:', e);
+            }
+            if (livingBaseFrame) {
+              drawFrameToCanvas(activeCanvas, livingBaseFrame);
+            }
+            // Entrance text appears centered over the living room
+            revealUI();
+          });
+        }, FREEDOM_FADE_DURATION);
+      });
     }
 
     // Draw the very first entrance frame immediately so something is visible

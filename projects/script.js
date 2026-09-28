@@ -464,6 +464,104 @@
     }
   });
 
+  // --- Exit Projects Interactive Overlay Controller ---
+  function initExitInteraction() {
+    const exitBtn = document.getElementById('exit-projects-btn');
+    if (!exitBtn) return;
+
+    // Create a tooltip element (same style as home page .interaction-tooltip)
+    let tooltipEl = document.getElementById('projects-exit-tooltip');
+    if (!tooltipEl) {
+      tooltipEl = document.createElement('div');
+      tooltipEl.id = 'projects-exit-tooltip';
+      tooltipEl.className = 'interaction-tooltip';
+      document.body.appendChild(tooltipEl);
+    }
+
+    function showTooltip(x, y) {
+      tooltipEl.textContent = 'Exit Projects';
+      tooltipEl.classList.add('visible');
+      updateTooltipPos(x, y);
+    }
+
+    function hideTooltip() {
+      tooltipEl.classList.remove('visible');
+    }
+
+    function updateTooltipPos(x, y) {
+      const offset = 14;
+      const tw = tooltipEl.offsetWidth || 100;
+      const th = tooltipEl.offsetHeight || 28;
+      let px = x + offset;
+      let py = y + offset;
+      if (px + tw + 12 > window.innerWidth) px = x - tw - offset;
+      if (py + th + 12 > window.innerHeight) py = y - th - offset;
+      px = Math.max(8, Math.min(px, window.innerWidth - tw - 8));
+      py = Math.max(8, Math.min(py, window.innerHeight - th - 8));
+      tooltipEl.style.transform = `translate3d(${Math.round(px)}px, ${Math.round(py)}px, 0)`;
+    }
+
+    exitBtn.addEventListener('mouseenter', (e) => {
+      if (projectLoading) return;
+      showTooltip(e.clientX, e.clientY);
+    });
+
+    exitBtn.addEventListener('mousemove', (e) => {
+      if (projectLoading) return;
+      updateTooltipPos(e.clientX, e.clientY);
+    });
+
+    exitBtn.addEventListener('mouseleave', () => {
+      hideTooltip();
+    });
+
+    const triggerExit = () => {
+      if (projectLoading || isCinematicActive) return;
+      hideTooltip();
+      try {
+        // Set returnFromProjects so home's PATH 1 plays the reverse bedroom_pc animation
+        sessionStorage.setItem('returnFromProjects', 'true');
+      } catch (err) {
+        console.warn('Unable to access sessionStorage:', err);
+      }
+      if (window.location.protocol === 'file:') {
+        window.location.href = '../index.html';
+      } else {
+        window.location.href = '/';
+      }
+    };
+
+    exitBtn.addEventListener('click', triggerExit);
+
+    exitBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        triggerExit();
+      }
+    });
+
+    // Keep the exit button hidden/disabled while loading is still in progress
+    exitBtn.classList.add('is-loading-hidden');
+
+    // Reveal once startLoadingSequence completes (hook into loadingOverlay fade-out)
+    const revealOnLoad = () => {
+      exitBtn.classList.remove('is-loading-hidden');
+    };
+
+    // Watch for the loading overlay to be hidden
+    const loObs = new MutationObserver(() => {
+      if (loadingOverlay && loadingOverlay.style.display === 'none') {
+        revealOnLoad();
+        loObs.disconnect();
+      }
+    });
+    if (loadingOverlay) {
+      loObs.observe(loadingOverlay, { attributes: true, attributeFilter: ['style', 'class'] });
+    } else {
+      revealOnLoad();
+    }
+  }
+
   // Start sequence & navigation on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
@@ -471,6 +569,7 @@
       initParallax();
       initProjectNavigation();
       initCinematicVideo();
+      initExitInteraction();
       startLoadingSequence();
     });
   } else {
@@ -478,6 +577,7 @@
     initParallax();
     initProjectNavigation();
     initCinematicVideo();
+    initExitInteraction();
     startLoadingSequence();
   }
 })();

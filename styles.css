@@ -176,6 +176,13 @@ body {
   will-change: opacity;
 }
 
+.freedom-splash-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.2rem;
+}
+
 .freedom-splash-text {
   font-family: var(--font-heading);
   font-size: clamp(3.5rem, 12vw, 11rem);
@@ -187,6 +194,44 @@ body {
   margin: 0;
   padding: 0;
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Minimal editorial loading indicator — sits naturally below "Freedom" */
+.freedom-loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  /* Delayed reveal so fast connections see nothing — only slow loads show it */
+  pointer-events: none;
+}
+
+.freedom-loading-indicator.is-visible {
+  opacity: 1;
+}
+
+.freedom-loading-indicator.is-fading-out {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.freedom-loading-label {
+  font-family: var(--font-body, 'Belleza', sans-serif);
+  font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.freedom-loading-percent {
+  font-family: var(--font-body, 'Belleza', sans-serif);
+  font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.55);
+  min-width: 2.8ch;
 }
 
 .freedom-splash.fade-out {
