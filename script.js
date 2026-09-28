@@ -72,6 +72,142 @@ document.addEventListener('DOMContentLoaded', () => {
   // Preload all sequence frames upfront into memory
   Object.keys(sequences).forEach((k) => preloadSequence(k));
 
+  // ---------------------------------------------------------------------------
+  // Critical Asset Preloader
+  // Ensures every required image is in the browser's decoded cache before the
+  // entrance animation begins. Progress is logged to the console as:
+  //   [Preloader] 25 / 102  (no visual progress bar — preserves minimalist aesthetic)
+  // ---------------------------------------------------------------------------
+  const AssetLoader = {
+    _totalCritical: 0,
+    _loadedCritical: 0,
+    _onComplete: null,
+
+    /**
+     * Attempt to fully decode a single Image element.
+     * Uses img.decode() when available (guarantees GPU-decoded pixel data),
+     * falls back to onload/onerror otherwise.
+     * Resolves immediately if the image is already cached & decoded.
+     */
+    _decodeImage(img) {
+      return new Promise((resolve) => {
+        // Already in browser cache and decoded
+        if (img.complete && img.naturalWidth > 0) {
+          resolve();
+          return;
+        }
+
+        if (typeof img.decode === 'function') {
+          img.decode().then(resolve).catch(resolve); // catch = broken image, still resolve
+        } else {
+          const done = () => resolve();
+          img.addEventListener('load', done, { once: true });
+          img.addEventListener('error', done, { once: true });
+        }
+      });
+    },
+
+    /**
+     * Preload an ordered list of Image sources.
+     * @param {string[]} urls   Absolute or root-relative URL strings
+     * @param {function} onProgress   Called after each image resolves
+     * @returns {Image[]} The created Image elements (also stored in browser cache)
+     */
+    _loadUrls(urls, onProgress) {
+      return urls.map((url) => {
+        const img = new Image();
+        img.src = url;
+        this._decodeImage(img).then(() => {
+          this._loadedCritical++;
+          console.log(`[Preloader] ${this._loadedCritical} / ${this._totalCritical}`);
+          if (onProgress) onProgress(this._loadedCritical, this._totalCritical);
+          if (this._loadedCritical >= this._totalCritical && this._onComplete) {
+            const cb = this._onComplete;
+            this._onComplete = null; // fire once
+            cb();
+          }
+        });
+        return img;
+      });
+    },
+
+    /**
+     * Build the list of critical URLs and start parallel loading.
+     * Critical = must be ready before the entrance animation plays.
+     *
+     * Priority order:
+     *   1. All 100 entrance frames  (the animation itself)
+     *   2. Living room base frame   (first frame shown after entrance completes)
+     *   3. Media/Cross.png          (interactive cursor overlay)
+     *
+     * Non-critical sequences (all other rooms) are already being fetched by
+     * the preloadSequence() loop above; they'll continue loading in the
+     * background while the entrance plays.
+     *
+     * @param {function} onComplete  Called exactly once when all critical assets are ready
+     */
+    loadCriticalAssets(onComplete) {
+      const entranceSeq = sequences['entrance'];
+      const livingSeq   = sequences['living_bedroom'];
+
+      // Build URL lists
+      const entranceUrls = [];
+      for (let i = 1; i <= entranceSeq.count; i++) {
+        entranceUrls.push(`${entranceSeq.folder}${entranceSeq.prefix}${pad4(i)}.jpg`);
+      }
+
+      // Living room base frame = first frame of living_bedroom sequence
+      const livingBaseUrl = `${livingSeq.folder}${livingSeq.prefix}${pad4(1)}.jpg`;
+
+      const criticalUrls = [
+        ...entranceUrls,
+        livingBaseUrl,
+        'Media/Cross.png',
+      ];
+
+      this._totalCritical  = criticalUrls.length;
+      this._loadedCritical = 0;
+      this._onComplete     = onComplete;
+
+      console.log(`[Preloader] Starting — ${this._totalCritical} critical assets to load`);
+
+      // Use already-created Image elements from frameCache when available,
+      // otherwise create new ones (Cross.png / living base frame).
+      const entranceFrames = frameCache['entrance'] || [];
+      const livingFrames   = frameCache['living_bedroom'] || [];
+
+      let resolved = 0;
+      const checkDone = () => {
+        resolved++;
+        this._loadedCritical = resolved;
+        console.log(`[Preloader] ${resolved} / ${this._totalCritical}`);
+        if (resolved >= this._totalCritical && this._onComplete) {
+          const cb = this._onComplete;
+          this._onComplete = null;
+          cb();
+        }
+      };
+
+      // Wire decode promises onto the already-started Image objects in frameCache
+      entranceFrames.forEach((img) => {
+        this._decodeImage(img).then(checkDone);
+      });
+
+      // Living base (first frame of living_bedroom)
+      const livingBaseImg = livingFrames[0] || (() => {
+        const img = new Image();
+        img.src = livingBaseUrl;
+        return img;
+      })();
+      this._decodeImage(livingBaseImg).then(checkDone);
+
+      // Cross.png (not part of any sequence cache)
+      const crossImg = new Image();
+      crossImg.src = 'Media/Cross.png';
+      this._decodeImage(crossImg).then(checkDone);
+    },
+  };
+
   // --- Canvas Image Renderer ---
   function drawFrameToCanvas(canvas, img) {
     if (!canvas || !img) return;
@@ -1499,59 +1635,76 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ------------------------------------------------------------------------
-    // PATH 3: First Visit (Freedom Splash -> Entrance Sequence -> Living Room)
+    // PATH 3: First Visit (Freedom Splash -> Asset Loading -> Entrance Sequence)
+    // "Freedom" is the loading screen. It stays visible until ALL critical
+    // assets are decoded. Only then does it fade out and the entrance plays.
     // ------------------------------------------------------------------------
     const entranceFrames = preloadSequence('entrance');
     const firstEntranceFrame = entranceFrames[0];
 
-    function beginEntranceFlow() {
-      // 1. "Freedom" appears and remains clearly visible for approximately 1 second
+    /**
+     * Called once — after AssetLoader confirms every critical asset is ready.
+     * At this point every entrance frame is decoded in the browser cache, so
+     * the image-sequence playback will be perfectly smooth with no black frames.
+     */
+    function onAssetsReady() {
+      console.log('[Preloader] All critical assets ready — starting entrance');
+
+      // Fade Freedom out smoothly
+      if (freedomSplash) {
+        freedomSplash.style.transition = `opacity ${FREEDOM_FADE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+        freedomSplash.classList.add('fade-out');
+      }
+
+      // After Freedom has fully faded, begin the entrance animation
       setTimeout(() => {
-        // 2. "Freedom" fades out smoothly over FREEDOM_FADE_DURATION
         if (freedomSplash) {
-          freedomSplash.style.transition = `opacity ${FREEDOM_FADE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;
-          freedomSplash.classList.add('fade-out');
+          freedomSplash.style.display = 'none';
         }
 
-        // 3. After the fade-out completes, the Entrance sequence starts
-        setTimeout(() => {
-          if (freedomSplash) {
-            freedomSplash.style.display = 'none';
+        // Entrance video sequence plays — all frames already decoded, no stuttering
+        playImageSequence(activeCanvas, entranceFrames, 0, entranceFrames.length - 1, () => {
+          try {
+            localStorage.setItem('portfolioIntroCompleted', 'true');
+            document.documentElement.classList.add('intro-completed');
+          } catch (e) {
+            console.warn('Unable to write to localStorage:', e);
           }
-
-          // 4. Entrance video sequence plays normally
-          playImageSequence(activeCanvas, entranceFrames, 0, entranceFrames.length - 1, () => {
-            try {
-              localStorage.setItem('portfolioIntroCompleted', 'true');
-              document.documentElement.classList.add('intro-completed');
-            } catch (e) {
-              console.warn('Unable to write to localStorage:', e);
-            }
-            if (livingBaseFrame) {
-              drawFrameToCanvas(activeCanvas, livingBaseFrame);
-            }
-            // 5. Entrance text appears centered over the video / living room
-            revealUI();
-          });
-        }, FREEDOM_FADE_DURATION);
-      }, FREEDOM_DISPLAY_DURATION);
+          if (livingBaseFrame) {
+            drawFrameToCanvas(activeCanvas, livingBaseFrame);
+          }
+          // Entrance text appears centered over the living room
+          revealUI();
+        });
+      }, FREEDOM_FADE_DURATION);
     }
+
+    // Draw the very first entrance frame immediately so something is visible
+    // behind the Freedom overlay while assets are loading.
+    const startPreloading = () => {
+      if (firstEntranceFrame && firstEntranceFrame.complete && firstEntranceFrame.naturalWidth > 0) {
+        drawFrameToCanvas(activeCanvas, firstEntranceFrame);
+      }
+      // Start loading all critical assets. Freedom stays on screen until done.
+      AssetLoader.loadCriticalAssets(onAssetsReady);
+    };
 
     if (firstEntranceFrame) {
       if (firstEntranceFrame.complete && firstEntranceFrame.naturalWidth > 0) {
         drawFrameToCanvas(activeCanvas, firstEntranceFrame);
-        beginEntranceFlow();
+        startPreloading();
       } else {
         firstEntranceFrame.onload = () => {
           drawFrameToCanvas(activeCanvas, firstEntranceFrame);
-          beginEntranceFlow();
+          startPreloading();
         };
         firstEntranceFrame.onerror = () => {
-          beginEntranceFlow();
+          // Frame failed — still kick off preloading so Freedom eventually fades
+          startPreloading();
         };
       }
     } else {
-      beginEntranceFlow();
+      startPreloading();
     }
   }
 
