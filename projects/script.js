@@ -456,7 +456,11 @@
       } catch (err) {
         console.warn('Unable to access sessionStorage:', err);
       }
-      window.location.href = '/';
+      if (window.location.protocol === 'file:') {
+        window.location.href = '../index.html';
+      } else {
+        window.location.href = '/';
+      }
     }
   });
 

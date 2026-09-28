@@ -574,7 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
       action: Object.freeze({
         type: 'url',
         sequence: 'bedroom_pc',
-        url: '/projects'
+        url: 'projects/'
       })
     }),
 
@@ -604,6 +604,23 @@ document.addEventListener('DOMContentLoaded', () => {
       })
     })
   };
+
+  function navigateUrl(targetUrl) {
+    if (!targetUrl) return;
+    if (targetUrl === '/projects' || targetUrl === 'projects/' || targetUrl === 'projects' || targetUrl === '/projects/') {
+      try {
+        sessionStorage.setItem('returnFromProjects', 'true');
+      } catch (err) { }
+
+      if (window.location.protocol === 'file:') {
+        window.location.href = 'projects/index.html';
+      } else {
+        window.location.href = 'projects/';
+      }
+      return;
+    }
+    window.location.href = targetUrl;
+  }
 
   const InteractiveObjectManager = {
     stage: null,
@@ -869,7 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // URL Navigation (e.g. /projects page navigation)
             if (action.type === 'url' && action.url) {
-              window.location.href = action.url;
+              navigateUrl(action.url);
               return;
             }
 
@@ -909,7 +926,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (action.type === 'url' && action.url) {
-        window.location.href = action.url;
+        navigateUrl(action.url);
         return;
       }
 
@@ -987,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (pcConfig && typeof InteractiveObjectManager !== 'undefined') {
         InteractiveObjectManager.handleObjectClick(pcConfig, null);
       } else {
-        window.location.href = '/projects';
+        navigateUrl('projects/');
       }
     });
   }
