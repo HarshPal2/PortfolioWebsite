@@ -845,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
         width: '6.8%',
         height: '4.6%'
       }),
-      polygon: '2,6 98,6 98,94 2,94',
+      polygon: '2,20 85,20 88,88 2,94',
       interactionType: 'both',
       cursor: 'pointer',
       glowColor: '#ffffff',

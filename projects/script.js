@@ -48,7 +48,15 @@
   }
 
   const pcImage = new Image();
-  pcImage.src = '/Media/BedroomToPCScreen/BedtoPC0075.jpg';
+  const pcBaseSrc = (window.location.protocol === 'file:')
+    ? '../Media/BedroomToPCScreen/BedtoPC0075'
+    : '/Media/BedroomToPCScreen/BedtoPC0075';
+  pcImage.src = `${pcBaseSrc}.webp`;
+  pcImage.onerror = () => {
+    if (pcImage.src.endsWith('.webp')) {
+      pcImage.src = `${pcBaseSrc}.jpg`;
+    }
+  };
 
   let parallaxInstance = null;
 
@@ -349,14 +357,14 @@
     if (cabinFilmBtn) {
       cabinFilmBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        openCinematic('/projects/Media/TreeHouseWithout.mp4');
+        openCinematic('Media/TreeHouseWithout.mp4');
       });
     }
 
     if (productFilmBtn) {
       productFilmBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        openCinematic('/projects/Media/Product Renders/vid.mp4');
+        openCinematic('Media/Product Renders/vid.mp4');
       });
     }
 
