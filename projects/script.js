@@ -194,6 +194,8 @@
     const glusightCaseStudy = document.getElementById('glusight-case-study');
     const cabinCaseStudy = document.getElementById('cabin-case-study');
     const productRendersCaseStudy = document.getElementById('product-renders-case-study');
+    const biophilicCaseStudy = document.getElementById('biophilic-case-study');
+    const posterCaseStudy = document.getElementById('poster-case-study');
     const standardProjectView = document.getElementById('standard-project-view');
     const viewport = document.querySelector('.monitor-content-viewport');
     const sectionLabelEl = document.getElementById('project-section-label');
@@ -219,25 +221,24 @@
         if (mainContent) {
           mainContent.classList.add('content-updating');
           setTimeout(() => {
+            if (glusightCaseStudy) glusightCaseStudy.style.display = 'none';
+            if (cabinCaseStudy) cabinCaseStudy.style.display = 'none';
+            if (productRendersCaseStudy) productRendersCaseStudy.style.display = 'none';
+            if (biophilicCaseStudy) biophilicCaseStudy.style.display = 'none';
+            if (posterCaseStudy) posterCaseStudy.style.display = 'none';
+            if (standardProjectView) standardProjectView.style.display = 'none';
+
             if (projectId === 'glusight') {
               if (glusightCaseStudy) glusightCaseStudy.style.display = 'flex';
-              if (cabinCaseStudy) cabinCaseStudy.style.display = 'none';
-              if (productRendersCaseStudy) productRendersCaseStudy.style.display = 'none';
-              if (standardProjectView) standardProjectView.style.display = 'none';
             } else if (projectId === 'cabin-in-woods') {
-              if (glusightCaseStudy) glusightCaseStudy.style.display = 'none';
               if (cabinCaseStudy) cabinCaseStudy.style.display = 'flex';
-              if (productRendersCaseStudy) productRendersCaseStudy.style.display = 'none';
-              if (standardProjectView) standardProjectView.style.display = 'none';
             } else if (projectId === 'product-renders') {
-              if (glusightCaseStudy) glusightCaseStudy.style.display = 'none';
-              if (cabinCaseStudy) cabinCaseStudy.style.display = 'none';
               if (productRendersCaseStudy) productRendersCaseStudy.style.display = 'flex';
-              if (standardProjectView) standardProjectView.style.display = 'none';
+            } else if (projectId === 'biophilic-interior') {
+              if (biophilicCaseStudy) biophilicCaseStudy.style.display = 'flex';
+            } else if (projectId === 'poster') {
+              if (posterCaseStudy) posterCaseStudy.style.display = 'flex';
             } else {
-              if (glusightCaseStudy) glusightCaseStudy.style.display = 'none';
-              if (cabinCaseStudy) cabinCaseStudy.style.display = 'none';
-              if (productRendersCaseStudy) productRendersCaseStudy.style.display = 'none';
               if (standardProjectView) standardProjectView.style.display = 'flex';
 
               if (sectionLabelEl) sectionLabelEl.textContent = data.category;

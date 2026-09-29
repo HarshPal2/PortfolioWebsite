@@ -1089,7 +1089,8 @@ body.is-loading .editorial-container,
    12-Column Asymmetric Editorial Magazine Grid System
    ========================================================================== */
 
-.editorial-article {
+.editorial-article,
+.editorial-case-study {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -1696,7 +1697,7 @@ body.is-loading .editorial-container,
 /* ==========================================================================
    Shared Interaction Tooltip (used by Exit Projects button)
    Mirrors the main site .interaction-tooltip for visual consistency
-   ==========================================================================
+   ========================================================================== */
 .interaction-tooltip {
   position: fixed;
   top: 0;
@@ -1725,3 +1726,39 @@ body.is-loading .editorial-container,
   opacity: 1;
   visibility: visible;
 }
+
+/* --- Poster Specific Frames & Layouts --- */
+.frame-poster {
+  aspect-ratio: 1 / 1.414;
+  height: auto;
+  max-height: 680px;
+}
+
+.frame-poster .editorial-img {
+  object-fit: contain;
+  background-color: #f0eee9;
+}
+
+.spread-poster-duo {
+  row-gap: 2.5rem;
+}
+
+.spread-poster-trio {
+  row-gap: 2.5rem;
+}
+
+.poster-col-6 {
+  grid-column: span 6;
+}
+
+.poster-col-4 {
+  grid-column: span 4;
+}
+
+@media (max-width: 900px) {
+  .poster-col-6,
+  .poster-col-4 {
+    grid-column: span 12;
+  }
+}
+
