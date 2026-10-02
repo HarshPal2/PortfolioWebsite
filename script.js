@@ -35,32 +35,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Animation Sequence Definitions ---
   const sequences = {
-    'entrance': { folder: 'Media/Entrance/', prefix: 'Entrance', count: 100 },
-    'living_bedroom': { folder: 'Media/Living_Bedroom/', prefix: 'LivingToBedroom', count: 50 },
-    'living_kitchen': { folder: 'Media/Living_Kitchen/', prefix: 'LivingToKitchen', count: 50 },
-    'living_pool': { folder: 'Media/Living_Pool/', prefix: 'LivingToPool', count: 50 },
-    'living_office': { folder: 'Media/Living_Office/', prefix: 'LivingToOffice', count: 50 },
-    'bedroom_kitchen': { folder: 'Media/Bedroom_Kitchen/', prefix: 'BedtoKitchen', count: 25 },
-    'bedroom_pc': { folder: 'Media/BedroomToPCScreen/', prefix: 'BedtoPC', count: 75 },
-    'pool_bedroom': { folder: 'Media/Pool_Bedroom/', prefix: 'PoolToBedroom', count: 100 },
-    'office_bedroom': { folder: 'Media/Office_Bedroom/', prefix: 'OfficeToBedroom', count: 75 },
-    'kitchen_pool': { folder: 'Media/Kitchen_Pool/', prefix: 'KitchenToPool', count: 100 },
-    'office_kitchen': { folder: 'Media/Office_Kitchen/', prefix: 'OfficeToKitchen', count: 75 },
-    'pool_office': { folder: 'Media/Pool_Office/', prefix: 'PoolToOffice', count: 75 }
+    'entrance': { folder: 'Media/Entrance/', prefix: 'Entrance', start: 1, count: 96 },
+    'living_bedroom': { folder: 'Media/Living_Bedroom/', prefix: 'LivingToBedroom', start: 97, count: 48 },
+    'living_kitchen': { folder: 'Media/Living_Kitchen/', prefix: 'LivingToKitchen', start: 146, count: 24 },
+    'living_pool': { folder: 'Media/Living_Pool/', prefix: 'LivingToPool', start: 171, count: 48 },
+    'living_office': { folder: 'Media/Living_Office/', prefix: 'LivingToOffice', start: 220, count: 48 },
+    'office_bedroom': { folder: 'Media/Office_Bedroom/', prefix: 'OfficeToBedroom', start: 269, count: 48 },
+    'bedroom_kitchen': { folder: 'Media/Bedroom_Kitchen/', prefix: 'BedroomToKitchen', start: 318, count: 24 },
+    'kitchen_pool': { folder: 'Media/Kitchen_Pool/', prefix: 'KitchenToPool', start: 343, count: 48 },
+    'pool_office': { folder: 'Media/Pool_Office/', prefix: 'PoolToOffice', start: 392, count: 48 },
+    'office_kitchen': { folder: 'Media/Office_Kitchen/', prefix: 'OfficetoKitchen', start: 441, count: 48 },
+    'pool_bedroom': { folder: 'Media/Pool_Bedroom/', prefix: 'PoolToBedroom', start: 490, count: 48 },
+    'bedroom_pc': { folder: 'Media/BedroomToPCScreen/', prefix: 'BedroomtoPc', start: 539, count: 24 }
   };
 
-  // --- WebP Support Detection ---
-  const supportsWebP = (() => {
-    try {
-      const elem = document.createElement('canvas');
-      if (elem.getContext && elem.getContext('2d')) {
-        return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
-      }
-    } catch (e) {}
-    return false;
-  })();
-  const imgExt = supportsWebP ? '.webp' : '.jpg';
-  console.log(`[AssetEngine] WebP supported: ${supportsWebP} (using format ${imgExt})`);
+  // Format extension for sequence frames (all media navigation assets are .avif)
+  const imgExt = '.avif';
+  console.log(`[AssetEngine] Using format ${imgExt} for animation sequences`);
 
   // --- In-Memory Frame Cache & LRU Eviction Policy ---
   const frameCache = {};
@@ -99,18 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!seq) return [];
 
     const frames = [];
-    for (let i = 1; i <= seq.count; i++) {
+    const start = seq.start || 1;
+    for (let i = 0; i < seq.count; i++) {
+      const frameNum = start + i;
       const img = new Image();
-      const baseSrc = `${seq.folder}${seq.prefix}${pad4(i)}`;
+      const baseSrc = `${seq.folder}${seq.prefix}${pad4(frameNum)}`;
       img.src = `${baseSrc}${imgExt}`;
-      if (supportsWebP) {
-        // Fallback to .jpg if .webp somehow fails to load
-        img.addEventListener('error', () => {
-          if (img.src.endsWith('.webp')) {
-            img.src = `${baseSrc}.jpg`;
-          }
-        }, { once: true });
-      }
       frames.push(img);
     }
 
@@ -501,8 +486,8 @@ document.addEventListener('DOMContentLoaded', () => {
     'bedroom-kitchen': { seq: 'bedroom_kitchen', reverse: false },
     'kitchen-bedroom': { seq: 'bedroom_kitchen', reverse: true },
 
-    'bedroom-poolroom': { seq: 'pool_bedroom', reverse: false },
-    'poolroom-bedroom': { seq: 'pool_bedroom', reverse: true },
+    'bedroom-poolroom': { seq: 'pool_bedroom', reverse: true },
+    'poolroom-bedroom': { seq: 'pool_bedroom', reverse: false },
 
     'office-bedroom': { seq: 'office_bedroom', reverse: false },
     'bedroom-office': { seq: 'office_bedroom', reverse: true },

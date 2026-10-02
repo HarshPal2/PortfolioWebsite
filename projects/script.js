@@ -49,14 +49,9 @@
 
   const pcImage = new Image();
   const pcBaseSrc = (window.location.protocol === 'file:')
-    ? '../Media/BedroomToPCScreen/BedtoPC0075'
-    : '/Media/BedroomToPCScreen/BedtoPC0075';
-  pcImage.src = `${pcBaseSrc}.webp`;
-  pcImage.onerror = () => {
-    if (pcImage.src.endsWith('.webp')) {
-      pcImage.src = `${pcBaseSrc}.jpg`;
-    }
-  };
+    ? '../Media/BedroomToPCScreen/BedroomtoPc0562.avif'
+    : '/Media/BedroomToPCScreen/BedroomtoPc0562.avif';
+  pcImage.src = pcBaseSrc;
 
   let parallaxInstance = null;
 
