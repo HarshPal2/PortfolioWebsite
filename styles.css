@@ -23,6 +23,10 @@ body {
   height: 100vh;
   overflow: hidden;
   background-color: #000000;
+  background-image: url('Media/Entrance/Entrance0001.avif');
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
   font-family: var(--font-body);
   color: #ffffff;
   -webkit-font-smoothing: antialiased;
@@ -104,7 +108,11 @@ body {
   height: 100vh;
   z-index: 1;
   overflow: hidden;
-  background-color: #000000;
+  background-color: transparent;
+  background-image: url('Media/Entrance/Entrance0001.avif');
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
   will-change: transform;
   transform-origin: center center;
 }
@@ -463,7 +471,7 @@ body {
   background-color: rgba(0, 0, 0, 0.25);
   z-index: 2;
   pointer-events: none;
-  opacity: 1;
+  opacity: 0;
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity;
 }
@@ -477,21 +485,41 @@ body {
   opacity: 1;
 }
 
+/* Ensure living-main / about-main only displays when in room-living and NOT ui-hidden */
+.ui-container:not(.room-living) .about-main,
+.ui-container:not(.room-living) .living-main,
 .ui-container.projects-mode .about-main,
-.ui-container.projects-mode .living-main {
+.ui-container.projects-mode .living-main,
+.ui-container.ui-hidden .about-main,
+.ui-container.ui-hidden .living-main {
   opacity: 0 !important;
-  transform: translate(-50%, calc(-50% - 12px));
-  pointer-events: none;
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  visibility: hidden !important;
+  pointer-events: none !important;
+  display: none !important;
+  transition: none !important;
+  transform: translate(-50%, calc(-50% - 12px)) !important;
 }
 
-.ui-container.projects-mode .bottom-footer {
+.ui-container.room-living:not(.ui-hidden) .about-main,
+.ui-container.room-living:not(.ui-hidden) .living-main {
+  display: flex !important;
+  visibility: visible !important;
+}
+
+.ui-container:not(.room-living) .bottom-footer,
+.ui-container.projects-mode .bottom-footer,
+.ui-container.ui-hidden .bottom-footer {
   opacity: 0 !important;
-  transform: translateY(-12px);
-  pointer-events: none;
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  visibility: hidden !important;
+  pointer-events: none !important;
+  display: none !important;
+  transition: none !important;
+  transform: translateY(-12px) !important;
+}
+
+.ui-container.room-living:not(.ui-hidden) .bottom-footer {
+  display: flex !important;
+  visibility: visible !important;
 }
 
 .headline-wrapper {
@@ -653,17 +681,18 @@ body {
 }
 
 /* Visibility: only show bedroom-main when in room-bedroom and revealed/visible */
-.ui-container.room-bedroom.revealed .bedroom-main,
-.ui-container.room-bedroom.visible .bedroom-main,
-.ui-container.room-bedroom .bedroom-main {
+.ui-container.room-bedroom:not(.ui-hidden).revealed .bedroom-main,
+.ui-container.room-bedroom:not(.ui-hidden).visible .bedroom-main,
+.ui-container.room-bedroom:not(.ui-hidden) .bedroom-main {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
   transform: translateY(0) !important;
+  display: block !important;
 }
 
-.ui-container.room-bedroom .bedroom-main .stagger-3,
-.ui-container.room-bedroom .bedroom-main .stagger-4 {
+.ui-container.room-bedroom:not(.ui-hidden) .bedroom-main .stagger-3,
+.ui-container.room-bedroom:not(.ui-hidden) .bedroom-main .stagger-4 {
   opacity: 1 !important;
   transform: translateY(0) !important;
   visibility: visible !important;
@@ -674,7 +703,13 @@ body {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
+  display: none !important;
+  transition: none !important;
   transform: translateY(16px) !important;
+}
+
+.ui-container.room-bedroom:not(.ui-hidden) .bedroom-main {
+  display: block !important;
 }
 
 /* --- Kitchen / Blog Introduction Content Area --- */
@@ -739,17 +774,18 @@ body {
 }
 
 /* Visibility: only show kitchen-main when in room-kitchen and revealed/visible */
-.ui-container.room-kitchen.revealed .kitchen-main,
-.ui-container.room-kitchen.visible .kitchen-main,
-.ui-container.room-kitchen .kitchen-main {
+.ui-container.room-kitchen:not(.ui-hidden).revealed .kitchen-main,
+.ui-container.room-kitchen:not(.ui-hidden).visible .kitchen-main,
+.ui-container.room-kitchen:not(.ui-hidden) .kitchen-main {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
   transform: translateY(0) !important;
+  display: block !important;
 }
 
-.ui-container.room-kitchen .kitchen-main .stagger-3,
-.ui-container.room-kitchen .kitchen-main .stagger-4 {
+.ui-container.room-kitchen:not(.ui-hidden) .kitchen-main .stagger-3,
+.ui-container.room-kitchen:not(.ui-hidden) .kitchen-main .stagger-4 {
   opacity: 1 !important;
   transform: translateY(0) !important;
   visibility: visible !important;
@@ -760,7 +796,13 @@ body {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
+  display: none !important;
+  transition: none !important;
   transform: translateY(16px) !important;
+}
+
+.ui-container.room-kitchen:not(.ui-hidden) .kitchen-main {
+  display: block !important;
 }
 
 /* --- Office / Contact Introduction Content Area --- */
@@ -812,9 +854,9 @@ body {
 }
 
 /* Visibility: only show office-main when in room-office and revealed/visible */
-.ui-container.room-office.revealed .office-main,
-.ui-container.room-office.visible .office-main,
-.ui-container.room-office .office-main {
+.ui-container.room-office:not(.ui-hidden).revealed .office-main,
+.ui-container.room-office:not(.ui-hidden).visible .office-main,
+.ui-container.room-office:not(.ui-hidden) .office-main {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
@@ -822,15 +864,15 @@ body {
   display: block !important;
 }
 
-.ui-container.room-office .office-main *,
-.ui-container.room-office .office-main .headline-wrapper,
-.ui-container.room-office .office-main .office-headline,
-.ui-container.room-office .office-main .office-sub-headline,
-.ui-container.room-office .office-main .orange-accent-line,
-.ui-container.room-office .office-main .office-cta-wrapper,
-.ui-container.room-office .office-main .contact-intro-btn,
-.ui-container.room-office .office-main .stagger-3,
-.ui-container.room-office .office-main .stagger-4 {
+.ui-container.room-office:not(.ui-hidden) .office-main *,
+.ui-container.room-office:not(.ui-hidden) .office-main .headline-wrapper,
+.ui-container.room-office:not(.ui-hidden) .office-main .office-headline,
+.ui-container.room-office:not(.ui-hidden) .office-main .office-sub-headline,
+.ui-container.room-office:not(.ui-hidden) .office-main .orange-accent-line,
+.ui-container.room-office:not(.ui-hidden) .office-main .office-cta-wrapper,
+.ui-container.room-office:not(.ui-hidden) .office-main .contact-intro-btn,
+.ui-container.room-office:not(.ui-hidden) .office-main .stagger-3,
+.ui-container.room-office:not(.ui-hidden) .office-main .stagger-4 {
   opacity: 1 !important;
   transform: translateY(0) !important;
   visibility: visible !important;
@@ -842,7 +884,13 @@ body {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
+  display: none !important;
+  transition: none !important;
   transform: translateY(16px) !important;
+}
+
+.ui-container.room-office:not(.ui-hidden) .office-main {
+  display: block !important;
 }
 
 /* --- Pool Room / About Me Content Area --- */
@@ -919,17 +967,18 @@ body {
 }
 
 /* Visibility: only show pool-main when in room-poolroom and revealed/visible */
-.ui-container.room-poolroom.revealed .pool-main,
-.ui-container.room-poolroom.visible .pool-main,
-.ui-container.room-poolroom .pool-main {
+.ui-container.room-poolroom:not(.ui-hidden).revealed .pool-main,
+.ui-container.room-poolroom:not(.ui-hidden).visible .pool-main,
+.ui-container.room-poolroom:not(.ui-hidden) .pool-main {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
   transform: translateY(0) !important;
+  display: block !important;
 }
 
-.ui-container.room-poolroom .pool-main .stagger-3,
-.ui-container.room-poolroom .pool-main .stagger-4 {
+.ui-container.room-poolroom:not(.ui-hidden) .pool-main .stagger-3,
+.ui-container.room-poolroom:not(.ui-hidden) .pool-main .stagger-4 {
   opacity: 1 !important;
   transform: translateY(0) !important;
   visibility: visible !important;
@@ -940,7 +989,13 @@ body {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
+  display: none !important;
+  transition: none !important;
   transform: translateY(16px) !important;
+}
+
+.ui-container.room-poolroom:not(.ui-hidden) .pool-main {
+  display: block !important;
 }
 
 /* --- Bottom Footer Elements --- */

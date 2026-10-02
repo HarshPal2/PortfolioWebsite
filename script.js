@@ -579,6 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const computedOpacity = window.getComputedStyle(uiContainer).opacity;
     if (parseFloat(computedOpacity) < 0.05 || uiContainer.classList.contains('ui-hidden')) {
+      uiContainer.classList.remove('visible', 'revealed');
       if (onComplete) onComplete();
       return;
     }
@@ -588,6 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (hasCompleted) return;
       hasCompleted = true;
       uiContainer.removeEventListener('transitionend', handleTransitionEnd);
+      uiContainer.classList.remove('visible', 'revealed');
       if (onComplete) onComplete();
     };
 
