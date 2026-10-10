@@ -544,6 +544,23 @@
       }
     });
 
+    const returnBtn = document.getElementById('nav-return-btn');
+    if (returnBtn) {
+      returnBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        triggerExit();
+      });
+    }
+
+    // Clicking outside the monitor viewport returns to bedroom
+    if (scene) {
+      scene.addEventListener('click', (e) => {
+        if (projectLoading || isCinematicActive) return;
+        if (e.target.closest('.monitor-content-viewport') || e.target.closest('#cinematic-video-modal')) return;
+        triggerExit();
+      });
+    }
+
     // Keep the exit button hidden/disabled while loading is still in progress
     exitBtn.classList.add('is-loading-hidden');
 
