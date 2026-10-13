@@ -467,6 +467,34 @@ body.is-loading .editorial-container,
   max-width: 480px;
 }
 
+.cs-hook-attribution {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: clamp(0.78rem, 0.9vw, 0.85rem);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  color: rgba(17, 17, 17, 0.65);
+}
+
+.cs-hook-attribution-link {
+  color: inherit;
+  text-decoration: none;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease, color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.cs-hook-attribution-link:hover {
+  color: #111111;
+  text-decoration: underline;
+}
+
+.cs-hook-attribution-link:focus-visible {
+  color: #111111;
+  outline: 2px solid #ff7a18;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
 .cs-lead-text,
 .cs-opportunity-intro,
 .cs-solution-statement,
