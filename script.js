@@ -8,14 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const canvasB = document.getElementById('sequence-canvas-secondary');
   const uiContainer = document.getElementById('ui-container');
   const freedomSplash = document.getElementById('freedom-splash');
-  const topHeader = document.querySelector('.top-header');
   const backdropRect = document.querySelector('.fullscreen-backdrop-rect');
   const sceneElement = document.getElementById('parallax-scene');
   const navLinks = document.querySelectorAll('.nav-link');
   const roomTitleEl = document.querySelector('.freedom-title h1');
 
-  // --- Entrance Sequence Timing Constants (Configurable) ---
-  const FREEDOM_DISPLAY_DURATION = 1000; // Duration (ms) Freedom title stays fully visible before fading
+  // --- Entrance Sequence Timing Constants ---
   const FREEDOM_FADE_DURATION = 800;    // Duration (ms) for Freedom title to smoothly fade out to 0 opacity
 
   let hasRevealed = false;
@@ -27,10 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getActiveCanvas() {
     return canvasA && canvasA.classList.contains('active-video') ? canvasA : canvasB;
-  }
-
-  function getStandbyCanvas() {
-    return canvasA && canvasA.classList.contains('active-video') ? canvasB : canvasA;
   }
 
   // --- Animation Sequence Definitions ---
@@ -79,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (evictCandidates.length > 0) {
       const toEvict = evictCandidates[0];
       delete frameCache[toEvict];
+      delete cacheAccessTimes[toEvict];
     }
   }
 
@@ -252,9 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     loadCriticalAssets(onComplete) {
-      const entranceSeq = sequences['entrance'];
-      const livingSeq   = sequences['living_bedroom'];
-
       // Preload ONLY entrance frames + living base + Cross.png
       const entranceFrames = preloadSequence('entrance');
       const livingFrames   = preloadSequence('living_bedroom');
@@ -318,11 +310,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!canvas || !img) return;
     currentActiveFrameImg = img;
 
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width = canvas.clientWidth || Math.round(window.innerWidth * 1.1);
-    const height = canvas.height = canvas.clientHeight || Math.round(window.innerHeight * 1.1);
-
     if (img.naturalWidth === 0) return;
+
+    const targetWidth = canvas.clientWidth || Math.round(window.innerWidth * 1.1);
+    const targetHeight = canvas.clientHeight || Math.round(window.innerHeight * 1.1);
+
+    if (canvas.width !== targetWidth) canvas.width = targetWidth;
+    if (canvas.height !== targetHeight) canvas.height = targetHeight;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const ctx = canvas.getContext('2d');
 
     const imgRatio = img.naturalWidth / img.naturalHeight;
     const canvasRatio = width / height;
@@ -369,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function playImageSequence(canvas, frames, startIdx, endIdx, onComplete) {
+  function playImageSequence(canvas, frames, startIdx, endIdx, onComplete, onFrame) {
     stopCurrentAnimation();
     if (!frames || frames.length === 0) {
       if (onComplete) onComplete();
@@ -391,6 +389,10 @@ document.addEventListener('DOMContentLoaded', () => {
           drawFrameToCanvas(canvas, img);
         }
 
+        if (typeof onFrame === 'function') {
+          onFrame(currentIdx);
+        }
+
         if (currentIdx === endIdx) {
           currentAnimId = null;
           if (onComplete) onComplete();
@@ -404,6 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstImg = frames[startIdx];
     if (firstImg) {
       drawFrameToCanvas(canvas, firstImg);
+    }
+    if (typeof onFrame === 'function') {
+      onFrame(startIdx);
     }
     currentAnimId = requestAnimationFrame(animate);
   }
@@ -870,6 +875,29 @@ document.addEventListener('DOMContentLoaded', () => {
       action: Object.freeze({
         type: 'contact'
       })
+    }),
+
+    // Kitchen Room -> Island Counter Blog Interaction
+    kitchenBlog: Object.freeze({
+      id: 'kitchenBlog',
+      room: 'kitchen',
+      label: 'Kitchen Blog Lab',
+      shape: 'rect',
+      bounds: Object.freeze({
+        left: '41%',
+        top: '54%',
+        width: '26%',
+        height: '22%'
+      }),
+      interactionType: 'both',
+      cursor: 'pointer',
+      glowColor: '#ff7a18',
+      glowSoftColor: 'rgba(255, 122, 24, 0.45)',
+      fillColor: 'rgba(255, 122, 24, 0.08)',
+      strokeColor: '#ff7a18',
+      action: Object.freeze({
+        type: 'kitchen_blog'
+      })
     })
   };
 
@@ -963,6 +991,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (!this.stage) return;
       if (bounds) {
+        if (
+          this.currentBounds.x === bounds.x &&
+          this.currentBounds.y === bounds.y &&
+          this.currentBounds.width === bounds.width &&
+          this.currentBounds.height === bounds.height
+        ) {
+          return;
+        }
         this.currentBounds = bounds;
       }
       this.stage.style.left = `${this.currentBounds.x}px`;
@@ -1118,6 +1154,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      if (action.type === 'kitchen_blog') {
+        openKitchenBlog();
+        return;
+      }
+
       if (action.sequence || action.type === 'animation' || (action.animation && (action.animation.sequence || action.animation.folder))) {
         const seqKey = action.sequence || (action.animation && action.animation.sequence);
         let frames = [];
@@ -1263,6 +1304,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isScrollLocked) {
         if (isContactInterfaceOpen()) {
           closeContactInterface();
+        } else if (typeof isKitchenBlogOpen === 'function' && isKitchenBlogOpen()) {
+          closeKitchenBlog();
         } else {
           return;
         }
@@ -1272,6 +1315,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!destRoom) return;
       if (destRoom === currentRoom && destRoom === 'office') {
         openContactInterface();
+        return;
+      }
+      if (destRoom === currentRoom && destRoom === 'kitchen') {
+        openKitchenBlog();
         return;
       }
       navigateToRoom(destRoom);
@@ -1322,6 +1369,15 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       if (isScrollLocked) return;
       navigateToRoom('bedroom');
+    });
+  }
+
+  const kitchenIntroBtn = document.getElementById('kitchen-intro-btn');
+  if (kitchenIntroBtn) {
+    kitchenIntroBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (isScrollLocked && (!isKitchenBlogOpen || !isKitchenBlogOpen())) return;
+      openKitchenBlog();
     });
   }
 
@@ -1380,13 +1436,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (contactForm) {
+    const nameInput = document.getElementById('contact-name');
+    const emailInput = document.getElementById('contact-email');
+    const msgInput = document.getElementById('contact-message');
+    const submitBtn = document.getElementById('contact-submit-btn');
+
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const nameInput = document.getElementById('contact-name');
-      const emailInput = document.getElementById('contact-email');
-      const msgInput = document.getElementById('contact-message');
-      const submitBtn = document.getElementById('contact-submit-btn');
-
       if (!nameInput || !emailInput || !msgInput) return;
 
       const name = nameInput.value.trim();
@@ -1432,6 +1488,513 @@ document.addEventListener('DOMContentLoaded', () => {
           }, 1800);
         }, 1000);
       }, 500);
+    });
+  }
+
+  // --- Interactive Kitchen Blog Section Controller ---
+  const kitchenBlogStage = document.getElementById('kitchen-blog-stage');
+  const kitchenCanvas = document.getElementById('kitchen-canvas');
+  const kitchenSceneStage = document.getElementById('kitchen-scene-stage');
+  const floatingWindow = document.getElementById('floating-project-window');
+  const windowProjectTitleMini = document.getElementById('window-project-title-mini');
+  const windowSectionTitleMini = document.getElementById('window-section-title-mini');
+  const contentCourseNum = document.getElementById('content-course-num');
+  const contentCourseTag = document.getElementById('content-course-tag');
+  const contentHeading = document.getElementById('content-heading');
+  const contentBody = document.getElementById('content-body-scrollable');
+  const sectionTabBtns = document.querySelectorAll('.section-tab-btn');
+  const projectPickBtns = document.querySelectorAll('.project-pick-btn');
+  const stoveDialsRow = document.getElementById('stove-dials-row');
+  const stoveDialPods = document.querySelectorAll('.stove-dial-pod');
+  const kitchenHoodArea = document.getElementById('kitchen-hood-area');
+  const kitchenHoodExitBtn = document.getElementById('kitchen-hood-exit-btn');
+  const windowCloseBtn = document.getElementById('window-close-btn');
+  const kitchenStageBackdrop = document.getElementById('kitchen-stage-backdrop');
+
+  // Background Kitchen Image for Full-Viewport Canvas Rendering (Matching PC Screen Section)
+  const kitchenImage = new Image();
+  kitchenImage.src = 'Media/KitchenScene.avif';
+
+  function renderKitchenScene() {
+    if (!kitchenCanvas) return;
+    const ctx = kitchenCanvas.getContext('2d');
+    const width = kitchenCanvas.width = window.innerWidth;
+    const height = kitchenCanvas.height = window.innerHeight;
+
+    const imgRatio = (kitchenImage.naturalWidth && kitchenImage.naturalHeight)
+      ? (kitchenImage.naturalWidth / kitchenImage.naturalHeight)
+      : 1.0;
+    const canvasRatio = width / height;
+    let drawWidth, drawHeight, offsetX, offsetY;
+
+    if (canvasRatio > imgRatio) {
+      drawWidth = width;
+      drawHeight = width / imgRatio;
+      offsetX = 0;
+      offsetY = (height - drawHeight) / 2;
+    } else {
+      drawWidth = height * imgRatio;
+      drawHeight = height;
+      offsetX = (width - drawWidth) / 2;
+      offsetY = 0;
+    }
+
+    ctx.clearRect(0, 0, width, height);
+    if (kitchenImage.complete && kitchenImage.naturalWidth > 0) {
+      ctx.drawImage(kitchenImage, offsetX, offsetY, drawWidth, drawHeight);
+    }
+
+    if (kitchenSceneStage) {
+      kitchenSceneStage.style.left = `${offsetX}px`;
+      kitchenSceneStage.style.top = `${offsetY}px`;
+      kitchenSceneStage.style.width = `${drawWidth}px`;
+      kitchenSceneStage.style.height = `${drawHeight}px`;
+    }
+  }
+
+  kitchenImage.onload = () => {
+    if (typeof isKitchenBlogOpen === 'function' && isKitchenBlogOpen()) {
+      renderKitchenScene();
+    }
+  };
+
+  window.addEventListener('resize', () => {
+    if (typeof isKitchenBlogOpen === 'function' && isKitchenBlogOpen()) {
+      renderKitchenScene();
+    }
+  });
+
+  const KITCHEN_PROJECTS = {
+    'glusight': {
+      title: 'GluSight',
+      discipline: 'Medical UX/UI',
+      sections: [
+        {
+          name: 'Research',
+          dishBadge: 'Course 01 — Raw Ingredients',
+          courseTag: 'DIAL 01 / 04 · THE FOUNDATION',
+          heading: 'Initial & Primary Research',
+          utensilName: 'Prep Station',
+          utensilDesc: 'Raw Data & Clinical Signals',
+          html: `
+            <p><strong>The Clinical Dilemma:</strong> Over 830 million people worldwide live with diabetes, yet most monitor glucose through raw numbers that trigger acute stress without providing clear context on what caused the change.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span><strong>Primary Fieldwork:</strong> Evaluated user habits during acute glycemic spikes; found widespread cognitive friction and reactive rather than anticipatory behavior.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span><strong>Secondary Literature:</strong> Verified clinical research confirming high sensor abandonment caused by constant alarm fatigue and unguided telemetry data.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span><strong>Target Opportunity:</strong> Transforming passive recording into contextual, proactive reassurance.</span></li>
+            </ul>
+          `
+        },
+        {
+          name: 'Interviews',
+          dishBadge: 'Course 02 — Simmering Reduction',
+          courseTag: 'DIAL 02 / 04 · USER FRICTION',
+          heading: 'Interview Process & Core Insights',
+          utensilName: 'Simmering Pot',
+          utensilDesc: 'Extracting Emotional Friction',
+          html: `
+            <p><strong>Qualitative Synthesis:</strong> In-depth interviews with patients revealed emotional cycles of guilt, hyper-vigilance, and cognitive overload during routine daily activities.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span><strong>Reactive Behaviour:</strong> Users routinely respond after fluctuations occur rather than anticipating them.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span><strong>Cognitive Overload:</strong> Isolated numeric values create anxiety when devoid of dietary and activity context.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span><strong>Tracking Isn’t Intervention:</strong> Current apps record historical logs but fail to advise users on what to do next.</span></li>
+            </ul>
+          `
+        },
+        {
+          name: 'Ideation',
+          dishBadge: 'Course 03 — Culinary Formulation',
+          courseTag: 'DIAL 03 / 04 · RAPID ITERATION',
+          heading: 'Ideation & Prototyping Experiments',
+          utensilName: 'Sauté Skillet',
+          utensilDesc: 'Testing Feedback Loops',
+          html: `
+            <p><strong>From Insight to Interface:</strong> Developing a calm, intuitive interface prioritizing forward-looking reassurance over clinical alarms.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span><strong>Predictive Trajectories:</strong> Proactive 2-hour forward forecast curves replacing harsh threshold panic.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span><strong>Contextual Meal Logging:</strong> Rapid 3-tap input correlating nutritional intake directly with glycemic curves.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span><strong>Reassuring Visual Tone:</strong> Soft organic color schemes replacing traditional medical red/green warning states.</span></li>
+            </ul>
+          `
+        },
+        {
+          name: 'Final Design',
+          dishBadge: 'Course 04 — Plated Creation',
+          courseTag: 'DIAL 04 / 04 · SERVING THE VISION',
+          heading: 'Final System & Business Adaptation',
+          utensilName: 'Plated Dish',
+          utensilDesc: 'Final Presentation & ROI',
+          html: `
+            <p><strong>The Complete Experience:</strong> GluSight delivers seamless daily guidance and sustainable health management for continuous biosensor users.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span><strong>Device Compatibility:</strong> Low-energy Bluetooth synchronization compatible with Abbott and Dexcom sensors.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span><strong>Healthcare Implications:</strong> Potential to reduce avoidable emergency visits through proactive spike mitigation.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span><strong>Enterprise Partnership Model:</strong> B2B integration opportunities for wellness programs and specialized endocrinology clinics.</span></li>
+            </ul>
+          `
+        }
+      ]
+    },
+    'cabin-in-woods': {
+      title: 'Cabin in Woods',
+      discipline: 'Visual 3D Scene',
+      sections: [
+        {
+          name: 'Research',
+          dishBadge: 'Course 01 — Raw Materials',
+          courseTag: 'DIAL 01 / 04 · SENSORY FOUNDATION',
+          heading: 'Atmospheric Research & Reference',
+          utensilName: 'Prep Station',
+          utensilDesc: 'Photogrammetry & Nordic Light',
+          html: `
+            <p><strong>Atmospheric Spatial Study:</strong> Exploring architectural solitude and contemplation through realistic lighting and material tactile resonance.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Photometric analysis of diffuse overcast Nordic lighting, misty fall air, and low sun angles.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Material tactile exploration combining charred yakisugi cedar siding with rough-cast concrete.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Study of thermal visual contrast: deep interior amber warmth balancing cold exterior mist.</span></li>
+            </ul>
+          `
+        },
+        {
+          name: 'Interviews',
+          dishBadge: 'Course 02 — User Perception',
+          courseTag: 'DIAL 02 / 04 · PSYCHOLOGY OF ESCAPE',
+          heading: 'Interviews & Emotional Mapping',
+          utensilName: 'Simmering Pot',
+          utensilDesc: 'Distilling Refuge & Shelter',
+          html: `
+            <p><strong>Spatial Inquiry:</strong> Gathering perspectives from design enthusiasts seeking respite from urban sensory saturation.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Desire for floor-to-ceiling glass framing untouched canopy vistas while preserving seclusion.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Emotional resonance of tactile wooden textures and central wood-burning hearth elements.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Reducing visual clutter to induce restorative mental stillness.</span></li>
+            </ul>
+          `
+        },
+        {
+          name: 'Ideation',
+          dishBadge: 'Course 03 — Compositional Heat',
+          courseTag: 'DIAL 03 / 04 · PROCEDURAL SCATTER',
+          heading: 'Ideation & Environment Assembly',
+          utensilName: 'Sauté Skillet',
+          utensilDesc: 'Foliage Scattering & God Rays',
+          html: `
+            <p><strong>Procedural Biome Generation:</strong> Scattering tens of thousands of sub-alpine conifers and tuning atmospheric volume fog.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Procedural moss distribution based on slope angle, humidity masks, and surface normal direction.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Camera composition studies utilizing an anamorphic 50mm cinematic perspective.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Custom shader development for wet rock sheen and fine water condensation.</span></li>
+            </ul>
+          `
+        },
+        {
+          name: 'Final Design',
+          dishBadge: 'Course 04 — The Finished Feast',
+          courseTag: 'DIAL 04 / 04 · COMMERCIAL VALUE',
+          heading: 'Cinematic Visual Delivery & Pitch',
+          utensilName: 'Plated Dish',
+          utensilDesc: 'Architectural Hospitality Pitch',
+          html: `
+            <p><strong>Commercial Delivery:</strong> Visual identity package created for high-end boutique hospitality concepts and architectural visualization portfolios.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>High-resolution visual set for pre-development investor pitch decks and client presentations.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Awarded recognition across curated 3D architectural digital art platforms.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Established streamlined procedural landscape workflow saving weeks of production effort.</span></li>
+            </ul>
+          `
+        }
+      ]
+    },
+    'biophilic-interior': {
+      title: 'Biophilic Interior',
+      discipline: 'Interior Architecture',
+      sections: [
+        {
+          name: 'Research',
+          dishBadge: 'Course 01 — Organic Elements',
+          courseTag: 'DIAL 01 / 04 · CIRCADIAN WELLNESS',
+          heading: 'Biophilic Principles & Plant Ecology',
+          utensilName: 'Prep Station',
+          utensilDesc: 'Living Flora & Air Quality',
+          html: `
+            <p><strong>Living Architecture:</strong> Investigating the physiological benefits of integrating living vegetation, natural lighting, and organic materials into built environments.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Simulated daylight penetration through parametric timber louvers to match circadian cycles.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Selection of air-purifying indoor species: Ficus lyrata, Monstera, and living moss partitions.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Acoustic buffering properties of preserved moss panels in open-concept spaces.</span></li>
+            </ul>
+          `
+        },
+        {
+          name: 'Interviews',
+          dishBadge: 'Course 02 — Human Factor',
+          courseTag: 'DIAL 02 / 04 · OCCUPANT HEALTH',
+          heading: 'Interviews & Workplace Feedback',
+          utensilName: 'Simmering Pot',
+          utensilDesc: 'Combating Desk Fatigue',
+          html: `
+            <p><strong>Occupant Inquiries:</strong> Surveying professionals experiencing mental fatigue in sterile, synthetic modern office environments.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Significant majority reported improved focus and lower stress when positioned near real greenery.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Subtle acoustics of running water helped mask distracting keyboard and conversation noise.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Preference for informal green nooks for collaboration instead of rigid boardrooms.</span></li>
+            </ul>
+          `
+        },
+        {
+          name: 'Ideation',
+          dishBadge: 'Course 03 — Material Fusion',
+          courseTag: 'DIAL 03 / 04 · INTEGRATED GROWTH',
+          heading: 'Ideation & Spatial Layouts',
+          utensilName: 'Sauté Skillet',
+          utensilDesc: 'Timber Joinery & Plant Planters',
+          html: `
+            <p><strong>Harmonizing Structure & Growth:</strong> Embedding irrigation systems and living planters into custom millwork and architectural partitions.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Curvilinear terrazzo seating featuring integrated sub-irrigation reservoir troughs.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Full-spectrum tunable LED lighting reproducing the spectral curve of natural sunrise and sunset.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Modular living-wall cassettes enabling swift maintenance without building disruption.</span></li>
+            </ul>
+          `
+        },
+        {
+          name: 'Final Design',
+          dishBadge: 'Course 04 — Sustainable Yield',
+          courseTag: 'DIAL 04 / 04 · WELL CERTIFICATION',
+          heading: 'Final Execution & Business Return',
+          utensilName: 'Plated Dish',
+          utensilDesc: 'Workplace Wellness & ESG',
+          html: `
+            <p><strong>Corporate Value Realized:</strong> Interior design concept supporting WELL Building Standard benchmarks for modern sustainable corporate real estate.</p>
+            <ul class="content-bullet-list">
+              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Demonstrable boost in employee satisfaction and voluntary on-site collaboration.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Measurable reduction in ambient indoor air contaminants through biological bio-filtering.</span></li>
+              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Elevated asset valuation and leasing premium for landlords investing in biophilic amenities.</span></li>
+            </ul>
+          `
+        }
+      ]
+    }
+  };
+
+  let activeKitchenProject = 'glusight';
+  let activeKitchenSection = 0;
+  let kitchenSectionProgress = 0.0;
+  let kitchenDialRotations = [0, 0, 0, 0];
+  let isKitchenRetracting = false;
+
+  function isKitchenBlogOpen() {
+    return kitchenBlogStage && kitchenBlogStage.classList.contains('is-open');
+  }
+
+  function updateKitchenUI() {
+    const proj = KITCHEN_PROJECTS[activeKitchenProject];
+    if (!proj) return;
+    const sec = proj.sections[activeKitchenSection];
+    if (!sec) return;
+
+    if (windowProjectTitleMini) windowProjectTitleMini.textContent = proj.title;
+    if (windowSectionTitleMini) windowSectionTitleMini.textContent = sec.name;
+    if (contentCourseNum) contentCourseNum.textContent = `0${activeKitchenSection + 1}`;
+    if (contentCourseTag) contentCourseTag.textContent = sec.courseTag;
+    if (contentHeading) contentHeading.textContent = sec.heading;
+    if (contentBody) {
+      contentBody.innerHTML = sec.html;
+      contentBody.scrollTop = 0;
+    }
+
+    // Update section tabs
+    sectionTabBtns.forEach((btn, idx) => {
+      btn.classList.toggle('active', idx === activeKitchenSection);
+    });
+
+    // Update project tabs
+    projectPickBtns.forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-project') === activeKitchenProject);
+    });
+
+    // Update dials (active pod & needle rotation)
+    stoveDialPods.forEach((pod, idx) => {
+      pod.classList.toggle('active', idx === activeKitchenSection);
+      const knob = pod.querySelector('.dial-knob');
+      if (knob) {
+        const rot = kitchenDialRotations[idx] || 0;
+        knob.style.setProperty('--needle-rot', `${rot}deg`);
+      }
+    });
+  }
+
+  function setKitchenSection(secIdx, progress = 0.0) {
+    activeKitchenSection = Math.max(0, Math.min(3, secIdx));
+    kitchenSectionProgress = Math.max(0, Math.min(1.0, progress));
+    kitchenDialRotations[activeKitchenSection] = Math.round(kitchenSectionProgress * 180);
+    updateKitchenUI();
+    if (contentBody) contentBody.scrollTop = 0;
+  }
+
+  function setKitchenProject(projId) {
+    if (!KITCHEN_PROJECTS[projId]) return;
+    activeKitchenProject = projId;
+    activeKitchenSection = 0;
+    kitchenSectionProgress = 0.0;
+    kitchenDialRotations = [0, 0, 0, 0];
+    updateKitchenUI();
+    if (contentBody) contentBody.scrollTop = 0;
+  }
+
+  function openKitchenBlog() {
+    if (!kitchenBlogStage) return;
+    InteractiveObjectManager.hideTooltip();
+    isScrollLocked = true;
+    isKitchenRetracting = false;
+
+    if (floatingWindow) {
+      floatingWindow.classList.remove('is-retracting');
+    }
+
+    kitchenBlogStage.classList.add('is-open');
+    kitchenBlogStage.setAttribute('aria-hidden', 'false');
+
+    renderKitchenScene();
+    setKitchenProject('glusight');
+  }
+
+  function closeKitchenBlog() {
+    if (!kitchenBlogStage || isKitchenRetracting) return;
+    isKitchenRetracting = true;
+
+    // Animate floating window moving upward directly into the kitchen hood
+    if (floatingWindow) {
+      floatingWindow.classList.add('is-retracting');
+    }
+
+    setTimeout(() => {
+      kitchenBlogStage.classList.remove('is-open');
+      kitchenBlogStage.setAttribute('aria-hidden', 'true');
+      if (floatingWindow) {
+        floatingWindow.classList.remove('is-retracting');
+      }
+      isScrollLocked = false;
+      isKitchenRetracting = false;
+      if (typeof InteractiveObjectManager !== 'undefined') {
+        InteractiveObjectManager.renderObjects();
+      }
+    }, 600);
+  }
+
+  window.openKitchenBlog = openKitchenBlog;
+  window.closeKitchenBlog = closeKitchenBlog;
+
+  // Handle mouse wheel specifically over the Stove Dials row
+  if (stoveDialsRow) {
+    stoveDialsRow.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isKitchenRetracting) return;
+
+      const delta = e.deltaY * 0.0018;
+      kitchenSectionProgress += delta;
+
+      if (kitchenSectionProgress > 1.0) {
+        if (activeKitchenSection < 3) {
+          activeKitchenSection += 1;
+          kitchenSectionProgress = 0.0;
+        } else {
+          kitchenSectionProgress = 1.0;
+        }
+      } else if (kitchenSectionProgress < 0.0) {
+        if (activeKitchenSection > 0) {
+          activeKitchenSection -= 1;
+          kitchenSectionProgress = 1.0;
+        } else {
+          kitchenSectionProgress = 0.0;
+        }
+      }
+
+      kitchenDialRotations[activeKitchenSection] = Math.round(kitchenSectionProgress * 180);
+      updateKitchenUI();
+    }, { passive: false });
+  }
+
+  // Prevent wheel and touch events from bubbling out of the floating project window
+  if (floatingWindow) {
+    floatingWindow.addEventListener('wheel', (e) => {
+      // Content scrolling proceeds normally inside contentBody
+      // Stop event from bubbling up to dials or room navigators
+      e.stopPropagation();
+    }, { passive: true });
+
+    floatingWindow.addEventListener('touchmove', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+
+    floatingWindow.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+  }
+
+  // Prevent wheel and touch events on the kitchen backdrop from triggering room transitions
+  if (kitchenBlogStage) {
+    kitchenBlogStage.addEventListener('wheel', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+
+    kitchenBlogStage.addEventListener('touchmove', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+  }
+
+  // Hook up buttons and tab clicks
+  sectionTabBtns.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const sec = parseInt(btn.getAttribute('data-section'), 10);
+      if (!isNaN(sec)) setKitchenSection(sec, 0.0);
+    });
+  });
+
+  projectPickBtns.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const proj = btn.getAttribute('data-project');
+      if (proj) setKitchenProject(proj);
+    });
+  });
+
+  stoveDialPods.forEach((pod) => {
+    pod.addEventListener('click', (e) => {
+      e.preventDefault();
+      const sec = parseInt(pod.getAttribute('data-section'), 10);
+      if (!isNaN(sec)) setKitchenSection(sec, 0.0);
+    });
+  });
+
+  if (kitchenHoodExitBtn) {
+    kitchenHoodExitBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeKitchenBlog();
+    });
+  }
+
+  if (kitchenHoodArea) {
+    kitchenHoodArea.addEventListener('click', (e) => {
+      if (e.target === kitchenHoodArea || e.target.closest('.kitchen-hood-exit-btn')) {
+        closeKitchenBlog();
+      }
+    });
+  }
+
+  if (windowCloseBtn) {
+    windowCloseBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeKitchenBlog();
+    });
+  }
+
+  if (kitchenStageBackdrop) {
+    kitchenStageBackdrop.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeKitchenBlog();
     });
   }
 
@@ -1575,6 +2138,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateRoomTitle(currentRoom);
 
+    fadeBackdropIn();
+
     if (typeof InteractiveObjectManager !== 'undefined') {
       InteractiveObjectManager.renderObjects();
       InteractiveObjectManager.setInteractiveEnabled(true);
@@ -1597,7 +2162,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Initialize Parallax Scene & Interactive Object Stage
     initParallaxEngine();
     InteractiveObjectManager.init();
-
     // 2. Check Startup State
     let isReturnFromProjects = false;
     let isReturnFromProjectsToLiving = false;
@@ -1868,6 +2432,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Draw the very first entrance frame immediately so something is visible
     // behind the Freedom overlay while assets are loading.
     const startPreloading = () => {
+      if (backdropRect) {
+        backdropRect.classList.add('backdrop-hidden');
+      }
       if (firstEntranceFrame && firstEntranceFrame.complete && firstEntranceFrame.naturalWidth > 0) {
         drawFrameToCanvas(activeCanvas, firstEntranceFrame);
       }
@@ -1901,6 +2468,10 @@ document.addEventListener('DOMContentLoaded', () => {
         closeContactInterface();
         return;
       }
+      if (typeof isKitchenBlogOpen === 'function' && isKitchenBlogOpen()) {
+        closeKitchenBlog();
+        return;
+      }
       if (currentRoom !== 'living' && !isScrollLocked && hasRevealed) {
         navigateToRoom('living');
       }
@@ -1921,7 +2492,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Run Unified Pipeline ---
   initPortfolio();
-
   /**
    * Development Helper Function:
    * Call `resetIntro()` in the browser DevTools console to clear the intro flag and test first-visit behavior again.

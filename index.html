@@ -58,7 +58,7 @@
 
     <!-- Layer 2: Backdrop Overlay -->
     <div class="parallax-layer layer-backdrop" data-depth="0.12">
-      <div class="fullscreen-backdrop-rect backdrop-hidden"></div>
+      <div class="fullscreen-backdrop-rect"></div>
     </div>
 
     <!-- Layer 3: Interactive Objects Overlay -->
@@ -168,9 +168,12 @@
             <!-- Orange Accent Line -->
             <div class="orange-accent-line stagger-4"></div>
 
-            <!-- Descriptor -->
-            <div class="kitchen-descriptor-wrap stagger-4">
-              <span class="kitchen-descriptor">Coming Soon · Essays &amp; Notes</span>
+            <!-- Blogs CTA Button -->
+            <div class="kitchen-cta-wrapper stagger-4">
+              <button type="button" class="explore-projects-btn kitchen-intro-btn" id="kitchen-intro-btn">
+                <span>Blogs</span>
+                <span class="btn-arrow" aria-hidden="true">→</span>
+              </button>
             </div>
           </div>
         </section>
@@ -345,6 +348,197 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Kitchen Blog Section Stage -->
+  <div id="kitchen-blog-stage" class="kitchen-blog-stage" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Interactive Kitchen Blog">
+    <div class="kitchen-stage-backdrop" id="kitchen-stage-backdrop"></div>
+
+    <!-- Edge-to-Edge 3D Kitchen Canvas Environment (Matching PC Screen Section) -->
+    <div class="kitchen-canvas-wrapper" id="kitchen-canvas-wrapper">
+      <canvas id="kitchen-canvas" class="kitchen-canvas"></canvas>
+    </div>
+
+    <!-- Coordinate Stage Aligned 1:1 with 3D Kitchen Canvas Scene -->
+    <div class="kitchen-scene-stage" id="kitchen-scene-stage">
+      <!-- 1. Kitchen Hood Area (Exit Mechanism) -->
+      <div class="kitchen-hood-area" id="kitchen-hood-area" title="Retract window to Kitchen Hood and exit">
+        <button type="button" class="kitchen-hood-exit-btn" id="kitchen-hood-exit-btn" aria-label="Retract window into Kitchen Hood to exit">
+          <span class="hood-exit-arrow" aria-hidden="true">▲</span>
+          <span class="hood-exit-text">Retract to Exit</span>
+        </button>
+      </div>
+
+      <!-- 2. Floating Project Window (Matching PC Project Window Design System) -->
+      <div class="floating-project-window" id="floating-project-window">
+        <!-- Window Top Bar -->
+        <div class="window-top-bar">
+          <div class="window-folio-group">
+            <span class="window-category-tag">CASE STUDY</span>
+            <span class="window-divider-dot">·</span>
+            <span class="window-project-title-mini" id="window-project-title-mini">GluSight</span>
+            <span class="window-divider-slash">/</span>
+            <span class="window-section-title-mini" id="window-section-title-mini">Research</span>
+          </div>
+          <button type="button" class="window-close-btn" id="window-close-btn" aria-label="Close Kitchen Blog">
+            <span class="close-label">Close</span>
+            <span class="close-icon" aria-hidden="true">✕</span>
+          </button>
+        </div>
+
+        <!-- Window Three-Column Layout -->
+        <div class="window-body-grid">
+          <!-- LEFT TAB — Project Sections -->
+          <nav class="window-tab-sections" aria-label="Case Study Sections">
+            <div class="tab-col-header">
+              <h2 class="tab-col-title">STOVE DIALS</h2>
+              <span class="tab-col-sub">SECTIONS</span>
+            </div>
+            <ul class="section-nav-list" id="section-nav-list">
+              <li>
+                <button type="button" class="section-tab-btn active" data-section="0">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span class="tab-meta">
+                    <strong class="tab-name">01 Research</strong>
+                    <small class="tab-sub">Primary &amp; Secondary</small>
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="section-tab-btn" data-section="1">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span class="tab-meta">
+                    <strong class="tab-name">02 Interviews</strong>
+                    <small class="tab-sub">Insights &amp; Friction</small>
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="section-tab-btn" data-section="2">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span class="tab-meta">
+                    <strong class="tab-name">03 Ideation</strong>
+                    <small class="tab-sub">Concepts &amp; Iteration</small>
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="section-tab-btn" data-section="3">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span class="tab-meta">
+                    <strong class="tab-name">04 Final Design</strong>
+                    <small class="tab-sub">Adaptation &amp; ROI</small>
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </nav>
+
+          <!-- CENTER AREA — Main Case Study Content -->
+          <main class="window-main-content" id="window-main-content">
+            <div class="content-header-strip">
+              <div class="cs-tag-row">
+                <span class="cs-num" id="content-course-num">01</span>
+                <span class="cs-tag" id="content-course-tag">THE FOUNDATION</span>
+              </div>
+              <h3 class="content-heading" id="content-heading">Initial &amp; Primary Research</h3>
+              <div class="cs-rule"></div>
+            </div>
+            <div class="content-body-scrollable" id="content-body-scrollable">
+              <!-- Dynamically populated by JS based on current project and section -->
+            </div>
+          </main>
+
+          <!-- RIGHT TAB — Project Selector -->
+          <aside class="window-tab-projects" aria-label="Available Projects">
+            <div class="tab-col-header">
+              <h2 class="tab-col-title">PROJECTS</h2>
+              <span class="tab-col-sub">DISHES</span>
+            </div>
+            <ul class="project-selector-list" id="project-selector-list">
+              <li>
+                <button type="button" class="project-pick-btn active" data-project="glusight">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span class="project-details">
+                    <strong class="project-name">GluSight</strong>
+                    <small class="project-discipline">Medical UX/UI</small>
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="project-pick-btn" data-project="cabin-in-woods">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span class="project-details">
+                    <strong class="project-name">Cabin in Woods</strong>
+                    <small class="project-discipline">Visual 3D Scene</small>
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="project-pick-btn" data-project="biophilic-interior">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span class="project-details">
+                    <strong class="project-name">Biophilic</strong>
+                    <small class="project-discipline">Interior Architecture</small>
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </aside>
+        </div>
+      </div>
+
+      <!-- 3. Interactive Stove Control Dials Row (Physical Dials Preserved, Overlays Removed) -->
+      <div class="stove-dials-row" id="stove-dials-row" aria-label="Stove Dials Section Progression">
+        <!-- Dial 1: Research -->
+        <button type="button" class="stove-dial-pod dial-1 active" data-section="0" aria-label="Dial 1: Research (Active)">
+          <div class="dial-knob" id="dial-knob-0">
+            <div class="dial-indicator-needle"></div>
+            <div class="dial-ring-glow"></div>
+          </div>
+          <div class="dial-info">
+            <span class="dial-tag">DIAL 01</span>
+            <span class="dial-name">Research</span>
+          </div>
+        </button>
+
+        <!-- Dial 2: Interviews -->
+        <button type="button" class="stove-dial-pod dial-2" data-section="1" aria-label="Dial 2: Interviews">
+          <div class="dial-knob" id="dial-knob-1">
+            <div class="dial-indicator-needle"></div>
+            <div class="dial-ring-glow"></div>
+          </div>
+          <div class="dial-info">
+            <span class="dial-tag">DIAL 02</span>
+            <span class="dial-name">Interviews</span>
+          </div>
+        </button>
+
+        <!-- Dial 3: Ideation -->
+        <button type="button" class="stove-dial-pod dial-3" data-section="2" aria-label="Dial 3: Ideation">
+          <div class="dial-knob" id="dial-knob-2">
+            <div class="dial-indicator-needle"></div>
+            <div class="dial-ring-glow"></div>
+          </div>
+          <div class="dial-info">
+            <span class="dial-tag">DIAL 03</span>
+            <span class="dial-name">Ideation</span>
+          </div>
+        </button>
+
+        <!-- Dial 4: Final Design & Business -->
+        <button type="button" class="stove-dial-pod dial-4" data-section="3" aria-label="Dial 4: Final Design & Business">
+          <div class="dial-knob" id="dial-knob-3">
+            <div class="dial-indicator-needle"></div>
+            <div class="dial-ring-glow"></div>
+          </div>
+          <div class="dial-info">
+            <span class="dial-tag">DIAL 04</span>
+            <span class="dial-name">Final Design</span>
+          </div>
+        </button>
       </div>
     </div>
   </div>

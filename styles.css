@@ -139,33 +139,6 @@ body {
   z-index: 2;
 }
 
-/* Off-screen initial positions for physical slide-in transitions (without fade) */
-.bg-video.slide-incoming {
-  z-index: 10 !important;
-  opacity: 1 !important;
-  will-change: transform;
-}
-
-.bg-video.slide-incoming.from-left {
-  transform: translate3d(-100%, 0, 0) !important;
-  transition: none !important;
-}
-
-.bg-video.slide-incoming.from-bottom {
-  transform: translate3d(0, 100%, 0) !important;
-  transition: none !important;
-}
-
-.bg-video.slide-incoming.from-right {
-  transform: translate3d(100%, 0, 0) !important;
-  transition: none !important;
-}
-
-.bg-video.slide-incoming.slide-active {
-  transform: translate3d(0, 0, 0) !important;
-  transition: transform 2.4s cubic-bezier(0.25, 1, 0.35, 1) !important;
-}
-
 /* --- Freedom Text Intro Splash (Full Viewport Centered Overlay) --- */
 .freedom-splash {
   position: fixed;
@@ -279,7 +252,6 @@ body {
 .ui-container.ui-hidden .kitchen-main,
 .ui-container.ui-hidden .pool-main,
 .ui-container.ui-hidden .office-main,
-.ui-container.ui-hidden .about-accents-stage,
 .ui-container.ui-hidden .freedom-title,
 .ui-container.ui-hidden .bottom-footer,
 .ui-container.ui-hidden .top-header {
@@ -419,6 +391,7 @@ body {
   top: 32px;
   right: 65px;
   z-index: 20;
+  pointer-events: none !important;
 }
 
 .freedom-title h1 {
@@ -429,6 +402,7 @@ body {
   letter-spacing: -0.5px;
   line-height: 1;
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+  pointer-events: none !important;
 }
 
 /* --- Main Home / Living Content Area (Centered Overlay) --- */
@@ -457,11 +431,6 @@ body {
   max-width: 500px;
 }
 
-.living-cta-wrapper {
-  display: inline-block;
-  margin-top: 6px;
-}
-
 /* --- Fullscreen 25% Opacity Black Backdrop Rectangle --- */
 .fullscreen-backdrop-rect {
   position: absolute;
@@ -470,19 +439,14 @@ body {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.25);
   z-index: 2;
-  pointer-events: none;
-  opacity: 0;
+  pointer-events: none !important;
+  opacity: 1;
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity;
 }
 
 .fullscreen-backdrop-rect.backdrop-hidden {
   opacity: 0 !important;
-}
-
-.ui-container.revealed .fullscreen-backdrop-rect,
-.ui-container.visible .fullscreen-backdrop-rect {
-  opacity: 1;
 }
 
 /* Ensure living-main / about-main only displays when in room-living and NOT ui-hidden */
@@ -1104,17 +1068,47 @@ body {
 
 @media (max-width: 900px) {
   .top-header {
-    left: 30px;
-    top: 30px;
+    left: max(14px, env(safe-area-inset-left, 14px));
+    top: max(14px, env(safe-area-inset-top, 14px));
+    right: max(14px, env(safe-area-inset-right, 14px));
+    width: auto;
+    max-width: calc(100vw - 28px);
+  }
+
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .nav-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-link {
+    font-size: 13.5px;
+    white-space: nowrap;
+    padding: 8px 6px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .freedom-title {
-    right: 30px;
-    top: 24px;
+    right: 20px;
+    top: max(16px, env(safe-area-inset-top, 16px));
+    pointer-events: none !important;
   }
 
   .freedom-title h1 {
-    font-size: 48px;
+    font-size: clamp(26px, 5vw, 38px);
+    pointer-events: none !important;
+    opacity: 0.6;
   }
 
   .bedroom-main,
@@ -1123,7 +1117,7 @@ body {
   .office-main {
     top: 20%;
     left: 8%;
-    max-width: 360px;
+    max-width: min(88vw, 360px);
   }
 
   .main-headline,
@@ -1132,7 +1126,8 @@ body {
   .kitchen-headline,
   .pool-headline,
   .office-headline {
-    font-size: 32px;
+    font-size: clamp(26px, 6.5vw, 34px);
+    line-height: 1.22;
   }
 
   .sub-headline,
@@ -1142,19 +1137,56 @@ body {
   .pool-sub-headline,
   .pool-supporting-text,
   .office-sub-headline {
-    font-size: 16px;
+    font-size: clamp(14px, 3.8vw, 16px);
+    line-height: 1.5;
   }
 
-  .explore-projects-btn {
+  .explore-projects-btn,
+  .kitchen-intro-btn,
+  .contact-intro-btn {
+    min-height: 44px;
     padding: 10px 22px;
-    font-size: 16px;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
 @media (max-width: 600px) {
+  .top-header {
+    left: max(12px, env(safe-area-inset-left, 12px));
+    top: max(12px, env(safe-area-inset-top, 12px));
+    right: max(12px, env(safe-area-inset-right, 12px));
+  }
+
+  .nav-bar {
+    gap: 10px;
+  }
+
+  .nav-link {
+    font-size: 13px;
+    padding: 6px 4px;
+  }
+
+  /* Watermark style on small phones to avoid obstructing header or headline */
+  .freedom-title {
+    top: auto;
+    bottom: clamp(65px, 10vh, 90px);
+    right: 18px;
+    text-align: right;
+  }
+
+  .freedom-title h1 {
+    font-size: 26px;
+    opacity: 0.35;
+  }
+
   .about-main,
   .living-main {
     max-width: 92%;
+    top: 48%;
   }
 
   .bedroom-main,
@@ -1172,7 +1204,7 @@ body {
   .kitchen-headline,
   .pool-headline,
   .office-headline {
-    font-size: 28px;
+    font-size: clamp(24px, 6vw, 30px);
   }
 
   .sub-headline,
@@ -1182,7 +1214,27 @@ body {
   .pool-sub-headline,
   .pool-supporting-text,
   .office-sub-headline {
-    font-size: 16px;
+    font-size: 14.5px;
+  }
+
+  .bottom-footer {
+    bottom: max(8px, env(safe-area-inset-bottom, 8px));
+    height: auto;
+  }
+
+  .footer-center {
+    display: none;
+  }
+
+  .footer-socials {
+    right: 16px;
+    bottom: 8px;
+    gap: 10px;
+  }
+
+  .social-icon {
+    width: 38px;
+    height: 38px;
   }
 }
 
@@ -1226,60 +1278,90 @@ body {
   pointer-events: none !important;
 }
 
-.interactive-object .glow-shape {
-  fill: transparent;
-  stroke: transparent;
-  stroke-width: 2px;
-  vector-effect: non-scaling-stroke;
-  pointer-events: visiblePainted !important;
-  cursor: pointer;
-  transition: fill 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              stroke 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              filter 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  filter: drop-shadow(0 0 0px transparent);
-  opacity: 0;
+/* ==========================================================================
+   Architectural Interactables Idle Breathing Glow System
+   Isolated, reusable component: Provides a soft, feathered, atmospheric
+   luminous boundary across all interactive colliders while idle.
+   ========================================================================== */
+:root {
+  /* Configurable Timing & Pulse Parameters */
+  --interactable-glow-duration: 1.65s;     /* Breathing cycle: 1.5–1.8s */
+  --interactable-glow-min-opacity: 0.32;   /* Min idle intensity: 30–35% */
+  --interactable-glow-max-opacity: 0.68;   /* Max idle intensity: 65–70% */
+  --interactable-glow-hover-opacity: 0.95; /* Hover intensity */
+
+  /* Configurable Visual Aesthetics: Ambient Architectural Bloom */
+  --interactable-glow-stroke: rgba(255, 255, 255, 0.92);  /* Luminous boundary stroke */
+  --interactable-glow-stroke-width: 2px;                  /* Non-scaling edge width */
+  --interactable-glow-fill: rgba(255, 255, 255, 0.06);    /* Soft interior bleed */
+  --interactable-glow-blur: 1px;                          /* Feathered edge softness */
+  --interactable-glow-bloom: rgba(255, 255, 255, 0.65);   /* Radiant ambient light */
 }
 
-/* Hover & Active Glowing States (Contour Glow strictly on SVG shape - White Soft Blurred Glow) */
+/* Base Idle State: Soft feathered luminous edge breathing smoothly on all interactables */
+.interactive-object .glow-shape {
+  pointer-events: all !important;
+  cursor: pointer !important;
+  fill: var(--obj-fill, var(--interactable-glow-fill)) !important;
+  stroke: var(--obj-stroke, var(--interactable-glow-stroke)) !important;
+  stroke-width: var(--interactable-glow-stroke-width, 2px) !important;
+  vector-effect: non-scaling-stroke;
+  opacity: var(--interactable-glow-min-opacity);
+  filter: blur(var(--interactable-glow-blur))
+          drop-shadow(0 0 2px #ffffff)
+          drop-shadow(0 0 6px var(--interactable-glow-bloom))
+          drop-shadow(0 0 12px rgba(255, 255, 255, 0.35));
+  animation: interactableIdleBreathe var(--interactable-glow-duration) ease-in-out infinite !important;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              stroke-width 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: opacity, filter;
+}
+
+/* Smooth sinusoidal idle breathing: 32% (dim) -> 68% (bright) -> 32% (dim) */
+@keyframes interactableIdleBreathe {
+  0%, 100% {
+    opacity: var(--interactable-glow-min-opacity);
+    filter: blur(var(--interactable-glow-blur))
+            drop-shadow(0 0 2px #ffffff)
+            drop-shadow(0 0 5px var(--interactable-glow-bloom))
+            drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  }
+  50% {
+    opacity: var(--interactable-glow-max-opacity);
+    filter: blur(calc(var(--interactable-glow-blur) + 0.4px))
+            drop-shadow(0 0 3px #ffffff)
+            drop-shadow(0 0 9px var(--interactable-glow-bloom))
+            drop-shadow(0 0 18px rgba(255, 255, 255, 0.5));
+  }
+}
+
+/* Hover & Active Glowing States: Soft ambient bloom intensifies without movement */
 .interactive-object .glow-shape:hover,
 .interactive-object .glow-shape.is-hovered,
 .interactive-object .glow-shape:focus,
 .interactive-object .glow-shape.is-active {
-  opacity: 1 !important;
-  fill: var(--obj-fill, rgba(255, 255, 255, 0.08)) !important;
-  stroke: var(--obj-stroke, rgba(255, 255, 255, 0.95)) !important;
-  stroke-width: 2.5px !important;
-  stroke-dasharray: none !important;
-  filter: blur(0.5px)
-          drop-shadow(0 0 2px #ffffff)
-          drop-shadow(0 0 6px rgba(255, 255, 255, 0.85))
-          drop-shadow(0 0 14px rgba(255, 255, 255, 0.6))
+  animation: none !important;
+  opacity: var(--interactable-glow-hover-opacity) !important;
+  fill: var(--obj-fill, var(--interactable-glow-fill)) !important;
+  stroke: var(--obj-stroke, var(--interactable-glow-stroke)) !important;
+  stroke-width: calc(var(--interactable-glow-stroke-width, 2px) + 0.5px) !important;
+  filter: blur(0.6px)
+          drop-shadow(0 0 3px #ffffff)
+          drop-shadow(0 0 8px var(--interactable-glow-bloom))
+          drop-shadow(0 0 16px rgba(255, 255, 255, 0.6))
           drop-shadow(0 0 28px rgba(255, 255, 255, 0.35)) !important;
 }
 
-/* Subtle Breathing Pulse when hovered (Luminous White Ambient Pulse) */
-@keyframes subtleObjectPulse {
-/*   0%, 100% {
-    filter: blur(0.5px)
-            drop-shadow(0 0 2px #ffffff)
-            drop-shadow(0 0 6px rgba(255, 255, 255, 0.85))
-            drop-shadow(0 0 14px rgba(255, 255, 255, 0.6))
-            drop-shadow(0 0 28px rgba(255, 255, 255, 0.35));
-  } */
-  50% {
-    filter: blur(0.6px)
-            drop-shadow(0 0 3px #ffffff)
-            drop-shadow(0 0 10px rgba(255, 255, 255, 0.95))
-            drop-shadow(0 0 20px rgba(255, 255, 255, 0.75))
-            drop-shadow(0 0 38px rgba(255, 255, 255, 0.5));
-  }
+/* Disabled during room transitions or intro */
+.interactive-disabled .interactive-object,
+.interactive-disabled .glow-shape {
+  pointer-events: none !important;
+  opacity: 0 !important;
+  animation: none !important;
 }
 
-.interactive-object .glow-shape:hover,
-.interactive-object .glow-shape.is-hovered {
-  animation: subtleObjectPulse 2.4s infinite ease-in-out;
-}
+
 
 /* Disabled during room transitions or intro */
 .interactive-disabled,
@@ -1787,5 +1869,972 @@ body {
 
   .contact-headline {
     font-size: 32px;
+  }
+}
+
+/* ==========================================================================
+   Kitchen Blog Section & Interactive Culinary Stage
+   ========================================================================== */
+
+/* CTA in Kitchen Room */
+.kitchen-cta-wrapper {
+  margin-top: 1.2rem;
+}
+
+.kitchen-intro-btn {
+  border-color: #ff7a18;
+  color: #ff7a18;
+}
+
+.kitchen-intro-btn:hover {
+  background: #ff7a18;
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(255, 122, 24, 0.35);
+}
+
+/* ==========================================================================
+   Interactive Kitchen Blog Laboratory Stage
+   Uses the same full-viewport canvas background & 1:1 coordinate stage
+   architecture as the PC Screen section.
+   ========================================================================== */
+
+/* Full Viewport Modal Stage */
+.kitchen-blog-stage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 250;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s ease;
+  overflow: hidden;
+  background-color: #000000;
+}
+
+.kitchen-blog-stage.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.kitchen-stage-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+/* 1. Fullscreen Canvas Environment (Edge-to-Edge, matching PC Screen section) */
+.kitchen-canvas-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000000;
+  pointer-events: none;
+}
+
+.kitchen-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 2. 1:1 Kitchen Coordinate Stage (Mapped to 1920x1920 KitchenScene.avif coordinates) */
+.kitchen-scene-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Kitchen Hood & Exit Mechanism */
+.kitchen-hood-area {
+  position: absolute;
+  top: 0;
+  left: 32%;
+  width: 36%;
+  height: 22%;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 10px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.kitchen-hood-exit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: rgba(15, 17, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(0);
+}
+
+.kitchen-hood-exit-btn:hover {
+  background: rgba(255, 122, 24, 0.9);
+  color: #ffffff;
+  border-color: #ff7a18;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(255, 122, 24, 0.4);
+}
+
+.hood-exit-arrow {
+  font-size: 11px;
+  transition: transform 0.25s ease;
+}
+
+.kitchen-hood-exit-btn:hover .hood-exit-arrow {
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   Floating Project Window
+   Reuses the visual design system of the PC Screen section's Project Window:
+   - Editorial white canvas (#ffffff)
+   - Crisp hair-line borders & subtle drop shadow
+   - Header with category / folio hierarchy & close return button
+   - Left & Right navigation columns with Didot category labels & active dots
+   - Center editorial case study layout with Didot headings & 4px scrollbar
+   ========================================================================== */
+.floating-project-window {
+  position: absolute;
+  top: 23%;
+  left: 10.7%;
+  width: 78.6%;
+  height: 44%;
+  min-height: 280px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #111111;
+  font-family: var(--font-body);
+  pointer-events: auto;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+}
+
+.floating-project-window.is-retracting {
+  transform: translateY(-130%) scale(0.85);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Window Top Bar (Editorial Header) */
+.window-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px;
+  background-color: #faf9f6;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.window-folio-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #777777;
+}
+
+.window-folio-group .window-category-tag {
+  color: #ff7a18;
+}
+
+.window-folio-group .window-divider-dot {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.window-folio-group .window-project-title-mini {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: #111111;
+  letter-spacing: 0.04em;
+}
+
+.window-folio-group .window-divider-slash {
+  color: rgba(0, 0, 0, 0.25);
+  font-family: var(--font-body);
+  font-weight: 400;
+}
+
+.window-folio-group .window-section-title-mini {
+  color: #555555;
+  font-weight: 600;
+}
+
+.window-close-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 3px 6px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #777777;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.window-close-btn:hover {
+  color: #000000;
+  transform: translateX(-1px);
+}
+
+.window-close-btn .close-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* Window Body Grid: 3 Editorial Columns */
+.window-body-grid {
+  display: grid;
+  grid-template-columns: minmax(140px, 190px) 1fr minmax(130px, 175px);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+/* Column Header Styles (Matching PC Editorial Navigation) */
+.tab-col-header {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.tab-col-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #111111;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.tab-col-sub {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #888888;
+  text-transform: uppercase;
+}
+
+/* LEFT TAB — Project Sections (Stove Dials) */
+.window-tab-sections {
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  background-color: #faf9f6;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 12px;
+  overflow-y: auto;
+  user-select: none;
+  scrollbar-width: none;
+}
+
+.window-tab-sections::-webkit-scrollbar {
+  display: none;
+}
+
+/* RIGHT TAB — Project Selector */
+.window-tab-projects {
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  background-color: #faf9f6;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 12px;
+  overflow-y: auto;
+  user-select: none;
+  scrollbar-width: none;
+}
+
+.window-tab-projects::-webkit-scrollbar {
+  display: none;
+}
+
+/* Lists & Buttons (Matching PC .nav-project-btn) */
+.section-nav-list,
+.project-selector-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.section-tab-btn,
+.project-pick-btn {
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 13.5px;
+  color: #666666;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.35;
+  border-radius: 3px;
+  transition: color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  outline: none;
+  width: 100%;
+}
+
+.section-tab-btn:hover,
+.project-pick-btn:hover {
+  color: #000000;
+  transform: translateX(2px);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.section-tab-btn.active,
+.project-pick-btn.active {
+  color: #000000;
+  font-weight: 700;
+}
+
+.section-tab-btn .active-dot,
+.project-pick-btn .active-dot {
+  font-size: 7px;
+  color: #ff7a18;
+  line-height: 1.7;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  margin-right: -2px;
+  flex-shrink: 0;
+}
+
+.section-tab-btn.active .active-dot,
+.project-pick-btn.active .active-dot {
+  opacity: 1;
+  transform: scale(1);
+  width: auto;
+  margin-right: 2px;
+}
+
+.tab-meta,
+.project-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tab-name,
+.project-name {
+  font-family: inherit;
+  font-size: 13px;
+  color: inherit;
+  line-height: 1.25;
+}
+
+.tab-sub,
+.project-discipline {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 400;
+  color: #888888;
+  margin-top: 1px;
+}
+
+/* CENTER AREA — Main Editorial Content Area (Matching PC Screen) */
+.window-main-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: clamp(14px, 1.8vw, 24px) clamp(16px, 2.2vw, 30px);
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.content-header-strip {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.content-header-strip .cs-tag-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.2rem;
+}
+
+.content-header-strip .cs-num {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.content-header-strip .cs-tag {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #888888;
+  font-weight: 600;
+}
+
+.content-heading {
+  font-family: var(--font-heading);
+  font-size: clamp(20px, 1.8vw, 28px);
+  font-weight: 700;
+  line-height: 1.05;
+  color: #000000;
+  letter-spacing: -0.02em;
+  margin: 0.2rem 0;
+}
+
+.content-header-strip .cs-rule {
+  width: 38px;
+  height: 2.5px;
+  background-color: #ff7a18;
+  margin: 0.45rem 0 0.75rem;
+  border-radius: 1px;
+}
+
+/* Scrollable Container with Custom 4px Scrollbar matching PC Screen */
+.content-body-scrollable {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+  overscroll-behavior: contain;
+}
+
+.content-body-scrollable::-webkit-scrollbar {
+  width: 4px;
+}
+
+.content-body-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content-body-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 2px;
+}
+
+.content-body-scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.content-body-scrollable p {
+  font-family: var(--font-body);
+  font-size: clamp(13.5px, 0.95vw, 15px);
+  line-height: 1.6;
+  color: #444444;
+  margin-bottom: 12px;
+}
+
+.content-body-scrollable strong {
+  color: #111111;
+  font-weight: 700;
+}
+
+.content-bullet-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.content-bullet-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #444444;
+  background: #faf9f6;
+  padding: 8px 12px;
+  border-radius: 2px;
+  border-left: 2px solid #ff7a18;
+}
+
+.content-bullet-item .bullet-idx {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  color: #111111;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Interactive Stove Control Dials Row
+   Preserves the physical stove dials and their visual appearance.
+   All floating cards, labels, and badges above them have been removed.
+   ========================================================================== */
+.stove-dials-row {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 18;
+}
+
+.stove-dial-pod {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  pointer-events: auto;
+  outline: none;
+  transition: transform 0.25s ease;
+}
+
+.stove-dial-pod:hover {
+  transform: translate(-50%, -53%);
+}
+
+/* Exact coordinates matching the knobs on KitchenScene.avif */
+.stove-dial-pod.dial-1 {
+  left: 33.06%;
+  top: 75.7%;
+}
+
+.stove-dial-pod.dial-2 {
+  left: 44.34%;
+  top: 75.7%;
+}
+
+.stove-dial-pod.dial-3 {
+  left: 55.42%;
+  top: 75.7%;
+}
+
+.stove-dial-pod.dial-4 {
+  left: 66.67%;
+  top: 75.7%;
+}
+
+.dial-knob {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #2a2d33 0%, #111215 75%);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stove-dial-pod.active .dial-knob {
+  border-color: #ff7a18;
+  box-shadow: 0 0 16px rgba(255, 122, 24, 0.7), inset 0 0 6px rgba(255, 122, 24, 0.4);
+}
+
+.dial-indicator-needle {
+  position: absolute;
+  top: 4px;
+  left: calc(50% - 1.5px);
+  width: 3px;
+  height: 12px;
+  background: #ffffff;
+  border-radius: 2px;
+  transform-origin: 1.5px 18px;
+  transform: rotate(var(--needle-rot, 0deg));
+  transition: transform 0.1s linear, background 0.3s ease;
+}
+
+.stove-dial-pod.active .dial-indicator-needle {
+  background: #ff7a18;
+  box-shadow: 0 0 6px #ff7a18;
+}
+
+.dial-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.dial-tag {
+  font-family: var(--font-body);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.dial-name {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.1;
+}
+
+.stove-dial-pod.active .dial-tag,
+.stove-dial-pod.active .dial-name {
+  color: #ff7a18;
+}
+
+/* Kitchen Blog Mobile Responsive Optimization */
+@media (max-width: 900px) {
+  .floating-project-window {
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    width: 100vw !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    transform: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    border: none !important;
+    z-index: 100 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .floating-project-window.is-retracting {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* Tablet view (769px-900px): optional contained modal */
+  @media (min-width: 769px) and (min-height: 501px) {
+    .floating-project-window {
+      top: max(16px, env(safe-area-inset-top, 16px)) !important;
+      bottom: clamp(125px, 17vh, 150px) !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: calc(100vw - 32px) !important;
+      max-width: 680px !important;
+      height: auto !important;
+      max-height: calc(100dvh - 140px) !important;
+      border-radius: 6px !important;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+    }
+    .floating-project-window.is-retracting {
+      transform: translateY(-130%) scale(0.85) !important;
+    }
+  }
+
+  .kitchen-hood-area {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
+  .window-top-bar,
+  .window-header-bar {
+    padding-top: max(12px, env(safe-area-inset-top, 12px)) !important;
+    padding-left: max(16px, env(safe-area-inset-left, 16px)) !important;
+    padding-right: max(16px, env(safe-area-inset-right, 16px)) !important;
+    padding-bottom: 10px !important;
+    min-height: 48px !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+    flex-shrink: 0 !important;
+  }
+
+  .window-folio-group,
+  .window-folio-tag {
+    font-size: 11px !important;
+    max-width: calc(100% - 65px) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .window-section-title-mini,
+  .window-divider-slash {
+    display: none !important;
+  }
+
+  .window-close-btn {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    padding: 8px 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Body grid transforms into flex column: Dishes pills -> Process pills -> Reading content */
+  .window-body-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Row 1: Project Selector Strip (Dishes) */
+  .window-tab-projects {
+    order: 1 !important;
+    border-left: none !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    background: #fafafa !important;
+    padding: 6px 12px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex-shrink: 0 !important;
+  }
+
+  .window-tab-projects::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .window-tab-projects .tab-col-header {
+    display: none !important;
+  }
+
+  .project-selector-list,
+  .project-pick-list,
+  .tab-project-list {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+
+  .project-selector-list li,
+  .project-pick-item,
+  .tab-project-item,
+  .project-pick-list li,
+  .tab-project-list li {
+    list-style: none !important;
+    display: inline-flex !important;
+    flex-shrink: 0 !important;
+  }
+
+  .project-pick-btn,
+  .tab-project-btn {
+    padding: 6px 12px !important;
+    font-size: 11.5px !important;
+    white-space: nowrap !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    background: #ffffff !important;
+    color: #444444 !important;
+    min-height: 36px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  .project-pick-btn.active,
+  .tab-project-btn.active {
+    background: #111111 !important;
+    color: #ffffff !important;
+    border-color: #111111 !important;
+  }
+
+  .project-pick-btn.active .active-dot,
+  .tab-project-btn.active .active-dot {
+    color: #ff7a18 !important;
+  }
+
+  .project-discipline,
+  .project-pick-desc,
+  .tab-project-desc {
+    display: none !important; /* Hide secondary desc on compact mobile pill */
+  }
+
+  /* Row 2: Section Navigation Strip (Process) */
+  .window-tab-sections {
+    order: 2 !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    background: #ffffff !important;
+    padding: 6px 12px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex-shrink: 0 !important;
+  }
+
+  .window-tab-sections::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .window-tab-sections .tab-col-header {
+    display: none !important;
+  }
+
+  .section-nav-list,
+  .tab-section-list {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+
+  .section-nav-item,
+  .tab-section-item,
+  .section-nav-list li,
+  .tab-section-list li {
+    list-style: none !important;
+    display: flex !important;
+    flex-shrink: 0 !important;
+  }
+
+  .section-tab-btn,
+  .tab-section-btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    background: #f7f7f7 !important;
+    color: #444444 !important;
+    min-height: 34px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  .section-tab-btn.active,
+  .tab-section-btn.active {
+    background: #ff7a18 !important;
+    color: #ffffff !important;
+    border-color: #ff7a18 !important;
+    font-weight: 600 !important;
+  }
+
+  .section-tab-btn.active .active-dot,
+  .tab-section-btn.active .active-dot {
+    color: #ffffff !important;
+  }
+
+  .tab-sub {
+    display: none !important; /* Hide secondary sub-label on mobile pill */
+  }
+
+  /* Row 3: Main Editorial Reading Pane */
+  .window-main-content,
+  .window-content-pane {
+    order: 3 !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    padding: 14px 16px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .content-heading {
+    font-size: clamp(16px, 4.5vw, 19px) !important;
+    margin: 4px 0 10px !important;
+    line-height: 1.25 !important;
+  }
+
+  .content-body-scrollable p {
+    font-size: clamp(12.5px, 3.4vw, 13.5px) !important;
+    line-height: 1.55 !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Physical Stove Dials */
+  .stove-dials-row {
+    bottom: 14px !important;
+    gap: clamp(10px, 3.5vw, 22px) !important;
+  }
+
+  .dial-knob {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .dial-name {
+    font-size: 9px !important;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape), (max-height: 500px) {
+  .floating-project-window {
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  .stove-dials-row {
+    display: none !important;
   }
 }

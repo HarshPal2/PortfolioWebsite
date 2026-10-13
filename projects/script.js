@@ -45,6 +45,15 @@
         viewport.scrollTop = 0;
       }
     });
+
+    // Touch event containment: prevent scrolling inside project window from triggering background parallax/gestures
+    viewport.addEventListener('touchmove', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+
+    viewport.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
   }
 
   const pcImage = new Image();
@@ -56,10 +65,19 @@
   let parallaxInstance = null;
 
   function initParallax() {
-    if (scene && typeof Parallax !== 'undefined' && !parallaxInstance) {
+    if (!scene || typeof Parallax === 'undefined') return;
+    const isMobile = window.innerWidth <= 900;
+    if (isMobile) {
+      if (parallaxInstance) {
+        try { parallaxInstance.destroy(); } catch (e) {}
+        parallaxInstance = null;
+      }
+      return;
+    }
+    if (!parallaxInstance) {
       parallaxInstance = new Parallax(scene, {
         relativeInput: true,
-        hoverOnly: false,
+        hoverOnly: true,
         frictionX: 0.08,
         frictionY: 0.08,
         scalarX: 8.0,
@@ -95,10 +113,18 @@
     ctx.drawImage(pcImage, offsetX, offsetY, drawWidth, drawHeight);
 
     if (stage) {
-      stage.style.left = `${offsetX}px`;
-      stage.style.top = `${offsetY}px`;
-      stage.style.width = `${drawWidth}px`;
-      stage.style.height = `${drawHeight}px`;
+      if (window.innerWidth <= 900) {
+        stage.style.left = '';
+        stage.style.top = '';
+        stage.style.width = '';
+        stage.style.height = '';
+        stage.style.transform = '';
+      } else {
+        stage.style.left = `${offsetX}px`;
+        stage.style.top = `${offsetY}px`;
+        stage.style.width = `${drawWidth}px`;
+        stage.style.height = `${drawHeight}px`;
+      }
     }
   }
 
@@ -556,6 +582,7 @@
     if (scene) {
       scene.addEventListener('click', (e) => {
         if (projectLoading || isCinematicActive) return;
+        if (window.innerWidth <= 900) return; // On mobile, use dedicated Return button
         if (e.target.closest('.monitor-content-viewport') || e.target.closest('#cinematic-video-modal')) return;
         triggerExit();
       });
