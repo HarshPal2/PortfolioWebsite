@@ -24,3 +24,6 @@ scratch/
 Explainations/
 
 
+
+.vercel
+.env*

@@ -248,7 +248,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadCriticalAssets(onComplete) {
       // Preload ONLY entrance frames + living base + Cross.png
-      const entranceFrames = preloadSequence('entrance');
+      
+    // Safety fallback: ensure UI is never stuck hidden if sequence takes too long
+    setTimeout(() => {
+      if (!hasRevealed) {
+        revealUI();
+      }
+    }, 3800);
+
+    const entranceFrames = preloadSequence('entrance');
       const livingFrames   = preloadSequence('living_bedroom');
 
       const livingBaseImg = livingFrames[0];
@@ -1503,11 +1511,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const contentHeading = document.getElementById('content-heading');
   const contentBody = document.getElementById('content-body-scrollable');
   const sectionTabBtns = document.querySelectorAll('.section-tab-btn');
-  const projectPickBtns = document.querySelectorAll('.project-pick-btn');
+  const projectPickBtns = document.querySelectorAll('.nav-project-btn');
   const stoveDialsRow = document.getElementById('stove-dials-row');
   const stoveDialPods = document.querySelectorAll('.stove-dial-pod');
   const kitchenHoodArea = document.getElementById('kitchen-hood-area');
   const kitchenHoodExitBtn = document.getElementById('kitchen-hood-exit-btn');
+  const kitchenReturnBtn = document.getElementById('kitchen-return-btn');
   const windowCloseBtn = document.getElementById('window-close-btn');
   const kitchenStageBackdrop = document.getElementById('kitchen-stage-backdrop');
 
@@ -1564,222 +1573,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const KITCHEN_PROJECTS = {
-    'glusight': {
-      title: 'GluSight',
-      discipline: 'Medical UX/UI',
-      sections: [
-        {
-          name: 'Research',
-          dishBadge: 'Course 01 — Raw Ingredients',
-          courseTag: 'DIAL 01 / 04 · THE FOUNDATION',
-          heading: 'Initial & Primary Research',
-          utensilName: 'Prep Station',
-          utensilDesc: 'Raw Data & Clinical Signals',
-          html: `
-            <p><strong>The Clinical Dilemma:</strong> Over 830 million people worldwide live with diabetes, yet most monitor glucose through raw numbers that trigger acute stress without providing clear context on what caused the change.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span><strong>Primary Fieldwork:</strong> Evaluated user habits during acute glycemic spikes; found widespread cognitive friction and reactive rather than anticipatory behavior.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span><strong>Secondary Literature:</strong> Verified clinical research confirming high sensor abandonment caused by constant alarm fatigue and unguided telemetry data.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span><strong>Target Opportunity:</strong> Transforming passive recording into contextual, proactive reassurance.</span></li>
-            </ul>
-          `
-        },
-        {
-          name: 'Interviews',
-          dishBadge: 'Course 02 — Simmering Reduction',
-          courseTag: 'DIAL 02 / 04 · USER FRICTION',
-          heading: 'Interview Process & Core Insights',
-          utensilName: 'Simmering Pot',
-          utensilDesc: 'Extracting Emotional Friction',
-          html: `
-            <p><strong>Qualitative Synthesis:</strong> In-depth interviews with patients revealed emotional cycles of guilt, hyper-vigilance, and cognitive overload during routine daily activities.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span><strong>Reactive Behaviour:</strong> Users routinely respond after fluctuations occur rather than anticipating them.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span><strong>Cognitive Overload:</strong> Isolated numeric values create anxiety when devoid of dietary and activity context.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span><strong>Tracking Isn’t Intervention:</strong> Current apps record historical logs but fail to advise users on what to do next.</span></li>
-            </ul>
-          `
-        },
-        {
-          name: 'Ideation',
-          dishBadge: 'Course 03 — Culinary Formulation',
-          courseTag: 'DIAL 03 / 04 · RAPID ITERATION',
-          heading: 'Ideation & Prototyping Experiments',
-          utensilName: 'Sauté Skillet',
-          utensilDesc: 'Testing Feedback Loops',
-          html: `
-            <p><strong>From Insight to Interface:</strong> Developing a calm, intuitive interface prioritizing forward-looking reassurance over clinical alarms.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span><strong>Predictive Trajectories:</strong> Proactive 2-hour forward forecast curves replacing harsh threshold panic.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span><strong>Contextual Meal Logging:</strong> Rapid 3-tap input correlating nutritional intake directly with glycemic curves.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span><strong>Reassuring Visual Tone:</strong> Soft organic color schemes replacing traditional medical red/green warning states.</span></li>
-            </ul>
-          `
-        },
-        {
-          name: 'Final Design',
-          dishBadge: 'Course 04 — Plated Creation',
-          courseTag: 'DIAL 04 / 04 · SERVING THE VISION',
-          heading: 'Final System & Business Adaptation',
-          utensilName: 'Plated Dish',
-          utensilDesc: 'Final Presentation & ROI',
-          html: `
-            <p><strong>The Complete Experience:</strong> GluSight delivers seamless daily guidance and sustainable health management for continuous biosensor users.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span><strong>Device Compatibility:</strong> Low-energy Bluetooth synchronization compatible with Abbott and Dexcom sensors.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span><strong>Healthcare Implications:</strong> Potential to reduce avoidable emergency visits through proactive spike mitigation.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span><strong>Enterprise Partnership Model:</strong> B2B integration opportunities for wellness programs and specialized endocrinology clinics.</span></li>
-            </ul>
-          `
-        }
-      ]
-    },
-    'cabin-in-woods': {
-      title: 'Cabin in Woods',
-      discipline: 'Visual 3D Scene',
-      sections: [
-        {
-          name: 'Research',
-          dishBadge: 'Course 01 — Raw Materials',
-          courseTag: 'DIAL 01 / 04 · SENSORY FOUNDATION',
-          heading: 'Atmospheric Research & Reference',
-          utensilName: 'Prep Station',
-          utensilDesc: 'Photogrammetry & Nordic Light',
-          html: `
-            <p><strong>Atmospheric Spatial Study:</strong> Exploring architectural solitude and contemplation through realistic lighting and material tactile resonance.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Photometric analysis of diffuse overcast Nordic lighting, misty fall air, and low sun angles.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Material tactile exploration combining charred yakisugi cedar siding with rough-cast concrete.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Study of thermal visual contrast: deep interior amber warmth balancing cold exterior mist.</span></li>
-            </ul>
-          `
-        },
-        {
-          name: 'Interviews',
-          dishBadge: 'Course 02 — User Perception',
-          courseTag: 'DIAL 02 / 04 · PSYCHOLOGY OF ESCAPE',
-          heading: 'Interviews & Emotional Mapping',
-          utensilName: 'Simmering Pot',
-          utensilDesc: 'Distilling Refuge & Shelter',
-          html: `
-            <p><strong>Spatial Inquiry:</strong> Gathering perspectives from design enthusiasts seeking respite from urban sensory saturation.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Desire for floor-to-ceiling glass framing untouched canopy vistas while preserving seclusion.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Emotional resonance of tactile wooden textures and central wood-burning hearth elements.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Reducing visual clutter to induce restorative mental stillness.</span></li>
-            </ul>
-          `
-        },
-        {
-          name: 'Ideation',
-          dishBadge: 'Course 03 — Compositional Heat',
-          courseTag: 'DIAL 03 / 04 · PROCEDURAL SCATTER',
-          heading: 'Ideation & Environment Assembly',
-          utensilName: 'Sauté Skillet',
-          utensilDesc: 'Foliage Scattering & God Rays',
-          html: `
-            <p><strong>Procedural Biome Generation:</strong> Scattering tens of thousands of sub-alpine conifers and tuning atmospheric volume fog.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Procedural moss distribution based on slope angle, humidity masks, and surface normal direction.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Camera composition studies utilizing an anamorphic 50mm cinematic perspective.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Custom shader development for wet rock sheen and fine water condensation.</span></li>
-            </ul>
-          `
-        },
-        {
-          name: 'Final Design',
-          dishBadge: 'Course 04 — The Finished Feast',
-          courseTag: 'DIAL 04 / 04 · COMMERCIAL VALUE',
-          heading: 'Cinematic Visual Delivery & Pitch',
-          utensilName: 'Plated Dish',
-          utensilDesc: 'Architectural Hospitality Pitch',
-          html: `
-            <p><strong>Commercial Delivery:</strong> Visual identity package created for high-end boutique hospitality concepts and architectural visualization portfolios.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>High-resolution visual set for pre-development investor pitch decks and client presentations.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Awarded recognition across curated 3D architectural digital art platforms.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Established streamlined procedural landscape workflow saving weeks of production effort.</span></li>
-            </ul>
-          `
-        }
-      ]
-    },
-    'biophilic-interior': {
-      title: 'Biophilic Interior',
-      discipline: 'Interior Architecture',
-      sections: [
-        {
-          name: 'Research',
-          dishBadge: 'Course 01 — Organic Elements',
-          courseTag: 'DIAL 01 / 04 · CIRCADIAN WELLNESS',
-          heading: 'Biophilic Principles & Plant Ecology',
-          utensilName: 'Prep Station',
-          utensilDesc: 'Living Flora & Air Quality',
-          html: `
-            <p><strong>Living Architecture:</strong> Investigating the physiological benefits of integrating living vegetation, natural lighting, and organic materials into built environments.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Simulated daylight penetration through parametric timber louvers to match circadian cycles.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Selection of air-purifying indoor species: Ficus lyrata, Monstera, and living moss partitions.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Acoustic buffering properties of preserved moss panels in open-concept spaces.</span></li>
-            </ul>
-          `
-        },
-        {
-          name: 'Interviews',
-          dishBadge: 'Course 02 — Human Factor',
-          courseTag: 'DIAL 02 / 04 · OCCUPANT HEALTH',
-          heading: 'Interviews & Workplace Feedback',
-          utensilName: 'Simmering Pot',
-          utensilDesc: 'Combating Desk Fatigue',
-          html: `
-            <p><strong>Occupant Inquiries:</strong> Surveying professionals experiencing mental fatigue in sterile, synthetic modern office environments.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Significant majority reported improved focus and lower stress when positioned near real greenery.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Subtle acoustics of running water helped mask distracting keyboard and conversation noise.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Preference for informal green nooks for collaboration instead of rigid boardrooms.</span></li>
-            </ul>
-          `
-        },
-        {
-          name: 'Ideation',
-          dishBadge: 'Course 03 — Material Fusion',
-          courseTag: 'DIAL 03 / 04 · INTEGRATED GROWTH',
-          heading: 'Ideation & Spatial Layouts',
-          utensilName: 'Sauté Skillet',
-          utensilDesc: 'Timber Joinery & Plant Planters',
-          html: `
-            <p><strong>Harmonizing Structure & Growth:</strong> Embedding irrigation systems and living planters into custom millwork and architectural partitions.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Curvilinear terrazzo seating featuring integrated sub-irrigation reservoir troughs.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Full-spectrum tunable LED lighting reproducing the spectral curve of natural sunrise and sunset.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Modular living-wall cassettes enabling swift maintenance without building disruption.</span></li>
-            </ul>
-          `
-        },
-        {
-          name: 'Final Design',
-          dishBadge: 'Course 04 — Sustainable Yield',
-          courseTag: 'DIAL 04 / 04 · WELL CERTIFICATION',
-          heading: 'Final Execution & Business Return',
-          utensilName: 'Plated Dish',
-          utensilDesc: 'Workplace Wellness & ESG',
-          html: `
-            <p><strong>Corporate Value Realized:</strong> Interior design concept supporting WELL Building Standard benchmarks for modern sustainable corporate real estate.</p>
-            <ul class="content-bullet-list">
-              <li class="content-bullet-item"><span class="bullet-idx">01</span><span>Demonstrable boost in employee satisfaction and voluntary on-site collaboration.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">02</span><span>Measurable reduction in ambient indoor air contaminants through biological bio-filtering.</span></li>
-              <li class="content-bullet-item"><span class="bullet-idx">03</span><span>Elevated asset valuation and leasing premium for landlords investing in biophilic amenities.</span></li>
-            </ul>
-          `
-        }
-      ]
-    }
-  };
+  const kitchenSecCounter = document.getElementById('kitchen-sec-counter');
 
-  let activeKitchenProject = 'glusight';
-  let activeKitchenSection = 0;
-  let kitchenSectionProgress = 0.0;
+  const KITCHEN_SPREADS = [
+    { id: 'kb-artboard-01', num: '01', dialIdx: 0 },
+    { id: 'kb-artboard-02', num: '02', dialIdx: 0 },
+    { id: 'kb-artboard-03', num: '03', dialIdx: 1 },
+    { id: 'kb-artboard-04', num: '04', dialIdx: 1 },
+    { id: 'kb-artboard-05', num: '05', dialIdx: 2 },
+    { id: 'kb-artboard-06', num: '06', dialIdx: 2 },
+    { id: 'kb-artboard-07', num: '07', dialIdx: 2 },
+    { id: 'kb-artboard-08', num: '08', dialIdx: 2 },
+    { id: 'kb-artboard-09', num: '09', dialIdx: 3 },
+    { id: 'kb-artboard-10', num: '10', dialIdx: 3 },
+    { id: 'kb-artboard-11', num: '11', dialIdx: 3 },
+    { id: 'kb-artboard-12', num: '12', dialIdx: 3 },
+    { id: 'kb-artboard-13', num: '13', dialIdx: 3 },
+    { id: 'kb-artboard-14', num: '14', dialIdx: 3 },
+    { id: 'kb-artboard-15', num: '15', dialIdx: 3 }
+  ];
+
+  const STOVE_DIAL_TARGETS = [
+    'kb-artboard-01', // Dial 1: Intro (Spreads 01-02)
+    'kb-artboard-03', // Dial 2: Opportunity & People (Spreads 03-04)
+    'kb-artboard-05', // Dial 3: Research & Findings (Spreads 05-08)
+    'kb-artboard-09'  // Dial 4: Solution & Product Experience (Spreads 09-15)
+  ];
+
+  let activeSpreadIdx = 0;
+  let activeKitchenDial = 0;
   let kitchenDialRotations = [0, 0, 0, 0];
   let isKitchenRetracting = false;
 
@@ -1788,58 +1610,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateKitchenUI() {
-    const proj = KITCHEN_PROJECTS[activeKitchenProject];
-    if (!proj) return;
-    const sec = proj.sections[activeKitchenSection];
-    if (!sec) return;
-
-    if (windowProjectTitleMini) windowProjectTitleMini.textContent = proj.title;
-    if (windowSectionTitleMini) windowSectionTitleMini.textContent = sec.name;
-    if (contentCourseNum) contentCourseNum.textContent = `0${activeKitchenSection + 1}`;
-    if (contentCourseTag) contentCourseTag.textContent = sec.courseTag;
-    if (contentHeading) contentHeading.textContent = sec.heading;
-    if (contentBody) {
-      contentBody.innerHTML = sec.html;
-      contentBody.scrollTop = 0;
-    }
-
-    // Update section tabs
-    sectionTabBtns.forEach((btn, idx) => {
-      btn.classList.toggle('active', idx === activeKitchenSection);
-    });
-
-    // Update project tabs
-    projectPickBtns.forEach((btn) => {
-      btn.classList.toggle('active', btn.getAttribute('data-project') === activeKitchenProject);
-    });
-
-    // Update dials (active pod & needle rotation)
+    // Update stove dials (active pod & needle rotation)
     stoveDialPods.forEach((pod, idx) => {
-      pod.classList.toggle('active', idx === activeKitchenSection);
+      pod.classList.toggle('active', idx === activeKitchenDial);
       const knob = pod.querySelector('.dial-knob');
       if (knob) {
         const rot = kitchenDialRotations[idx] || 0;
         knob.style.setProperty('--needle-rot', `${rot}deg`);
       }
     });
+
+    // Update section counter in header: e.g. "01 / 15"
+    if (kitchenSecCounter && KITCHEN_SPREADS[activeSpreadIdx]) {
+      kitchenSecCounter.textContent = `${KITCHEN_SPREADS[activeSpreadIdx].num} / 15`;
+    }
   }
 
-  function setKitchenSection(secIdx, progress = 0.0) {
-    activeKitchenSection = Math.max(0, Math.min(3, secIdx));
-    kitchenSectionProgress = Math.max(0, Math.min(1.0, progress));
-    kitchenDialRotations[activeKitchenSection] = Math.round(kitchenSectionProgress * 180);
+  function setKitchenDial(dialIdx) {
+    activeKitchenDial = Math.max(0, Math.min(STOVE_DIAL_TARGETS.length - 1, dialIdx));
+    const targetId = STOVE_DIAL_TARGETS[activeKitchenDial];
+    if (targetId && contentBody) {
+      const targetSec = document.getElementById(targetId);
+      if (targetSec) {
+        const targetTop = targetSec.offsetTop - contentBody.offsetTop;
+        contentBody.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+      }
+    }
     updateKitchenUI();
-    if (contentBody) contentBody.scrollTop = 0;
-  }
-
-  function setKitchenProject(projId) {
-    if (!KITCHEN_PROJECTS[projId]) return;
-    activeKitchenProject = projId;
-    activeKitchenSection = 0;
-    kitchenSectionProgress = 0.0;
-    kitchenDialRotations = [0, 0, 0, 0];
-    updateKitchenUI();
-    if (contentBody) contentBody.scrollTop = 0;
   }
 
   function openKitchenBlog() {
@@ -1856,7 +1653,11 @@ document.addEventListener('DOMContentLoaded', () => {
     kitchenBlogStage.setAttribute('aria-hidden', 'false');
 
     renderKitchenScene();
-    setKitchenProject('glusight');
+    activeSpreadIdx = 0;
+    activeKitchenDial = 0;
+    kitchenDialRotations = [0, 0, 0, 0];
+    if (contentBody) contentBody.scrollTop = 0;
+    updateKitchenUI();
   }
 
   function closeKitchenBlog() {
@@ -1892,35 +1693,46 @@ document.addEventListener('DOMContentLoaded', () => {
       e.stopPropagation();
       if (isKitchenRetracting) return;
 
-      const delta = e.deltaY * 0.0018;
-      kitchenSectionProgress += delta;
-
-      if (kitchenSectionProgress > 1.0) {
-        if (activeKitchenSection < 3) {
-          activeKitchenSection += 1;
-          kitchenSectionProgress = 0.0;
-        } else {
-          kitchenSectionProgress = 1.0;
-        }
-      } else if (kitchenSectionProgress < 0.0) {
-        if (activeKitchenSection > 0) {
-          activeKitchenSection -= 1;
-          kitchenSectionProgress = 1.0;
-        } else {
-          kitchenSectionProgress = 0.0;
-        }
+      const delta = e.deltaY;
+      if (delta > 30 && activeKitchenDial < STOVE_DIAL_TARGETS.length - 1) {
+        setKitchenDial(activeKitchenDial + 1);
+      } else if (delta < -30 && activeKitchenDial > 0) {
+        setKitchenDial(activeKitchenDial - 1);
       }
-
-      kitchenDialRotations[activeKitchenSection] = Math.round(kitchenSectionProgress * 180);
-      updateKitchenUI();
     }, { passive: false });
+  }
+
+  // Synchronize GluSight active spread and dials with scroll position inside content-body-scrollable
+  if (contentBody) {
+    let scrollDebounce = null;
+    contentBody.addEventListener('scroll', () => {
+      if (scrollDebounce) cancelAnimationFrame(scrollDebounce);
+      scrollDebounce = requestAnimationFrame(() => {
+        const bodyRect = contentBody.getBoundingClientRect();
+        const threshold = bodyRect.top + bodyRect.height * 0.35;
+        let foundIdx = 0;
+        KITCHEN_SPREADS.forEach((spread, idx) => {
+          const el = document.getElementById(spread.id);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.top <= threshold) {
+              foundIdx = idx;
+            }
+          }
+        });
+        if (foundIdx !== activeSpreadIdx) {
+          activeSpreadIdx = foundIdx;
+          activeKitchenDial = KITCHEN_SPREADS[activeSpreadIdx].dialIdx;
+          kitchenDialRotations[activeKitchenDial] = (activeSpreadIdx % 3) * 45;
+          updateKitchenUI();
+        }
+      });
+    }, { passive: true });
   }
 
   // Prevent wheel and touch events from bubbling out of the floating project window
   if (floatingWindow) {
     floatingWindow.addEventListener('wheel', (e) => {
-      // Content scrolling proceeds normally inside contentBody
-      // Stop event from bubbling up to dials or room navigators
       e.stopPropagation();
     }, { passive: true });
 
@@ -1944,30 +1756,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
   }
 
-  // Hook up buttons and tab clicks
-  sectionTabBtns.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const sec = parseInt(btn.getAttribute('data-section'), 10);
-      if (!isNaN(sec)) setKitchenSection(sec, 0.0);
-    });
-  });
-
-  projectPickBtns.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const proj = btn.getAttribute('data-project');
-      if (proj) setKitchenProject(proj);
-    });
-  });
-
+  // Hook up stove dial clicks
   stoveDialPods.forEach((pod) => {
     pod.addEventListener('click', (e) => {
       e.preventDefault();
       const sec = parseInt(pod.getAttribute('data-section'), 10);
-      if (!isNaN(sec)) setKitchenSection(sec, 0.0);
+      if (!isNaN(sec)) setKitchenDial(sec);
     });
   });
+
+  if (kitchenReturnBtn) {
+    kitchenReturnBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeKitchenBlog();
+    });
+  }
 
   if (kitchenHoodExitBtn) {
     kitchenHoodExitBtn.addEventListener('click', (e) => {
