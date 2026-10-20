@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function initSequenceFrames(key) {
+  function preloadSequence(key) {
     cacheAccessTimes[key] = Date.now();
     if (frameCache[key]) return frameCache[key];
 
@@ -89,22 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i = 0; i < seq.count; i++) {
       const frameNum = start + i;
       const img = new Image();
-      img._targetSrc = `${seq.folder}${seq.prefix}${pad4(frameNum)}${imgExt}`;
+      const baseSrc = `${seq.folder}${seq.prefix}${pad4(frameNum)}`;
+      img.src = `${baseSrc}${imgExt}`;
       frames.push(img);
     }
 
     frameCache[key] = frames;
     pruneCache();
-    return frames;
-  }
-
-  function preloadSequence(key) {
-    const frames = initSequenceFrames(key);
-    frames.forEach((img) => {
-      if (!img.src && img._targetSrc) {
-        img.src = img._targetSrc;
-      }
-    });
     return frames;
   }
 
@@ -256,84 +247,77 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     loadCriticalAssets(onComplete) {
-      // 1. Initialize entrance frames without firing 96 network requests all at once
-      const entranceFrames = initSequenceFrames('entrance');
-      if (!entranceFrames[0].src && entranceFrames[0]._targetSrc) {
-        entranceFrames[0].src = entranceFrames[0]._targetSrc;
-      }
+      // Preload entrance frames sequence (sets .src on entrance frames so browser downloads them in order)
+      const entranceFrames = preloadSequence('entrance');
 
-      // 2. Preload living room base frame directly without loading all 48 bedroom frames
+      // Preload living base frame directly (single image) without loading all 48 bedroom transition frames
       const livingBaseImg = new Image();
       livingBaseImg.src = 'Media/Living_Bedroom/LivingToBedroom0097.avif';
 
       const crossImg = new Image();
       crossImg.src = 'Media/Cross.png';
 
-      // 3. Critical Playback Buffer: preload the first 24 frames (~1.0s of animation at 24fps)
-      // plus living room base image and Cross.png (26 items total).
-      // This loads rapidly in 1.5-2.5s with smooth percentage progression.
+      // We track the initial 24 frames of entrance (~1.0s at 24fps) + living base + Cross
       const BUFFER_COUNT = 24;
-      const bufferFrames = entranceFrames.slice(0, BUFFER_COUNT);
-      bufferFrames.forEach((img) => {
-        if (!img.src && img._targetSrc) img.src = img._targetSrc;
-      });
-
-      const criticalItems = [
-        ...bufferFrames,
+      const criticalBuffer = [
+        ...entranceFrames.slice(0, BUFFER_COUNT),
         livingBaseImg,
         crossImg
       ];
 
-      this._totalCritical  = criticalItems.length;
+      this._totalCritical  = criticalBuffer.length;
       this._loadedCritical = 0;
       this._onComplete     = onComplete;
 
-      console.log(`[Preloader] Starting buffer — ${this._totalCritical} critical assets to load (Format: ${imgExt})`);
+      console.log(`[Preloader] Tracking initial buffer — ${this._totalCritical} assets (Format: ${imgExt})`);
 
-      // Make indicator visible immediately on start
+      // Make indicator visible immediately
       const el = this._getIndicator();
       if (el) el.classList.add('is-visible');
 
-      // Safety fallback: 15s in case of severe network failure
-      let safetyTimer = setTimeout(() => {
+      let resolved = 0;
+      let hasCompleted = false;
+
+      const finish = () => {
+        if (hasCompleted) return;
+        hasCompleted = true;
+        if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
         if (this._onComplete) {
-          console.warn('[Preloader] Safety timeout reached — proceeding to entrance sequence');
           const cb = this._onComplete;
           this._onComplete = null;
           cb();
         }
-      }, 15000);
-
-      // Controlled concurrency batch loading: 5 images at a time for maximum throughput
-      let idx = 0;
-      let activeDecodes = 0;
-      const concurrency = 5;
-      let resolved = 0;
-
-      const pump = () => {
-        while (activeDecodes < concurrency && idx < criticalItems.length) {
-          const item = criticalItems[idx++];
-          activeDecodes++;
-          this._decodeImage(item).then(() => {
-            activeDecodes--;
-            resolved++;
-            this._loadedCritical = resolved;
-            this._updateIndicator(resolved, this._totalCritical);
-            if (resolved >= this._totalCritical && this._onComplete) {
-              if (safetyTimer) {
-                clearTimeout(safetyTimer);
-                safetyTimer = null;
-              }
-              const cb = this._onComplete;
-              this._onComplete = null;
-              cb();
-            } else {
-              pump();
-            }
-          });
-        }
       };
-      pump();
+
+      // Safety fallback: 10s maximum wait for buffer
+      let safetyTimer = setTimeout(() => {
+        console.warn('[Preloader] Buffer timer elapsed — proceeding to animation');
+        finish();
+      }, 10000);
+
+      criticalBuffer.forEach((img) => {
+        if (img.complete && img.naturalWidth > 0) {
+          resolved++;
+          this._loadedCritical = resolved;
+          this._updateIndicator(resolved, this._totalCritical);
+          if (resolved >= this._totalCritical) finish();
+          return;
+        }
+
+        const onDone = () => {
+          resolved++;
+          this._loadedCritical = resolved;
+          this._updateIndicator(resolved, this._totalCritical);
+          if (resolved >= this._totalCritical) finish();
+        };
+
+        if (typeof img.decode === 'function') {
+          img.decode().then(onDone).catch(onDone);
+        } else {
+          img.addEventListener('load', onDone, { once: true });
+          img.addEventListener('error', onDone, { once: true });
+        }
+      });
     },
   };
 
@@ -420,18 +404,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = frames[currentIdx];
         if (img && img.naturalWidth > 0) {
           drawFrameToCanvas(canvas, img);
-
-          if (typeof onFrame === 'function') {
-            onFrame(currentIdx);
-          }
-
-          if (currentIdx === endIdx) {
-            currentAnimId = null;
-            if (onComplete) onComplete();
-            return;
-          }
-          currentIdx += step;
         }
+
+        if (typeof onFrame === 'function') {
+          onFrame(currentIdx);
+        }
+
+        if (currentIdx === endIdx) {
+          currentAnimId = null;
+          if (onComplete) onComplete();
+          return;
+        }
+        currentIdx += step;
       }
       currentAnimId = requestAnimationFrame(animate);
     }
@@ -2218,35 +2202,14 @@ document.addEventListener('DOMContentLoaded', () => {
       uiContainer.classList.remove('revealed', 'visible');
     }
 
-    const entranceFrames = initSequenceFrames('entrance');
+    const entranceFrames = preloadSequence('entrance');
     const firstEntranceFrame = entranceFrames[0];
-    if (!firstEntranceFrame.src && firstEntranceFrame._targetSrc) {
-      firstEntranceFrame.src = firstEntranceFrame._targetSrc;
-    }
 
     /**
      * Called once — after critical buffer frames and living base image are ready.
      */
     function onAssetsReady() {
-      console.log('[Preloader] Critical buffer ready — streaming remaining frames and starting entrance');
-
-      // Immediately begin streaming remaining entrance frames (24 to 95) in playback order
-      const remainingEntrance = entranceFrames.slice(24);
-      let streamIdx = 0;
-      let activeStreams = 0;
-      const streamConcurrency = 4;
-      const pumpStream = () => {
-        while (activeStreams < streamConcurrency && streamIdx < remainingEntrance.length) {
-          const item = remainingEntrance[streamIdx++];
-          activeStreams++;
-          if (!item.src && item._targetSrc) item.src = item._targetSrc;
-          AssetLoader._decodeImage(item).then(() => {
-            activeStreams--;
-            pumpStream();
-          });
-        }
-      };
-      pumpStream();
+      console.log('[Preloader] Buffer ready — starting entrance animation');
 
       // Step 1: Fade loading indicator out first
       AssetLoader.fadeOutIndicator().then(() => {
@@ -2293,9 +2256,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    if (firstEntranceFrame.complete && firstEntranceFrame.naturalWidth > 0) {
+    if (firstEntranceFrame && firstEntranceFrame.complete && firstEntranceFrame.naturalWidth > 0) {
       drawFirstFrameIfReady();
-    } else {
+    } else if (firstEntranceFrame) {
       firstEntranceFrame.onload = drawFirstFrameIfReady;
     }
 
