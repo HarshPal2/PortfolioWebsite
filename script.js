@@ -2203,7 +2203,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // ------------------------------------------------------------------------
     const targetRoom = getRoomFromHash() || 'living';
 
-    if (isIntroCompleted) {
+    // Temporary feature flag: bypass the initial loading screen and entrance sequence
+    // to open directly to Living / About Me page. Set to false to restore intro.
+    const BYPASS_LOADING_SCREEN = true;
+
+    if (BYPASS_LOADING_SCREEN || isIntroCompleted) {
       if (freedomSplash) {
         freedomSplash.style.display = 'none';
         freedomSplash.classList.add('fade-out');

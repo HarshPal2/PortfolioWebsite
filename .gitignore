@@ -27,3 +27,6 @@ Explainations/
 
 .vercel
 .env*
+
+*.pptx
+Reference/Screen Recording*.mp4
