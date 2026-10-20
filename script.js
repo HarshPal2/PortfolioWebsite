@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function preloadSequence(key) {
+  function initSequenceFrames(key) {
     cacheAccessTimes[key] = Date.now();
     if (frameCache[key]) return frameCache[key];
 
@@ -90,12 +90,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const frameNum = start + i;
       const img = new Image();
       const baseSrc = `${seq.folder}${seq.prefix}${pad4(frameNum)}`;
-      img.src = `${baseSrc}${imgExt}`;
+      img._targetSrc = `${baseSrc}${imgExt}`;
       frames.push(img);
     }
 
     frameCache[key] = frames;
     pruneCache();
+    return frames;
+  }
+
+  function preloadSequence(key) {
+    const frames = initSequenceFrames(key);
+    frames.forEach((img) => {
+      if (!img.src && img._targetSrc) {
+        img.src = img._targetSrc;
+      }
+    });
     return frames;
   }
 
@@ -208,6 +218,9 @@ document.addEventListener('DOMContentLoaded', () => {
           resolve(false);
           return;
         }
+        if (!img.src && img._targetSrc) {
+          img.src = img._targetSrc;
+        }
         if (img.complete) {
           resolve(img.naturalWidth > 0);
           return;
@@ -249,13 +262,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!el) { resolve(); return; }
         el.classList.add('is-fading-out');
         el.classList.remove('is-visible');
-        setTimeout(resolve, 450);
+        setTimeout(resolve, 350);
       });
     },
 
     loadCriticalAssets(onComplete) {
-      // Preload entrance frames sequence (sets .src on entrance frames so browser downloads them in order)
-      const entranceFrames = preloadSequence('entrance');
+      // 1. Initialize entrance sequence without firing 96 network requests at once
+      const entranceFrames = initSequenceFrames('entrance');
+
+      // Frame 1 starts immediately for early canvas display
+      if (!entranceFrames[0].src && entranceFrames[0]._targetSrc) {
+        entranceFrames[0].src = entranceFrames[0]._targetSrc;
+      }
 
       // Preload living base frame directly (single image) without loading all 48 bedroom transition frames
       const livingBaseImg = new Image();
@@ -264,18 +282,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const crossImg = new Image();
       crossImg.src = 'Media/Cross.png';
 
-      // Track all 96 entrance frames + living base + Cross
-      const criticalBuffer = [
-        ...entranceFrames,
+      // Safe playback buffer: 18 frames (~0.75s of animation at 24fps) + living base + Cross
+      // This loads rapidly in 1.5 - 2.5s and delivers a perfectly smooth startup
+      const BUFFER_COUNT = 18;
+      const bufferFrames = entranceFrames.slice(0, BUFFER_COUNT);
+
+      const criticalItems = [
+        ...bufferFrames,
         livingBaseImg,
         crossImg
       ];
 
-      this._totalCritical  = criticalBuffer.length;
+      this._totalCritical  = criticalItems.length;
       this._loadedCritical = 0;
       this._onComplete     = onComplete;
 
-      console.log(`[Preloader] Tracking all ${this._totalCritical} entrance assets (Format: ${imgExt})`);
+      console.log(`[Preloader] Tracking initial buffer — ${this._totalCritical} critical assets`);
 
       // Make indicator visible immediately
       const el = this._getIndicator();
@@ -295,22 +317,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       };
 
-      // Safety fallback: 12s maximum wait for buffer
+      // Safety fallback: 8s maximum wait for buffer
       let safetyTimer = setTimeout(() => {
         console.warn('[Preloader] Buffer timer elapsed — proceeding to animation');
         finish();
-      }, 12000);
+      }, 8000);
 
-      criticalBuffer.forEach((img) => {
-        this._loadImage(img).then(() => {
-          resolved++;
-          this._loadedCritical = resolved;
-          this._updateIndicator(resolved, this._totalCritical);
-          if (resolved >= this._totalCritical) {
-            finish();
-          }
-        });
-      });
+      // Pipelined concurrent loading: 4 images at a time for optimal HTTP/2 throughput
+      let idx = 0;
+      let activeRequests = 0;
+      const concurrency = 4;
+
+      const pump = () => {
+        while (activeRequests < concurrency && idx < criticalItems.length) {
+          const item = criticalItems[idx++];
+          activeRequests++;
+          this._loadImage(item).then(() => {
+            activeRequests--;
+            resolved++;
+            this._loadedCritical = resolved;
+            this._updateIndicator(resolved, this._totalCritical);
+            if (resolved >= this._totalCritical) {
+              finish();
+            } else {
+              pump();
+            }
+          });
+        }
+      };
+      pump();
     },
   };
 
@@ -410,6 +445,9 @@ document.addEventListener('DOMContentLoaded', () => {
           currentIdx += step;
         } else if (img && !img.complete) {
           // If this frame is still downloading, hold current canvas display and wait for it
+          if (!img.src && img._targetSrc) {
+            img.src = img._targetSrc;
+          }
           if (!img._loadWaiting) {
             img._loadWaiting = true;
             const onReady = () => {
@@ -433,7 +471,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const firstImg = frames[startIdx];
     if (firstImg) {
-      drawFrameToCanvas(canvas, firstImg);
+      if (!firstImg.src && firstImg._targetSrc) {
+        firstImg.src = firstImg._targetSrc;
+      }
+      if (firstImg.complete && firstImg.naturalWidth > 0) {
+        drawFrameToCanvas(canvas, firstImg);
+      }
     }
     if (typeof onFrame === 'function') {
       onFrame(startIdx);
@@ -2214,14 +2257,34 @@ document.addEventListener('DOMContentLoaded', () => {
       uiContainer.classList.remove('revealed', 'visible');
     }
 
-    const entranceFrames = preloadSequence('entrance');
+    const entranceFrames = initSequenceFrames('entrance');
     const firstEntranceFrame = entranceFrames[0];
+    if (firstEntranceFrame && !firstEntranceFrame.src && firstEntranceFrame._targetSrc) {
+      firstEntranceFrame.src = firstEntranceFrame._targetSrc;
+    }
 
     /**
      * Called once — after critical buffer frames and living base image are ready.
      */
     function onAssetsReady() {
-      console.log('[Preloader] Buffer ready — starting entrance animation');
+      console.log('[Preloader] Buffer ready — streaming remaining frames and starting entrance');
+
+      // Immediately begin streaming remaining entrance frames (18 to 95) in strict playback order
+      const remainingEntrance = entranceFrames.slice(18);
+      let streamIdx = 0;
+      let activeStreams = 0;
+      const streamConcurrency = 4;
+      const pumpStream = () => {
+        while (activeStreams < streamConcurrency && streamIdx < remainingEntrance.length) {
+          const item = remainingEntrance[streamIdx++];
+          activeStreams++;
+          AssetLoader._loadImage(item).then(() => {
+            activeStreams--;
+            pumpStream();
+          });
+        }
+      };
+      pumpStream();
 
       // Step 1: Fade loading indicator out first
       AssetLoader.fadeOutIndicator().then(() => {
