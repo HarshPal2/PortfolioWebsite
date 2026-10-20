@@ -1681,33 +1681,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const kitchenSecCounter = document.getElementById('kitchen-sec-counter');
 
   const KITCHEN_SPREADS = [
-    { id: 'kb-artboard-01', num: '01', dialIdx: 0 },
-    { id: 'kb-artboard-02', num: '02', dialIdx: 0 },
-    { id: 'kb-artboard-03', num: '03', dialIdx: 1 },
-    { id: 'kb-artboard-04', num: '04', dialIdx: 1 },
-    { id: 'kb-artboard-05', num: '05', dialIdx: 2 },
-    { id: 'kb-artboard-06', num: '06', dialIdx: 2 },
-    { id: 'kb-artboard-07', num: '07', dialIdx: 2 },
-    { id: 'kb-artboard-08', num: '08', dialIdx: 2 },
-    { id: 'kb-artboard-09', num: '09', dialIdx: 3 },
-    { id: 'kb-artboard-10', num: '10', dialIdx: 3 },
-    { id: 'kb-artboard-11', num: '11', dialIdx: 3 },
-    { id: 'kb-artboard-12', num: '12', dialIdx: 3 },
-    { id: 'kb-artboard-13', num: '13', dialIdx: 3 },
-    { id: 'kb-artboard-14', num: '14', dialIdx: 3 },
-    { id: 'kb-artboard-15', num: '15', dialIdx: 3 }
+    { id: 'kb-sec-01', num: '01', dialIdx: 0 },
+    { id: 'kb-sec-02', num: '02', dialIdx: 1 },
+    { id: 'kb-sec-03', num: '03', dialIdx: 2 },
+    { id: 'kb-sec-04', num: '04', dialIdx: 3 },
+    { id: 'kb-sec-05', num: '05', dialIdx: 4 }
   ];
 
   const STOVE_DIAL_TARGETS = [
-    'kb-artboard-01', // Dial 1: Intro (Spreads 01-02)
-    'kb-artboard-03', // Dial 2: Opportunity & People (Spreads 03-04)
-    'kb-artboard-05', // Dial 3: Research & Findings (Spreads 05-08)
-    'kb-artboard-09'  // Dial 4: Solution & Product Experience (Spreads 09-15)
+    'kb-sec-01', // Dial 1: The Hook
+    'kb-sec-02', // Dial 2: Intro
+    'kb-sec-03', // Dial 3: The Idea
+    'kb-sec-04', // Dial 4: Research
+    'kb-sec-05'  // Dial 5: Future
   ];
 
   let activeSpreadIdx = 0;
   let activeKitchenDial = 0;
-  let kitchenDialRotations = [0, 0, 0, 0];
+  let kitchenDialRotations = [0, 0, 0, 0, 0];
   let isKitchenRetracting = false;
 
   function isKitchenBlogOpen() {
@@ -1725,19 +1716,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Update section counter in header: e.g. "01 / 15"
+    // Update section counter in header: e.g. "01 / 05"
     if (kitchenSecCounter && KITCHEN_SPREADS[activeSpreadIdx]) {
-      kitchenSecCounter.textContent = `${KITCHEN_SPREADS[activeSpreadIdx].num} / 15`;
+      kitchenSecCounter.textContent = `${KITCHEN_SPREADS[activeSpreadIdx].num} / 05`;
     }
   }
 
   function setKitchenDial(dialIdx) {
     activeKitchenDial = Math.max(0, Math.min(STOVE_DIAL_TARGETS.length - 1, dialIdx));
+    activeSpreadIdx = activeKitchenDial;
     const targetId = STOVE_DIAL_TARGETS[activeKitchenDial];
     if (targetId && contentBody) {
       const targetSec = document.getElementById(targetId);
       if (targetSec) {
-        const targetTop = targetSec.offsetTop - contentBody.offsetTop;
+        const targetTop = targetSec.getBoundingClientRect().top - contentBody.getBoundingClientRect().top + contentBody.scrollTop;
         contentBody.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
       }
     }
@@ -1760,7 +1752,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderKitchenScene();
     activeSpreadIdx = 0;
     activeKitchenDial = 0;
-    kitchenDialRotations = [0, 0, 0, 0];
+    kitchenDialRotations = [0, 0, 0, 0, 0];
     if (contentBody) contentBody.scrollTop = 0;
     updateKitchenUI();
   }
@@ -1790,6 +1782,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.openKitchenBlog = openKitchenBlog;
   window.closeKitchenBlog = closeKitchenBlog;
+  window.setKitchenDial = setKitchenDial;
 
   // Handle mouse wheel specifically over the Stove Dials row
   if (stoveDialsRow) {
@@ -1815,16 +1808,21 @@ document.addEventListener('DOMContentLoaded', () => {
       scrollDebounce = requestAnimationFrame(() => {
         const bodyRect = contentBody.getBoundingClientRect();
         const threshold = bodyRect.top + bodyRect.height * 0.35;
+        const isBottom = contentBody.scrollTop + contentBody.clientHeight >= contentBody.scrollHeight - 60;
         let foundIdx = 0;
-        KITCHEN_SPREADS.forEach((spread, idx) => {
-          const el = document.getElementById(spread.id);
-          if (el) {
-            const rect = el.getBoundingClientRect();
-            if (rect.top <= threshold) {
-              foundIdx = idx;
+        if (isBottom) {
+          foundIdx = KITCHEN_SPREADS.length - 1;
+        } else {
+          KITCHEN_SPREADS.forEach((spread, idx) => {
+            const el = document.getElementById(spread.id);
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              if (rect.top <= threshold) {
+                foundIdx = idx;
+              }
             }
-          }
-        });
+          });
+        }
         if (foundIdx !== activeSpreadIdx) {
           activeSpreadIdx = foundIdx;
           activeKitchenDial = KITCHEN_SPREADS[activeSpreadIdx].dialIdx;
