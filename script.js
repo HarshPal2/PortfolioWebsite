@@ -1720,6 +1720,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (kitchenSecCounter && KITCHEN_SPREADS[activeSpreadIdx]) {
       kitchenSecCounter.textContent = `${KITCHEN_SPREADS[activeSpreadIdx].num} / 05`;
     }
+
+    // Update right rail section tabs (matching Illustrator preview)
+    const railTabs = document.querySelectorAll('.kb-rail-tab');
+    railTabs.forEach((tab, idx) => {
+      tab.classList.toggle('active', idx === activeSpreadIdx);
+    });
   }
 
   function setKitchenDial(dialIdx) {
@@ -1832,6 +1838,18 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }, { passive: true });
   }
+
+  // Handle click on Right Rail Section Tabs
+  const kitchenRailTabs = document.querySelectorAll('.kb-rail-tab');
+  kitchenRailTabs.forEach((tab) => {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
+      const secIdx = parseInt(tab.getAttribute('data-section'), 10);
+      if (!isNaN(secIdx)) {
+        setKitchenDial(secIdx);
+      }
+    });
+  });
 
   // Prevent wheel and touch events from bubbling out of the floating project window
   if (floatingWindow) {

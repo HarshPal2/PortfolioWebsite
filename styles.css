@@ -2165,6 +2165,131 @@ body {
 }
 
 /* Scroll Area & Open Editorial Artboard Canvas */
+.kb-window-body {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  background: #ffffff;
+}
+
+/* Editorial Left and Right Rails matching Illustrator preview */
+.kb-rail {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  z-index: 5;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.kb-rail-left {
+  width: clamp(80px, 10vw, 130px);
+  border-right: 1.5px solid #000000;
+  padding: clamp(24px, 3.5vw, 40px) 16px;
+  align-items: center;
+}
+
+.kb-rail-inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.kb-rail-left .kb-rail-inner {
+  align-items: center;
+}
+
+.kb-rail-tag-projects {
+  font-family: 'GFS Didot', Georgia, serif;
+  font-size: clamp(15px, 1.3vw, 18px);
+  font-weight: 400;
+  color: #000000;
+  letter-spacing: 0.02em;
+  display: block;
+}
+
+.kb-rail-right {
+  width: clamp(120px, 13.5vw, 170px);
+  border-left: 1.5px solid #000000;
+  padding: clamp(24px, 3.5vw, 40px) clamp(16px, 2vw, 24px);
+  align-items: flex-start;
+}
+
+.kb-rail-right .kb-rail-inner {
+  align-items: flex-start;
+}
+
+.kb-rail-title {
+  font-family: 'GFS Didot', Georgia, serif;
+  font-size: clamp(15px, 1.3vw, 18px);
+  font-weight: 400;
+  color: #000000;
+  letter-spacing: 0.02em;
+  margin-bottom: 22px;
+}
+
+.kb-rail-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.kb-rail-tab {
+  font-family: 'GFS Didot', Georgia, serif;
+  font-size: clamp(14.5px, 1.25vw, 17px);
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.42);
+  background: transparent;
+  border: none;
+  padding: 2px 0;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  text-align: left;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  outline: none;
+}
+
+.kb-rail-tab:hover {
+  color: #000000;
+}
+
+.kb-rail-tab.active {
+  color: #000000;
+}
+
+.kb-rail-tab.active .kb-tab-num {
+  position: relative;
+  display: inline-block;
+  border-bottom: 2px solid #000000;
+  padding-bottom: 2px;
+}
+
+@media (max-width: 900px) {
+  .kb-rail-left {
+    display: none;
+  }
+  .kb-rail-right {
+    width: clamp(110px, 15vw, 135px);
+    padding: 24px 14px;
+  }
+}
+
+@media (max-width: 680px) {
+  .kb-rail-right {
+    display: none;
+  }
+  .kb-artboard-meta-strip {
+    display: flex !important;
+  }
+}
+
 .kitchen-content-scroll {
   flex: 1;
   min-height: 0;
@@ -2210,10 +2335,10 @@ body {
 
 /* Artboard Meta Strip */
 .kb-artboard-meta-strip {
-  display: flex;
+  display: none;
   justify-content: space-between;
   margin-bottom: 24px;
-  font-family: var(--font-heading);
+  font-family: 'GFS Didot', Georgia, serif;
   font-size: 13.5px;
   font-weight: 400;
   letter-spacing: 0.08em;

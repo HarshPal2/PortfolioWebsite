@@ -18,7 +18,7 @@
 
   <link rel="preload" as="image" type="image/avif" href="Media/Living_Bedroom/LivingToBedroom0097.avif">
 
-  <link rel="stylesheet" href="styles.css?v=20261020_projects_v8">
+  <link rel="stylesheet" href="styles.css?v=20261020_glusight_v12">
 
   <!-- Instant Pre-Render Check: Temporarily bypass Freedom loading screen & open directly to Living/About Me -->
   <script>
@@ -388,7 +388,16 @@
           </div>
         </header>
 
-        <!-- Main Scrollable Case Study Content (Open Editorial Architecture) -->
+        <!-- Window Body Container: Tripartite Editorial Canvas matching preview_detailed_layout.jpg -->
+        <div class="kb-window-body" id="kb-window-body">
+          <!-- Left Editorial Rail (Projects Category Label matching Illustrator artboard) -->
+          <aside class="kb-rail kb-rail-left" aria-label="Category Rail">
+            <div class="kb-rail-inner">
+              <span class="kb-rail-tag-projects">Projects</span>
+            </div>
+          </aside>
+
+          <!-- Main Scrollable Case Study Content (Open Editorial Architecture) -->
         <main class="kitchen-content-scroll content-body-scrollable" id="content-body-scrollable">
           <article class="kitchen-article-canvas" id="kitchen-article-canvas" aria-label="GluSight Detailed Case Study">
 
@@ -873,7 +882,32 @@
             </section>
           </article>
         </main>
+
+        <!-- Right Editorial Rail (Section Tab Matching preview_detailed_layout.jpg) -->
+        <aside class="kb-rail kb-rail-right" aria-label="Section Tabs">
+          <div class="kb-rail-inner">
+            <div class="kb-rail-title">Sections</div>
+            <nav class="kb-rail-tabs" aria-label="GluSight Sections">
+              <button type="button" class="kb-rail-tab active" data-section="0" data-target="kb-sec-01" aria-label="Section 1: The Hook" title="01. The Hook">
+                <span class="kb-tab-prefix">Sections_</span><span class="kb-tab-num">1</span>
+              </button>
+              <button type="button" class="kb-rail-tab" data-section="1" data-target="kb-sec-02" aria-label="Section 2: Introducing GluSight" title="02. Introducing GluSight">
+                <span class="kb-tab-prefix">Sections_</span><span class="kb-tab-num">2</span>
+              </button>
+              <button type="button" class="kb-rail-tab" data-section="2" data-target="kb-sec-03" aria-label="Section 3: Exploring the Idea" title="03. Exploring the Idea">
+                <span class="kb-tab-prefix">Sections_</span><span class="kb-tab-num">3</span>
+              </button>
+              <button type="button" class="kb-rail-tab" data-section="3" data-target="kb-sec-04" aria-label="Section 4: Research &amp; Insights" title="04. Research &amp; Insights">
+                <span class="kb-tab-prefix">Sections_</span><span class="kb-tab-num">4</span>
+              </button>
+              <button type="button" class="kb-rail-tab" data-section="4" data-target="kb-sec-05" aria-label="Section 5: Future Plans &amp; Reflection" title="05. Future Plans &amp; Reflection">
+                <span class="kb-tab-prefix">Sections_</span><span class="kb-tab-num">5</span>
+              </button>
+            </nav>
+          </div>
+        </aside>
       </div>
+    </div>
 
       <!-- Stove Control Dials Row temporarily removed per user request -->
     </div>
@@ -881,7 +915,7 @@
 
   <!-- Parallax.js Library by Matthew Wagerfield -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/parallax/3.1.0/parallax.min.js"></script>
-  <script src="script.js?v=20261020_glusight_v11"></script>
+  <script src="script.js?v=20261020_glusight_v12"></script>
 </body>
 
 </html>
