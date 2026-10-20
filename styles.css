@@ -224,11 +224,25 @@ body {
 
 /* Immediately ensure UI elements are visible and positioned when intro is completed */
 .intro-completed .ui-container,
+.intro-completed .ui-container.ui-hidden,
 .intro-completed .top-header,
 .intro-completed .freedom-title {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto;
+}
+
+.intro-completed .ui-container.ui-hidden .about-main,
+.intro-completed .ui-container.ui-hidden .living-main,
+.intro-completed .ui-container.ui-hidden .bedroom-main,
+.intro-completed .ui-container.ui-hidden .kitchen-main,
+.intro-completed .ui-container.ui-hidden .pool-main,
+.intro-completed .ui-container.ui-hidden .office-main,
+.intro-completed .ui-container.ui-hidden .freedom-title,
+.intro-completed .ui-container.ui-hidden .bottom-footer,
+.intro-completed .ui-container.ui-hidden .top-header {
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .intro-completed .stagger-1,
@@ -261,6 +275,7 @@ body {
 
 .ui-container.ui-hidden {
   opacity: 0 !important;
+  visibility: hidden !important;
   pointer-events: none !important;
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
@@ -275,7 +290,28 @@ body {
 .ui-container.ui-hidden .bottom-footer,
 .ui-container.ui-hidden .top-header {
   opacity: 0 !important;
+  visibility: hidden !important;
   pointer-events: none !important;
+}
+
+/* Ensure subsequent visits with intro-completed override ui-hidden immediately */
+.intro-completed .ui-container.ui-hidden {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.intro-completed .ui-container.ui-hidden .about-main,
+.intro-completed .ui-container.ui-hidden .living-main,
+.intro-completed .ui-container.ui-hidden .bedroom-main,
+.intro-completed .ui-container.ui-hidden .kitchen-main,
+.intro-completed .ui-container.ui-hidden .pool-main,
+.intro-completed .ui-container.ui-hidden .office-main,
+.intro-completed .ui-container.ui-hidden .freedom-title,
+.intro-completed .ui-container.ui-hidden .bottom-footer,
+.intro-completed .ui-container.ui-hidden .top-header {
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .ui-container.revealed,

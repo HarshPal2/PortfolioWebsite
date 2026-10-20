@@ -248,15 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadCriticalAssets(onComplete) {
       // Preload ONLY entrance frames + living base + Cross.png
-      
-    // Safety fallback: ensure UI is never stuck hidden if sequence takes too long
-    setTimeout(() => {
-      if (!hasRevealed) {
-        revealUI();
-      }
-    }, 3800);
-
-    const entranceFrames = preloadSequence('entrance');
+      const entranceFrames = preloadSequence('entrance');
       const livingFrames   = preloadSequence('living_bedroom');
 
       const livingBaseImg = livingFrames[0];
@@ -282,6 +274,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el) el.classList.add('is-visible');
       }, 500);
 
+      // Safety fallback: only if asset loading stalls for an extended duration on extreme network failure,
+      // proceed to onAssetsReady so the intro doesn't hang indefinitely.
+      let safetyTimer = setTimeout(() => {
+        if (this._onComplete) {
+          console.warn('[Preloader] Safety timeout reached — proceeding to entrance sequence');
+          const cb = this._onComplete;
+          this._onComplete = null;
+          cb();
+        }
+      }, 25000);
+
       // Batch decoding: 6 images at a time to prevent main thread stall
       let idx = 0;
       let activeDecodes = 0;
@@ -299,6 +302,10 @@ document.addEventListener('DOMContentLoaded', () => {
             this._updateIndicator(resolved, this._totalCritical);
             console.log(`[Preloader] ${resolved} / ${this._totalCritical}`);
             if (resolved >= this._totalCritical && this._onComplete) {
+              if (safetyTimer) {
+                clearTimeout(safetyTimer);
+                safetyTimer = null;
+              }
               const cb = this._onComplete;
               this._onComplete = null;
               cb();
@@ -2183,6 +2190,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // "Freedom" is the loading screen. It stays visible until ALL critical
     // assets are decoded. Only then does it fade out and the entrance plays.
     // ------------------------------------------------------------------------
+    isScrollLocked = true;
+    hasRevealed = false;
+    if (typeof InteractiveObjectManager !== 'undefined') {
+      InteractiveObjectManager.setInteractiveEnabled(false);
+    }
+    if (uiContainer) {
+      uiContainer.classList.add('ui-hidden');
+      uiContainer.classList.remove('revealed', 'visible');
+    }
+
     const entranceFrames = preloadSequence('entrance');
     const firstEntranceFrame = entranceFrames[0];
 
@@ -2237,6 +2254,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const startPreloading = () => {
       if (backdropRect) {
         backdropRect.classList.add('backdrop-hidden');
+      }
+      if (uiContainer) {
+        uiContainer.classList.add('ui-hidden');
+        uiContainer.classList.remove('revealed', 'visible');
       }
       if (firstEntranceFrame && firstEntranceFrame.complete && firstEntranceFrame.naturalWidth > 0) {
         drawFrameToCanvas(activeCanvas, firstEntranceFrame);
