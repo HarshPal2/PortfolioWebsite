@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function preloadSequence(key) {
+  function initSequenceFrames(key) {
     cacheAccessTimes[key] = Date.now();
     if (frameCache[key]) return frameCache[key];
 
@@ -89,13 +89,22 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i = 0; i < seq.count; i++) {
       const frameNum = start + i;
       const img = new Image();
-      const baseSrc = `${seq.folder}${seq.prefix}${pad4(frameNum)}`;
-      img.src = `${baseSrc}${imgExt}`;
+      img._targetSrc = `${seq.folder}${seq.prefix}${pad4(frameNum)}${imgExt}`;
       frames.push(img);
     }
 
     frameCache[key] = frames;
     pruneCache();
+    return frames;
+  }
+
+  function preloadSequence(key) {
+    const frames = initSequenceFrames(key);
+    frames.forEach((img) => {
+      if (!img.src && img._targetSrc) {
+        img.src = img._targetSrc;
+      }
+    });
     return frames;
   }
 
@@ -247,17 +256,30 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     loadCriticalAssets(onComplete) {
-      // Preload ONLY entrance frames + living base + Cross.png
-      const entranceFrames = preloadSequence('entrance');
-      const livingFrames   = preloadSequence('living_bedroom');
+      // 1. Initialize entrance frames without firing 96 network requests all at once
+      const entranceFrames = initSequenceFrames('entrance');
+      if (!entranceFrames[0].src && entranceFrames[0]._targetSrc) {
+        entranceFrames[0].src = entranceFrames[0]._targetSrc;
+      }
 
-      const livingBaseImg = livingFrames[0];
+      // 2. Preload living room base frame directly without loading all 48 bedroom frames
+      const livingBaseImg = new Image();
+      livingBaseImg.src = 'Media/Living_Bedroom/LivingToBedroom0097.avif';
 
       const crossImg = new Image();
       crossImg.src = 'Media/Cross.png';
 
+      // 3. Critical Playback Buffer: preload the first 24 frames (~1.0s of animation at 24fps)
+      // plus living room base image and Cross.png (26 items total).
+      // This loads rapidly in 1.5-2.5s with smooth percentage progression.
+      const BUFFER_COUNT = 24;
+      const bufferFrames = entranceFrames.slice(0, BUFFER_COUNT);
+      bufferFrames.forEach((img) => {
+        if (!img.src && img._targetSrc) img.src = img._targetSrc;
+      });
+
       const criticalItems = [
-        ...entranceFrames,
+        ...bufferFrames,
         livingBaseImg,
         crossImg
       ];
@@ -266,16 +288,13 @@ document.addEventListener('DOMContentLoaded', () => {
       this._loadedCritical = 0;
       this._onComplete     = onComplete;
 
-      console.log(`[Preloader] Starting — ${this._totalCritical} critical assets to load (Format: ${imgExt})`);
+      console.log(`[Preloader] Starting buffer — ${this._totalCritical} critical assets to load (Format: ${imgExt})`);
 
-      // Reveal indicator after short delay on slower connections
-      this._indicatorRevealTimer = setTimeout(() => {
-        const el = this._getIndicator();
-        if (el) el.classList.add('is-visible');
-      }, 500);
+      // Make indicator visible immediately on start
+      const el = this._getIndicator();
+      if (el) el.classList.add('is-visible');
 
-      // Safety fallback: only if asset loading stalls for an extended duration on extreme network failure,
-      // proceed to onAssetsReady so the intro doesn't hang indefinitely.
+      // Safety fallback: 15s in case of severe network failure
       let safetyTimer = setTimeout(() => {
         if (this._onComplete) {
           console.warn('[Preloader] Safety timeout reached — proceeding to entrance sequence');
@@ -283,12 +302,12 @@ document.addEventListener('DOMContentLoaded', () => {
           this._onComplete = null;
           cb();
         }
-      }, 25000);
+      }, 15000);
 
-      // Batch decoding: 6 images at a time to prevent main thread stall
+      // Controlled concurrency batch loading: 5 images at a time for maximum throughput
       let idx = 0;
       let activeDecodes = 0;
-      const concurrency = 6;
+      const concurrency = 5;
       let resolved = 0;
 
       const pump = () => {
@@ -300,7 +319,6 @@ document.addEventListener('DOMContentLoaded', () => {
             resolved++;
             this._loadedCritical = resolved;
             this._updateIndicator(resolved, this._totalCritical);
-            console.log(`[Preloader] ${resolved} / ${this._totalCritical}`);
             if (resolved >= this._totalCritical && this._onComplete) {
               if (safetyTimer) {
                 clearTimeout(safetyTimer);
@@ -402,18 +420,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = frames[currentIdx];
         if (img && img.naturalWidth > 0) {
           drawFrameToCanvas(canvas, img);
-        }
 
-        if (typeof onFrame === 'function') {
-          onFrame(currentIdx);
-        }
+          if (typeof onFrame === 'function') {
+            onFrame(currentIdx);
+          }
 
-        if (currentIdx === endIdx) {
-          currentAnimId = null;
-          if (onComplete) onComplete();
-          return;
+          if (currentIdx === endIdx) {
+            currentAnimId = null;
+            if (onComplete) onComplete();
+            return;
+          }
+          currentIdx += step;
         }
-        currentIdx += step;
       }
       currentAnimId = requestAnimationFrame(animate);
     }
@@ -2187,8 +2205,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ------------------------------------------------------------------------
     // PATH 3: First Visit (Freedom Splash -> Asset Loading -> Entrance Sequence)
-    // "Freedom" is the loading screen. It stays visible until ALL critical
-    // assets are decoded. Only then does it fade out and the entrance plays.
+    // "Freedom" is the loading screen. It stays visible until critical buffer
+    // frames are decoded. Only then does it fade out and the entrance plays.
     // ------------------------------------------------------------------------
     isScrollLocked = true;
     hasRevealed = false;
@@ -2200,20 +2218,39 @@ document.addEventListener('DOMContentLoaded', () => {
       uiContainer.classList.remove('revealed', 'visible');
     }
 
-    const entranceFrames = preloadSequence('entrance');
+    const entranceFrames = initSequenceFrames('entrance');
     const firstEntranceFrame = entranceFrames[0];
+    if (!firstEntranceFrame.src && firstEntranceFrame._targetSrc) {
+      firstEntranceFrame.src = firstEntranceFrame._targetSrc;
+    }
 
     /**
-     * Called once — after AssetLoader confirms every critical asset is ready.
-     * At this point every entrance frame is decoded in the browser cache, so
-     * the image-sequence playback will be perfectly smooth with no black frames.
+     * Called once — after critical buffer frames and living base image are ready.
      */
     function onAssetsReady() {
-      console.log('[Preloader] All critical assets ready — starting entrance');
+      console.log('[Preloader] Critical buffer ready — streaming remaining frames and starting entrance');
 
-      // Step 1: Fade loading indicator out first (graceful cascade)
+      // Immediately begin streaming remaining entrance frames (24 to 95) in playback order
+      const remainingEntrance = entranceFrames.slice(24);
+      let streamIdx = 0;
+      let activeStreams = 0;
+      const streamConcurrency = 4;
+      const pumpStream = () => {
+        while (activeStreams < streamConcurrency && streamIdx < remainingEntrance.length) {
+          const item = remainingEntrance[streamIdx++];
+          activeStreams++;
+          if (!item.src && item._targetSrc) item.src = item._targetSrc;
+          AssetLoader._decodeImage(item).then(() => {
+            activeStreams--;
+            pumpStream();
+          });
+        }
+      };
+      pumpStream();
+
+      // Step 1: Fade loading indicator out first
       AssetLoader.fadeOutIndicator().then(() => {
-        // Step 2: Fade Freedom out smoothly
+        // Step 2: Fade Freedom splash out smoothly
         if (freedomSplash) {
           freedomSplash.style.transition = `opacity ${FREEDOM_FADE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;
           freedomSplash.classList.add('fade-out');
@@ -2225,7 +2262,7 @@ document.addEventListener('DOMContentLoaded', () => {
             freedomSplash.style.display = 'none';
           }
 
-          // Entrance video sequence plays — all frames already decoded, no stuttering
+          // Entrance sequence plays smoothly
           playImageSequence(activeCanvas, entranceFrames, 0, entranceFrames.length - 1, () => {
             try {
               localStorage.setItem('portfolioIntroCompleted', 'true');
@@ -2249,40 +2286,29 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Draw the very first entrance frame immediately so something is visible
-    // behind the Freedom overlay while assets are loading.
-    const startPreloading = () => {
-      if (backdropRect) {
-        backdropRect.classList.add('backdrop-hidden');
-      }
-      if (uiContainer) {
-        uiContainer.classList.add('ui-hidden');
-        uiContainer.classList.remove('revealed', 'visible');
-      }
+    // Draw the first entrance frame immediately when available
+    const drawFirstFrameIfReady = () => {
       if (firstEntranceFrame && firstEntranceFrame.complete && firstEntranceFrame.naturalWidth > 0) {
         drawFrameToCanvas(activeCanvas, firstEntranceFrame);
       }
-      // Start loading all critical assets. Freedom stays on screen until done.
-      AssetLoader.loadCriticalAssets(onAssetsReady);
     };
 
-    if (firstEntranceFrame) {
-      if (firstEntranceFrame.complete && firstEntranceFrame.naturalWidth > 0) {
-        drawFrameToCanvas(activeCanvas, firstEntranceFrame);
-        startPreloading();
-      } else {
-        firstEntranceFrame.onload = () => {
-          drawFrameToCanvas(activeCanvas, firstEntranceFrame);
-          startPreloading();
-        };
-        firstEntranceFrame.onerror = () => {
-          // Frame failed — still kick off preloading so Freedom eventually fades
-          startPreloading();
-        };
-      }
+    if (firstEntranceFrame.complete && firstEntranceFrame.naturalWidth > 0) {
+      drawFirstFrameIfReady();
     } else {
-      startPreloading();
+      firstEntranceFrame.onload = drawFirstFrameIfReady;
     }
+
+    if (backdropRect) {
+      backdropRect.classList.add('backdrop-hidden');
+    }
+    if (uiContainer) {
+      uiContainer.classList.add('ui-hidden');
+      uiContainer.classList.remove('revealed', 'visible');
+    }
+
+    // Start preloading immediately at t=0
+    AssetLoader.loadCriticalAssets(onAssetsReady);
   }
 
   // --- Global Escape Key Navigation (Return to About Me / Living) ---

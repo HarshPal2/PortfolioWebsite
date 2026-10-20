@@ -360,42 +360,42 @@ body {
 .ui-container.visible .stagger-1 {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 0.1s;
+  transition-delay: 0.15s;
 }
 
 .ui-container.revealed .stagger-2,
 .ui-container.visible .stagger-2 {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 0.3s;
+  transition-delay: 0.2s;
 }
 
 .ui-container.revealed .stagger-3,
 .ui-container.visible .stagger-3 {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 0.55s;
+  transition-delay: 0.28s;
 }
 
 .ui-container.revealed .stagger-4,
 .ui-container.visible .stagger-4 {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 0.75s;
+  transition-delay: 0.36s;
 }
 
 .ui-container.revealed .stagger-5,
 .ui-container.visible .stagger-5 {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 0.95s;
+  transition-delay: 0.44s;
 }
 
 .ui-container.revealed .stagger-6,
 .ui-container.visible .stagger-6 {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: 1.15s;
+  transition-delay: 0.5s;
 }
 
 /* --- Top Header Navigation --- */
