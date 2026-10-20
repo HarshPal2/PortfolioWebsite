@@ -2883,6 +2883,7 @@ body {
    All floating cards, labels, and badges above them have been removed.
    ========================================================================== */
 .stove-dials-row {
+  display: none !important; /* Temporarily removed per user request */
   position: absolute;
   inset: 0;
   pointer-events: none;
