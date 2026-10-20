@@ -202,21 +202,28 @@ document.addEventListener('DOMContentLoaded', () => {
     _percentEl: null,
     _indicatorRevealTimer: null,
 
-    _decodeImage(img) {
+    _loadImage(img) {
       return new Promise((resolve) => {
-        if (img.complete && img.naturalWidth > 0) {
-          resolve();
+        if (!img) {
+          resolve(false);
           return;
         }
-
-        if (typeof img.decode === 'function') {
-          img.decode().then(resolve).catch(resolve);
-        } else {
-          const done = () => resolve();
-          img.addEventListener('load', done, { once: true });
-          img.addEventListener('error', done, { once: true });
+        if (img.complete) {
+          resolve(img.naturalWidth > 0);
+          return;
         }
+        const onDone = () => {
+          img.removeEventListener('load', onDone);
+          img.removeEventListener('error', onDone);
+          resolve(img.naturalWidth > 0);
+        };
+        img.addEventListener('load', onDone, { once: true });
+        img.addEventListener('error', onDone, { once: true });
       });
+    },
+
+    _decodeImage(img) {
+      return this._loadImage(img);
     },
 
     _getIndicator() {
@@ -257,10 +264,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const crossImg = new Image();
       crossImg.src = 'Media/Cross.png';
 
-      // We track the initial 24 frames of entrance (~1.0s at 24fps) + living base + Cross
-      const BUFFER_COUNT = 24;
+      // Track all 96 entrance frames + living base + Cross
       const criticalBuffer = [
-        ...entranceFrames.slice(0, BUFFER_COUNT),
+        ...entranceFrames,
         livingBaseImg,
         crossImg
       ];
@@ -269,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
       this._loadedCritical = 0;
       this._onComplete     = onComplete;
 
-      console.log(`[Preloader] Tracking initial buffer — ${this._totalCritical} assets (Format: ${imgExt})`);
+      console.log(`[Preloader] Tracking all ${this._totalCritical} entrance assets (Format: ${imgExt})`);
 
       // Make indicator visible immediately
       const el = this._getIndicator();
@@ -289,34 +295,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       };
 
-      // Safety fallback: 10s maximum wait for buffer
+      // Safety fallback: 12s maximum wait for buffer
       let safetyTimer = setTimeout(() => {
         console.warn('[Preloader] Buffer timer elapsed — proceeding to animation');
         finish();
-      }, 10000);
+      }, 12000);
 
       criticalBuffer.forEach((img) => {
-        if (img.complete && img.naturalWidth > 0) {
+        this._loadImage(img).then(() => {
           resolved++;
           this._loadedCritical = resolved;
           this._updateIndicator(resolved, this._totalCritical);
-          if (resolved >= this._totalCritical) finish();
-          return;
-        }
-
-        const onDone = () => {
-          resolved++;
-          this._loadedCritical = resolved;
-          this._updateIndicator(resolved, this._totalCritical);
-          if (resolved >= this._totalCritical) finish();
-        };
-
-        if (typeof img.decode === 'function') {
-          img.decode().then(onDone).catch(onDone);
-        } else {
-          img.addEventListener('load', onDone, { once: true });
-          img.addEventListener('error', onDone, { once: true });
-        }
+          if (resolved >= this._totalCritical) {
+            finish();
+          }
+        });
       });
     },
   };
@@ -404,18 +397,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = frames[currentIdx];
         if (img && img.naturalWidth > 0) {
           drawFrameToCanvas(canvas, img);
-        }
 
-        if (typeof onFrame === 'function') {
-          onFrame(currentIdx);
-        }
+          if (typeof onFrame === 'function') {
+            onFrame(currentIdx);
+          }
 
-        if (currentIdx === endIdx) {
-          currentAnimId = null;
-          if (onComplete) onComplete();
-          return;
+          if (currentIdx === endIdx) {
+            currentAnimId = null;
+            if (onComplete) onComplete();
+            return;
+          }
+          currentIdx += step;
+        } else if (img && !img.complete) {
+          // If this frame is still downloading, hold current canvas display and wait for it
+          if (!img._loadWaiting) {
+            img._loadWaiting = true;
+            const onReady = () => {
+              img._loadWaiting = false;
+            };
+            img.addEventListener('load', onReady, { once: true });
+            img.addEventListener('error', onReady, { once: true });
+          }
+        } else {
+          // Frame completed with error or unavailable — skip to next to keep sequence flowing
+          if (currentIdx === endIdx) {
+            currentAnimId = null;
+            if (onComplete) onComplete();
+            return;
+          }
+          currentIdx += step;
         }
-        currentIdx += step;
       }
       currentAnimId = requestAnimationFrame(animate);
     }
@@ -1986,9 +1997,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isIntroCompleted = false;
     try {
-      isIntroCompleted = localStorage.getItem('portfolioIntroCompleted') === 'true';
+      localStorage.removeItem('portfolioIntroCompleted');
+      isIntroCompleted = sessionStorage.getItem('portfolioIntroCompleted') === 'true';
     } catch (e) {
-      console.warn('Unable to access localStorage:', e);
+      console.warn('Unable to access sessionStorage:', e);
     }
 
     // ------------------------------------------------------------------------
@@ -2228,10 +2240,10 @@ document.addEventListener('DOMContentLoaded', () => {
           // Entrance sequence plays smoothly
           playImageSequence(activeCanvas, entranceFrames, 0, entranceFrames.length - 1, () => {
             try {
-              localStorage.setItem('portfolioIntroCompleted', 'true');
+              sessionStorage.setItem('portfolioIntroCompleted', 'true');
               document.documentElement.classList.add('intro-completed');
             } catch (e) {
-              console.warn('Unable to write to localStorage:', e);
+              console.warn('Unable to write to sessionStorage:', e);
             }
             const livingBase = getRoomBaseFrame('living');
             if (livingBase) {
@@ -2312,7 +2324,9 @@ document.addEventListener('DOMContentLoaded', () => {
   window.resetIntro = function () {
     try {
       localStorage.removeItem('portfolioIntroCompleted');
+      sessionStorage.removeItem('portfolioIntroCompleted');
       sessionStorage.removeItem('returnFromProjects');
+      sessionStorage.removeItem('returnFromProjectsToLiving');
       document.documentElement.classList.remove('intro-completed');
       console.log('Intro state reset successfully. Reloading...');
       location.reload();

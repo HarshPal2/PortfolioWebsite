@@ -18,12 +18,13 @@
 
   <link rel="preload" as="image" type="image/avif" href="Media/Entrance/Entrance0001.avif">
 
-  <link rel="stylesheet" href="styles.css?v=20261020_playback_v3">
+  <link rel="stylesheet" href="styles.css?v=20261020_playback_v5">
 
   <!-- Instant Pre-Render Check (Prevents Freedom Splash Flash on Reload/Subsequent Visits/Return from Projects) -->
   <script>
     try {
-      if (localStorage.getItem('portfolioIntroCompleted') === 'true' || 
+      localStorage.removeItem('portfolioIntroCompleted');
+      if (sessionStorage.getItem('portfolioIntroCompleted') === 'true' || 
           sessionStorage.getItem('returnFromProjects') === 'true' ||
           sessionStorage.getItem('returnFromProjectsToLiving') === 'true') {
         document.documentElement.classList.add('intro-completed');
@@ -1144,7 +1145,7 @@
 
   <!-- Parallax.js Library by Matthew Wagerfield -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/parallax/3.1.0/parallax.min.js"></script>
-  <script src="script.js?v=20261020_playback_v3"></script>
+  <script src="script.js?v=20261020_playback_v5"></script>
 </body>
 
 </html>
