@@ -450,11 +450,21 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           if (!img._loadWaiting) {
             img._loadWaiting = true;
+            img._waitStartTime = performance.now();
             const onReady = () => {
               img._loadWaiting = false;
             };
             img.addEventListener('load', onReady, { once: true });
             img.addEventListener('error', onReady, { once: true });
+          } else if (img._waitStartTime && (performance.now() - img._waitStartTime > 150)) {
+            // Frame wait limit exceeded (150ms) — skip forward so animation flow doesn't freeze
+            img._loadWaiting = false;
+            if (currentIdx === endIdx) {
+              currentAnimId = null;
+              if (onComplete) onComplete();
+              return;
+            }
+            currentIdx += step;
           }
         } else {
           // Frame completed with error or unavailable — skip to next to keep sequence flowing
@@ -766,11 +776,78 @@ document.addEventListener('DOMContentLoaded', () => {
       InteractiveObjectManager.setInteractiveEnabled(false);
     }
 
+    let hasCompletedTransition = false;
+    let safetyTimer = null;
+
+    const completeTransition = () => {
+      if (hasCompletedTransition) return;
+      hasCompletedTransition = true;
+      if (safetyTimer) {
+        clearTimeout(safetyTimer);
+        safetyTimer = null;
+      }
+
+      currentRoom = destRoom;
+
+      const baseFrame = getRoomBaseFrame(destRoom);
+      const activeCanvas = getActiveCanvas();
+      if (baseFrame && activeCanvas) {
+        if (baseFrame.complete && baseFrame.naturalWidth > 0) {
+          drawFrameToCanvas(activeCanvas, baseFrame);
+        } else {
+          const onBaseReady = () => drawFrameToCanvas(activeCanvas, baseFrame);
+          baseFrame.addEventListener('load', onBaseReady, { once: true });
+        }
+      }
+
+      updateRoomTitle(destRoom);
+
+      const destNav = roomToNav[destRoom];
+      updateActiveNav(destNav);
+
+      // Keep URL hash synchronized cleanly
+      try {
+        if (destNav && window.location.hash !== `#${destNav}`) {
+          window.history.replaceState(null, '', `#${destNav}`);
+        }
+      } catch (e) {}
+
+      if (uiContainer) {
+        updateUIRoomState(destRoom);
+      }
+
+      if (typeof InteractiveObjectManager !== 'undefined') {
+        InteractiveObjectManager.renderObjects();
+      }
+
+      fadeBackdropIn();
+
+      fadeUIIn(() => {
+        if (typeof InteractiveObjectManager !== 'undefined') {
+          InteractiveObjectManager.setInteractiveEnabled(true);
+        }
+        isScrollLocked = false;
+        BackgroundAssetQueue.reprioritize(destRoom);
+        BackgroundAssetQueue.resume();
+        if (onComplete) onComplete();
+      });
+    };
+
+    // Safety timeout: transition must never leave the user permanently locked
+    safetyTimer = setTimeout(() => {
+      if (!hasCompletedTransition) {
+        console.warn(`[Transition] Safety timeout fired for ${connKey} — completing room state`);
+        stopCurrentAnimation();
+        completeTransition();
+      }
+    }, 6000);
+
     let uiDone = false;
     let backdropDone = false;
 
     const startAnimation = () => {
       if (!uiDone || !backdropDone) return;
+      if (hasCompletedTransition) return;
 
       const frames = preloadSequence(conn.seq);
       const activeCanvas = getActiveCanvas();
@@ -780,49 +857,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       BackgroundAssetQueue.pause();
       playImageSequence(activeCanvas, frames, startIdx, endIdx, () => {
-        currentRoom = destRoom;
-
-        const baseFrame = getRoomBaseFrame(destRoom);
-        if (baseFrame) {
-          if (baseFrame.complete && baseFrame.naturalWidth > 0) {
-            drawFrameToCanvas(activeCanvas, baseFrame);
-          } else {
-            const onBaseReady = () => drawFrameToCanvas(activeCanvas, baseFrame);
-            baseFrame.addEventListener('load', onBaseReady, { once: true });
-          }
-        }
-
-        updateRoomTitle(destRoom);
-
-        const destNav = roomToNav[destRoom];
-        updateActiveNav(destNav);
-
-        // Keep URL hash synchronized cleanly
-        try {
-          if (destNav && window.location.hash !== `#${destNav}`) {
-            window.history.replaceState(null, '', `#${destNav}`);
-          }
-        } catch (e) {}
-
-        if (uiContainer) {
-          updateUIRoomState(destRoom);
-        }
-
-        if (typeof InteractiveObjectManager !== 'undefined') {
-          InteractiveObjectManager.renderObjects();
-        }
-
-        fadeBackdropIn();
-
-        fadeUIIn(() => {
-          if (typeof InteractiveObjectManager !== 'undefined') {
-            InteractiveObjectManager.setInteractiveEnabled(true);
-          }
-          isScrollLocked = false;
-          BackgroundAssetQueue.reprioritize(destRoom);
-          BackgroundAssetQueue.resume();
-          if (onComplete) onComplete();
-        });
+        completeTransition();
       });
     };
 
@@ -1168,6 +1203,13 @@ document.addEventListener('DOMContentLoaded', () => {
             objEl.classList.add('is-hovered');
             shapeEl.classList.add('is-hovered');
             this.showTooltip(tooltipText, e.clientX, e.clientY);
+            if (config.action && config.action.targetRoom) {
+              const hoverConnKey = `${currentRoom}-${config.action.targetRoom}`;
+              const hoverConn = roomConnections[hoverConnKey];
+              if (hoverConn && hoverConn.seq) {
+                preloadSequence(hoverConn.seq);
+              }
+            }
             if (typeof config.onHover === 'function') config.onHover(config, objEl, e);
           });
 

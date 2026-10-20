@@ -222,35 +222,6 @@ body {
 }
 
 
-/* Immediately ensure UI elements are visible and positioned when intro is completed */
-.intro-completed .ui-container,
-.intro-completed .ui-container.ui-hidden,
-.intro-completed .top-header,
-.intro-completed .freedom-title {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto;
-}
-
-.intro-completed .ui-container.ui-hidden .about-main,
-.intro-completed .ui-container.ui-hidden .living-main,
-.intro-completed .ui-container.ui-hidden .bedroom-main,
-.intro-completed .ui-container.ui-hidden .kitchen-main,
-.intro-completed .ui-container.ui-hidden .pool-main,
-.intro-completed .ui-container.ui-hidden .office-main,
-.intro-completed .ui-container.ui-hidden .freedom-title,
-.intro-completed .ui-container.ui-hidden .bottom-footer,
-.intro-completed .ui-container.ui-hidden .top-header {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
-
-.intro-completed .stagger-1,
-.intro-completed .stagger-2 {
-  opacity: 1 !important;
-  transform: translateY(0) !important;
-}
-
 /* Hide Freedom Intro Splash immediately on initial paint when intro is already completed */
 .intro-completed .freedom-splash,
 .intro-completed #freedom-splash {
@@ -294,25 +265,6 @@ body {
   pointer-events: none !important;
 }
 
-/* Ensure subsequent visits with intro-completed override ui-hidden immediately */
-.intro-completed .ui-container.ui-hidden {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-}
-
-.intro-completed .ui-container.ui-hidden .about-main,
-.intro-completed .ui-container.ui-hidden .living-main,
-.intro-completed .ui-container.ui-hidden .bedroom-main,
-.intro-completed .ui-container.ui-hidden .kitchen-main,
-.intro-completed .ui-container.ui-hidden .pool-main,
-.intro-completed .ui-container.ui-hidden .office-main,
-.intro-completed .ui-container.ui-hidden .freedom-title,
-.intro-completed .ui-container.ui-hidden .bottom-footer,
-.intro-completed .ui-container.ui-hidden .top-header {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
 
 .ui-container.revealed,
 .ui-container.visible {
