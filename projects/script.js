@@ -62,6 +62,136 @@
     : '/Media/BedroomToPCScreen/BedroomtoPc0562.avif';
   pcImage.src = pcBaseSrc;
 
+  // --- Forward PC animation for history arrivals ---------------------------------
+  // Clicking the PC plays Bedroom -> PC on the HOUSE page and then navigates here. Browser
+  // Forward (or Back from a later page) skips that step, so this page replays the same frames
+  // itself when it is reached through history from a house that was showing the Bedroom.
+  const PC_FRAME_START = 539;
+  const PC_FRAME_COUNT = 24;
+  const pcFrameBase = (window.location.protocol === 'file:')
+    ? '../Media/BedroomToPCScreen/'
+    : '/Media/BedroomToPCScreen/';
+  let introActive = false;   // true while the forward animation owns the canvas
+  let introCancel = null;    // finishes an in-flight intro immediately (once)
+
+  // The house records the room it last settled on; the first page shown afterwards consumes it.
+  function consumeHouseExitRoom() {
+    let room = null;
+    try {
+      room = sessionStorage.getItem('houseRoomSettled');
+      sessionStorage.removeItem('houseRoomSettled');
+    } catch (err) { }
+    return room;
+  }
+
+  // The house plays the reverse animation only when a return flag is present, and consumes it
+  // after doing so. Browser Back/Forward never set it, so every time this page is shown from
+  // the house it re-arms the flag (unless an Escape/Return flag is already pending).
+  function armHouseReturn() {
+    if (!cameFromHouse()) return;
+    try {
+      if (sessionStorage.getItem('returnFromProjects') === 'true' ||
+          sessionStorage.getItem('returnFromProjectsToLiving') === 'true') return;
+      sessionStorage.setItem('returnFromProjects', 'true');
+    } catch (err) { }
+  }
+
+  function shouldPlayForwardIntro(viaHistory) {
+    const room = consumeHouseExitRoom();   // always consume, whatever the outcome
+    return viaHistory && room === 'bedroom' && cameFromHouse();
+  }
+
+  function drawCover(img) {
+    if (!canvas || !img || img.naturalWidth === 0) return;
+    const width = canvas.clientWidth || Math.round(window.innerWidth * 1.1);
+    const height = canvas.clientHeight || Math.round(window.innerHeight * 1.1);
+    if (canvas.width !== width) canvas.width = width;
+    if (canvas.height !== height) canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const imgRatio = img.naturalWidth / img.naturalHeight;
+    let dw, dh, ox, oy;
+    if (width / height > imgRatio) {
+      dw = width; dh = width / imgRatio; ox = 0; oy = (height - dh) / 2;
+    } else {
+      dw = height * imgRatio; dh = height; ox = (width - dw) / 2; oy = 0;
+    }
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(img, ox, oy, dw, dh);
+  }
+
+  function playForwardIntro(onDone) {
+    if (introCancel) introCancel();   // an interrupted earlier run must not leave the stage hidden
+
+    introActive = true;
+    projectLoading = true;
+    if (stage) stage.style.visibility = 'hidden';
+    const exitEl = document.getElementById('exit-projects-btn');
+    if (exitEl) exitEl.classList.add('is-loading-hidden');
+
+    const frames = [];
+    for (let i = 0; i < PC_FRAME_COUNT; i++) {
+      const img = new Image();
+      img.src = `${pcFrameBase}BedroomtoPc${String(PC_FRAME_START + i).padStart(4, '0')}.avif`;
+      frames.push(img);
+    }
+
+    let finished = false;
+    let raf = null;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      if (raf !== null) cancelAnimationFrame(raf);
+      introCancel = null;
+      introActive = false;
+      renderScene();                                  // last frame + monitor geometry
+      if (stage) stage.style.visibility = '';
+      onDone();
+    };
+    introCancel = finish;
+
+    const settle = (img) => new Promise((resolve) => {
+      if (img.complete) { resolve(); return; }
+      if (typeof img.decode === 'function') { img.decode().then(resolve, resolve); return; }
+      img.onload = img.onerror = () => resolve();
+    });
+
+    // Start once the frames are available; if they are not within 1.5 s, skip the animation
+    // rather than hold a blank screen.
+    Promise.race([
+      Promise.all(frames.map(settle)),
+      new Promise((resolve) => setTimeout(resolve, 1500))
+    ]).then(() => {
+      if (finished) return;
+      if (!(frames[0].complete && frames[0].naturalWidth > 0)) { finish(); return; }
+      const interval = 1000 / 24;   // same 24 fps as the house sequences
+      let idx = 0;
+      let last = performance.now();
+      const tick = (now) => {
+        if (finished) return;
+        if (now - last >= interval) {
+          last = now - ((now - last) % interval);
+          const img = frames[idx];
+          if (img.complete && img.naturalWidth > 0) drawCover(img);
+          if (idx === frames.length - 1) { finish(); return; }
+          idx++;
+        }
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    });
+  }
+
+  // Decided before the first paint of the canvas so the final frame never flashes first.
+  const navType = (performance.getEntriesByType('navigation')[0] || {}).type;
+  armHouseReturn();
+  const forwardIntroPlanned = shouldPlayForwardIntro(navType === 'back_forward');
+  if (forwardIntroPlanned) {
+    introActive = true;
+    if (stage) stage.style.visibility = 'hidden';
+    const earlyExit = document.getElementById('exit-projects-btn');
+    if (earlyExit) earlyExit.classList.add('is-loading-hidden');
+  }
+
   let parallaxInstance = null;
 
   function initParallax() {
@@ -87,6 +217,7 @@
   }
 
   function renderScene() {
+    if (introActive) return;
     if (!canvas || !pcImage || pcImage.naturalWidth === 0) return;
 
     const ctx = canvas.getContext('2d');
@@ -421,9 +552,10 @@
   }
 
   // --- Loading Intro Dismissal Controller ---
-  const PROGRESS_START_DELAY_MS = 500; // 0.5s delay before progress line begins expanding
-  const PROGRESS_ANIM_DURATION_MS = 1200; // 1.2s progress bar duration
-  const TOTAL_LOADING_DURATION_MS = PROGRESS_START_DELAY_MS + PROGRESS_ANIM_DURATION_MS + 250; // ~1950ms total
+  // Optimized for seamless continuous handoff from the bedroom zoom animation
+  const PROGRESS_START_DELAY_MS = 0;
+  const PROGRESS_ANIM_DURATION_MS = 200;
+  const TOTAL_LOADING_DURATION_MS = 200;
   let loadingDismissTimer = null;
 
   function startLoadingSequence() {
@@ -433,12 +565,10 @@
       viewport.scrollTop = 0;
     }
 
-    setTimeout(() => {
-      const progressBar = document.querySelector('.loading-line-bar');
-      if (progressBar) {
-        progressBar.classList.add('is-animating');
-      }
-    }, PROGRESS_START_DELAY_MS);
+    const progressBar = document.querySelector('.loading-line-bar');
+    if (progressBar) {
+      progressBar.classList.add('is-animating');
+    }
 
     loadingDismissTimer = setTimeout(() => {
       if (loadingOverlay) {
@@ -451,7 +581,7 @@
             viewport.classList.remove('is-loading');
             viewport.scrollTop = 0;
           }
-        }, 750);
+        }, 300);
       } else {
         projectLoading = false;
         document.body.classList.remove('is-loading');
@@ -477,20 +607,100 @@
     renderScene();
   });
 
+  // --- Leaving Projects (shared by Escape, the exit hit-area and the Return to Room button) ---
+  // The house is entered from here via browser history whenever Projects was opened from it,
+  // so Back/Forward stay symmetrical and no extra entry is pushed. When Projects was opened
+  // directly (no house entry behind it) the entry is replaced with the house instead.
+  // The return flag is written BEFORE history.back(): the house page consumes it only once
+  // its restoration animation has finished, whether it comes back from the bfcache or reloads.
+  let isLeavingProjects = false;
+  let leaveFallbackTimer = null;
+
+  function cameFromHouse() {
+    try {
+      if (!document.referrer || window.history.length < 2) return false;
+      const ref = new URL(document.referrer);
+      return ref.origin === window.location.origin && /^\/(index\.html)?$/.test(ref.pathname);
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function leaveProjects(toLiving) {
+    if (isLeavingProjects) return;
+    isLeavingProjects = true;
+
+    try {
+      // Exactly one flag: Return to Room -> Bedroom, Escape -> Living.
+      sessionStorage.setItem(toLiving ? 'returnFromProjectsToLiving' : 'returnFromProjects', 'true');
+      sessionStorage.removeItem(toLiving ? 'returnFromProjects' : 'returnFromProjectsToLiving');
+    } catch (err) {
+      console.warn('Unable to access sessionStorage:', err);
+    }
+
+    const houseUrl = (window.location.protocol === 'file:') ? '../index.html' : '/';
+
+    if (cameFromHouse()) {
+      // history.back() is asynchronous. If it has not left this page after a generous delay
+      // (nothing to go back to), fall back to replacing this entry with the house.
+      const cancelFallback = () => {
+        if (leaveFallbackTimer) { clearTimeout(leaveFallbackTimer); leaveFallbackTimer = null; }
+      };
+      window.addEventListener('pagehide', cancelFallback, { once: true });
+      leaveFallbackTimer = setTimeout(() => {
+        leaveFallbackTimer = null;
+        window.removeEventListener('pagehide', cancelFallback);
+        window.location.replace(houseUrl);
+      }, 2500);
+      window.history.back();
+    } else {
+      window.location.replace(houseUrl);
+    }
+  }
+
+  // The case-study "Kitchen Blog" link goes straight to the Kitchen. The return flags would make the
+  // house replay PC -> Bedroom and land in the Bedroom instead, so drop them before leaving.
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest || !e.target.closest('#bedroom-to-kitchen-blog-btn')) return;
+    try {
+      sessionStorage.removeItem('returnFromProjects');
+      sessionStorage.removeItem('returnFromProjectsToLiving');
+    } catch (err) { }
+  }, true);
+
+  // If the browser restores this page from the bfcache (Forward from the house), it comes back
+  // frozen mid-exit; re-arm the exit controls.
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    isLeavingProjects = false;
+    if (leaveFallbackTimer) { clearTimeout(leaveFallbackTimer); leaveFallbackTimer = null; }
+
+    // Restored from the bfcache: no startup code runs, so re-arm the house's reverse animation
+    // and replay the forward zoom when coming from the Bedroom (a bfcache restore is always a
+    // history traversal).
+    armHouseReturn();
+    if (shouldPlayForwardIntro(true)) {
+      playForwardIntro(() => {
+        projectLoading = false;
+        const exitEl = document.getElementById('exit-projects-btn');
+        if (exitEl) exitEl.classList.remove('is-loading-hidden');
+      });
+    } else if (introCancel) {
+      introCancel();
+    }
+  });
+
+  // Leaving mid-intro (e.g. Back during the zoom): settle into the finished state so a later
+  // bfcache restore never shows a hidden stage.
+  window.addEventListener('pagehide', () => {
+    if (introCancel) introCancel();
+  });
+
   // --- Escape Key: Return to Living Room (Continuous Rollback: PC -> Bedroom -> Living) ---
   window.addEventListener('keydown', (e) => {
     if (isCinematicActive) return; // Handled by cinematic video controller
     if (e.key === 'Escape' || e.key === 'Esc') {
-      try {
-        sessionStorage.setItem('returnFromProjectsToLiving', 'true');
-      } catch (err) {
-        console.warn('Unable to access sessionStorage:', err);
-      }
-      if (window.location.protocol === 'file:') {
-        window.location.href = '../index.html';
-      } else {
-        window.location.href = '/';
-      }
+      leaveProjects(true);
     }
   });
 
@@ -548,17 +758,8 @@
     const triggerExit = () => {
       if (projectLoading || isCinematicActive) return;
       hideTooltip();
-      try {
-        // Set returnFromProjects so home's PATH 1 plays the reverse bedroom_pc animation
-        sessionStorage.setItem('returnFromProjects', 'true');
-      } catch (err) {
-        console.warn('Unable to access sessionStorage:', err);
-      }
-      if (window.location.protocol === 'file:') {
-        window.location.href = '../index.html';
-      } else {
-        window.location.href = '/';
-      }
+      // Home plays the reverse bedroom_pc animation (returnFromProjects flag set by leaveProjects)
+      leaveProjects(false);
     };
 
     exitBtn.addEventListener('click', triggerExit);
@@ -610,6 +811,14 @@
     }
   }
 
+  function beginPage() {
+    if (forwardIntroPlanned) {
+      playForwardIntro(startLoadingSequence);   // zoom first, then the usual "Loading Projects" intro
+    } else {
+      startLoadingSequence();
+    }
+  }
+
   // Start sequence & navigation on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
@@ -618,7 +827,7 @@
       initProjectNavigation();
       initCinematicVideo();
       initExitInteraction();
-      startLoadingSequence();
+      beginPage();
     });
   } else {
     renderScene();
@@ -626,6 +835,6 @@
     initProjectNavigation();
     initCinematicVideo();
     initExitInteraction();
-    startLoadingSequence();
+    beginPage();
   }
 })();

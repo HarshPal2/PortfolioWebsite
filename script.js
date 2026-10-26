@@ -109,6 +109,20 @@ document.addEventListener('DOMContentLoaded', () => {
     return frames;
   }
 
+  // Load ONE frame of a sequence (negative idx counts from the end) without
+  // requesting the rest of that sequence. Used for room base frames so the first
+  // paint is not queued behind dozens of unrelated frame downloads.
+  function getSequenceFrame(key, idx) {
+    const frames = initSequenceFrames(key);
+    if (!frames || frames.length === 0) return null;
+    const img = frames[idx < 0 ? frames.length + idx : idx];
+    if (!img) return null;
+    if (!img.src && img._targetSrc) {
+      img.src = img._targetSrc;
+    }
+    return img;
+  }
+
   // --- Progressive Background Asset Queue ---
   // Loads non-critical sequences in small, throttled batches during idle time.
   // Prioritizes outgoing transitions from currentRoom. Never chokes the main thread.
@@ -144,10 +158,10 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     reprioritize(room) {
+      // Queue ONLY the sequences reachable from this room. The set is small enough
+      // (<= 5) to fit inside MAX_CACHED_SEQUENCES, so nothing is evicted and re-queued.
       const adjacent = this._roomAdjacency[room] || [];
-      const allKeys = Object.keys(sequences).filter((k) => k !== 'entrance');
-      // Priority: adjacent sequences first, then remaining sequences
-      const priorityOrder = [...adjacent, ...allKeys.filter((k) => !adjacent.includes(k))];
+      const priorityOrder = adjacent;
 
       const newQueue = [];
       priorityOrder.forEach((seqKey) => {
@@ -174,13 +188,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const seq = sequences[item.seqKey];
         if (!seq) continue;
 
-        if (!frameCache[item.seqKey]) {
-          preloadSequence(item.seqKey);
-        }
-
-        const img = frameCache[item.seqKey][item.index - 1];
+        // Create frame objects lazily (no network yet) and start each download only
+        // when its turn comes, so _concurrency is a real limit.
+        const frames = frameCache[item.seqKey] || initSequenceFrames(item.seqKey);
+        const img = frames && frames[item.index - 1];
         if (!img || (img.complete && img.naturalWidth > 0)) {
           continue;
+        }
+        if (!img.src && img._targetSrc) {
+          img.src = img._targetSrc;
         }
 
         this._activeLoading++;
@@ -539,7 +555,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Records the room the house last settled on. /projects/ reads (and removes) it to know whether a
+  // browser Forward/Back arrival comes from the Bedroom, in which case it replays the PC zoom itself.
+  // Written when the house settles (rather than on pagehide, because the incoming page's pageshow
+  // can run before the outgoing page's pagehide) and again on every bfcache restore, since
+  // /projects/ removes it each time it is shown.
+  function rememberHouseRoom() {
+    try {
+      sessionStorage.setItem('houseRoomSettled', currentRoom);
+    } catch (e) {}
+  }
+
   function updateActiveNav(targetNavKey) {
+    rememberHouseRoom(); // always called after currentRoom is set (transition end, Projects return, startup)
     navLinks.forEach((l) => {
       const navKey = l.getAttribute('data-nav') || l.getAttribute('href').replace('#', '');
       if (
@@ -736,27 +764,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getRoomBaseFrame(room) {
-    if (room === 'living') {
-      const frames = preloadSequence('living_bedroom');
-      return frames ? frames[0] : null;
-    }
-    if (room === 'bedroom') {
-      const frames = preloadSequence('living_bedroom');
-      return frames ? frames[frames.length - 1] : null;
-    }
-    if (room === 'kitchen') {
-      const frames = preloadSequence('living_kitchen');
-      return frames ? frames[frames.length - 1] : null;
-    }
-    if (room === 'poolroom') {
-      const frames = preloadSequence('living_pool');
-      return frames ? frames[frames.length - 1] : null;
-    }
-    if (room === 'office') {
-      const frames = preloadSequence('living_office');
-      return frames ? frames[frames.length - 1] : null;
-    }
+    // Only the single frame that represents the room is requested here.
+    if (room === 'living') return getSequenceFrame('living_bedroom', 0);
+    if (room === 'bedroom') return getSequenceFrame('living_bedroom', -1);
+    if (room === 'kitchen') return getSequenceFrame('living_kitchen', -1);
+    if (room === 'poolroom') return getSequenceFrame('living_pool', -1);
+    if (room === 'office') return getSequenceFrame('living_office', -1);
     return null;
+  }
+
+  // Wait until every frame has settled (loaded or failed) or the timeout elapses.
+  // Resolves with the fraction of frames that loaded successfully (0..1).
+  const SEQUENCE_READY_TIMEOUT_MS = 2000;
+  const SEQUENCE_MIN_PLAYABLE_FRACTION = 0.85;
+
+  function awaitSequenceReady(frames, maxWaitMs) {
+    return new Promise((resolve) => {
+      const total = frames.length || 1;
+      const measure = () => {
+        let loaded = 0;
+        let settled = 0;
+        frames.forEach((img) => {
+          if (img.complete && img.src) {
+            settled++;
+            if (img.naturalWidth > 0) loaded++;
+          }
+        });
+        return { loaded, settled };
+      };
+      const start = performance.now();
+      const check = () => {
+        const { loaded, settled } = measure();
+        if (settled >= frames.length || performance.now() - start >= maxWaitMs) {
+          resolve(loaded / total);
+          return;
+        }
+        setTimeout(check, 50);
+      };
+      check();
+    });
   }
 
   // --- Unified Room-to-Room Transition Controller ---
@@ -775,6 +821,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof InteractiveObjectManager !== 'undefined') {
       InteractiveObjectManager.setInteractiveEnabled(false);
     }
+
+    // Start fetching this transition's frames immediately (they download while the
+    // UI fades out) and stop background prefetch from competing with them.
+    BackgroundAssetQueue.pause();
+    preloadSequence(conn.seq);
 
     let hasCompletedTransition = false;
     let safetyTimer = null;
@@ -829,6 +880,9 @@ document.addEventListener('DOMContentLoaded', () => {
         isScrollLocked = false;
         BackgroundAssetQueue.reprioritize(destRoom);
         BackgroundAssetQueue.resume();
+        if (destRoom === 'bedroom') {
+          preloadSequence('bedroom_pc');
+        }
         if (onComplete) onComplete();
       });
     };
@@ -856,8 +910,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const endIdx = conn.reverse ? 0 : frames.length - 1;
 
       BackgroundAssetQueue.pause();
-      playImageSequence(activeCanvas, frames, startIdx, endIdx, () => {
-        completeTransition();
+
+      // Frames are now loaded on demand, so a click made before the background
+      // prefetch finished may find the sequence only partly downloaded. Give it a
+      // short window to arrive; if it still isn't usable (slow connection), cut
+      // straight to the destination room instead of stuttering through a mostly
+      // empty animation (which previously froze the canvas until the 6 s safety timer).
+      awaitSequenceReady(frames, SEQUENCE_READY_TIMEOUT_MS).then((loadedFraction) => {
+        if (hasCompletedTransition) return;
+        if (loadedFraction < SEQUENCE_MIN_PLAYABLE_FRACTION) {
+          console.warn(`[Transition] ${connKey}: only ${Math.round(loadedFraction * 100)}% of frames loaded — skipping animation`);
+          completeTransition();
+          return;
+        }
+        playImageSequence(activeCanvas, frames, startIdx, endIdx, () => {
+          completeTransition();
+        });
       });
     };
 
@@ -1012,6 +1080,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (targetUrl === '/projects' || targetUrl === 'projects/' || targetUrl === 'projects' || targetUrl === '/projects/') {
       try {
         sessionStorage.setItem('returnFromProjects', 'true');
+        sessionStorage.removeItem('returnFromProjectsToLiving'); // a leftover Escape flag must not win
       } catch (err) { }
 
       if (window.location.protocol === 'file:') {
@@ -1372,15 +1441,11 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }; // end startAnim
 
-        fadeUIOut(() => {
-          uiDone = true;
-          startAnim();
-        });
-
-        fadeBackdropOut(() => {
-          backdropDone = true;
-          startAnim();
-        });
+        fadeUIOut();
+        fadeBackdropOut();
+        uiDone = true;
+        backdropDone = true;
+        startAnim();
 
         return;
       }
@@ -1742,8 +1807,25 @@ document.addEventListener('DOMContentLoaded', () => {
     updateKitchenUI();
   }
 
-  function openKitchenBlog() {
+  // --- Kitchen Blog <-> browser history ---------------------------------------
+  // The Blog stays an in-page modal. Opening it pushes ONE history entry (same URL,
+  // state {kitchenBlog:true}) so the browser Back button can close it. Every close
+  // path funnels through the popstate handler, so Back and the on-screen controls
+  // (Return to Kitchen, hood exit, window close, backdrop, Escape) behave identically
+  // and never leave a duplicate entry behind.
+  let blogHistoryBackPending = false;
+
+  function historyHasBlogState() {
+    try {
+      return !!(window.history.state && window.history.state.kitchenBlog);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function openKitchenBlog(opts) {
     if (!kitchenBlogStage) return;
+    const fromHistory = !!(opts && opts.fromHistory === true);
     InteractiveObjectManager.hideTooltip();
     isScrollLocked = true;
     isKitchenRetracting = false;
@@ -1755,6 +1837,14 @@ document.addEventListener('DOMContentLoaded', () => {
     kitchenBlogStage.classList.add('is-open');
     kitchenBlogStage.setAttribute('aria-hidden', 'false');
 
+    // One entry per opening: skip when history already represents the open Blog
+    // (Forward, reload, repeated open triggers).
+    if (!fromHistory && !historyHasBlogState()) {
+      try {
+        window.history.pushState({ kitchenBlog: true }, '', window.location.href);
+      } catch (e) {}
+    }
+
     renderKitchenScene();
     activeSpreadIdx = 0;
     activeKitchenDial = 0;
@@ -1763,7 +1853,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateKitchenUI();
   }
 
-  function closeKitchenBlog() {
+  // Visual close only (the original close animation). Does not touch history.
+  function closeKitchenBlogUI() {
     if (!kitchenBlogStage || isKitchenRetracting) return;
     isKitchenRetracting = true;
 
@@ -1784,6 +1875,65 @@ document.addEventListener('DOMContentLoaded', () => {
         InteractiveObjectManager.renderObjects();
       }
     }, 600);
+  }
+
+  // Close request from the UI / Escape. When the Blog owns the current history entry,
+  // pop it; the popstate handler then runs closeKitchenBlogUI().
+  function closeKitchenBlog() {
+    if (!kitchenBlogStage || isKitchenRetracting) return;
+    if (isKitchenBlogOpen() && historyHasBlogState()) {
+      if (blogHistoryBackPending) return;
+      blogHistoryBackPending = true;
+      try {
+        window.history.back();
+      } catch (e) {
+        blogHistoryBackPending = false;
+        closeKitchenBlogUI();
+        return;
+      }
+      // history.back() is asynchronous; if no popstate arrives, still close the modal.
+      setTimeout(() => {
+        if (blogHistoryBackPending) {
+          blogHistoryBackPending = false;
+          if (isKitchenBlogOpen()) closeKitchenBlogUI();
+        }
+      }, 1000);
+      return;
+    }
+    closeKitchenBlogUI();
+  }
+
+  // Re-open the Blog because history says it should be open (Forward). Waits out a
+  // running transition / retract, and goes to the Kitchen first if we are elsewhere.
+  function openBlogFromHistory(attempt) {
+    if (!historyHasBlogState()) return;                       // history moved on
+    if (isKitchenBlogOpen() && !isKitchenRetracting) return;  // already open
+    if (isScrollLocked) {
+      if (attempt < 60) setTimeout(() => openBlogFromHistory(attempt + 1), 50);
+      return;
+    }
+    if (currentRoom !== 'kitchen') {
+      navigateToRoom('kitchen', () => openBlogFromHistory(0));
+      return;
+    }
+    openKitchenBlog({ fromHistory: true });
+  }
+
+  function syncBlogWithHistory() {
+    blogHistoryBackPending = false;
+    if (!historyHasBlogState()) {
+      if (isKitchenBlogOpen()) closeKitchenBlogUI();
+      return;
+    }
+    if (!hasRevealed) return;
+    openBlogFromHistory(0);
+  }
+
+  // Page (re)loaded on an entry that represents an open Blog (e.g. reload while open).
+  function restoreBlogFromHistoryState() {
+    if (currentRoom === 'kitchen' && historyHasBlogState() && !isKitchenBlogOpen()) {
+      openKitchenBlog({ fromHistory: true });
+    }
   }
 
   window.openKitchenBlog = openKitchenBlog;
@@ -2078,6 +2228,131 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================================================
+  // Return from /projects — one restoration routine for every way back
+  // ==========================================================================
+  // Used by initPortfolio() (page was (re)loaded) AND by the `pageshow` handler
+  // (page was restored from the back/forward cache, so initPortfolio() does not run).
+  //   'bedroom' -> Return to Room: PC -> Bedroom (reverse BedroomToPC)
+  //   'living'  -> Escape:         PC -> Bedroom -> Living (continuous reverse)
+  let projectsReturnInProgress = false;
+
+  function readProjectsReturn() {
+    try {
+      // Escape wins: the PC click also leaves returnFromProjects set.
+      if (sessionStorage.getItem('returnFromProjectsToLiving') === 'true') return 'living';
+      if (sessionStorage.getItem('returnFromProjects') === 'true') return 'bedroom';
+    } catch (e) {
+      console.warn('Unable to access sessionStorage:', e);
+    }
+    return null;
+  }
+
+  // Flags are only consumed once the restoration has fully finished, so a reload
+  // or a second visit in the middle of the animation still restores correctly.
+  function clearProjectsReturnFlags() {
+    try {
+      sessionStorage.removeItem('returnFromProjects');
+      sessionStorage.removeItem('returnFromProjectsToLiving');
+    } catch (e) {}
+  }
+
+  // Run cb exactly once when img is decoded (or has failed / does not exist).
+  function whenFrameReady(img, cb) {
+    let done = false;
+    const once = () => { if (!done) { done = true; cb(); } };
+    if (!img) { once(); return; }
+    if (!img.src && img._targetSrc) { img.src = img._targetSrc; }
+    if (img.complete && img.naturalWidth > 0) { once(); return; }
+    if (typeof img.decode === 'function') {
+      img.decode().then(once, once);
+    } else {
+      img.addEventListener('load', once, { once: true });
+      img.addEventListener('error', once, { once: true });
+    }
+  }
+
+  function restoreFromProjects(dest) {
+    if (projectsReturnInProgress) return; // never run the reverse animation twice
+    projectsReturnInProgress = true;
+
+    const toLiving = dest === 'living';
+    const finalRoom = toLiving ? 'living' : 'bedroom';
+    const finalNav = roomToNav[finalRoom];
+    const activeCanvas = getActiveCanvas();
+
+    if (freedomSplash) {
+      freedomSplash.style.display = 'none';
+      freedomSplash.classList.add('fade-out');
+    }
+
+    currentRoom = finalRoom;
+    updateRoomTitle(finalRoom);
+    updateActiveNav(finalNav);
+
+    if (uiContainer) {
+      updateUIRoomState(finalRoom);
+      uiContainer.classList.add('ui-hidden');
+    }
+    if (backdropRect) {
+      backdropRect.classList.add('backdrop-hidden');
+    }
+
+    isScrollLocked = true;
+    hasRevealed = true;
+    InteractiveObjectManager.setInteractiveEnabled(false);
+
+    const pcFrames = preloadSequence('bedroom_pc');
+    const bedroomLivingFrames = toLiving ? preloadSequence('living_bedroom') : null;
+    // Frame shown once the reverse animation has finished (only this one frame is requested
+    // for the Bedroom case; the Living case already holds the whole living_bedroom sequence).
+    const finalFrame = toLiving ? bedroomLivingFrames[0] : getRoomBaseFrame('bedroom');
+
+    const finish = () => {
+      whenFrameReady(finalFrame, () => {
+        if (finalFrame) {
+          drawFrameToCanvas(activeCanvas, finalFrame);
+        }
+
+        // Make the URL reflect the room that is actually shown (no hashchange fires for replaceState).
+        try {
+          if (finalNav && window.location.hash !== `#${finalNav}`) {
+            window.history.replaceState(null, '', `#${finalNav}`);
+          }
+        } catch (e) {}
+
+        InteractiveObjectManager.renderObjects();
+        fadeBackdropIn();
+
+        fadeUIIn(() => {
+          InteractiveObjectManager.setInteractiveEnabled(true);
+          isScrollLocked = false;
+          clearProjectsReturnFlags();
+          projectsReturnInProgress = false;
+        });
+      });
+    };
+
+    const startPlayback = () => {
+      const lastFrame = pcFrames[pcFrames.length - 1];
+      if (lastFrame) {
+        drawFrameToCanvas(activeCanvas, lastFrame);
+      }
+
+      // 1. PC -> Bedroom (reverse BedroomToPC)
+      playImageSequence(activeCanvas, pcFrames, pcFrames.length - 1, 0, () => {
+        if (toLiving) {
+          // 2. Bedroom -> Living (reverse), continuing without a stop
+          playImageSequence(activeCanvas, bedroomLivingFrames, bedroomLivingFrames.length - 1, 0, finish);
+        } else {
+          finish();
+        }
+      });
+    };
+
+    whenFrameReady(pcFrames[pcFrames.length - 1], startPlayback);
+  }
+
+  // ==========================================================================
   // Unified Startup & Initialization Pipeline
   // ==========================================================================
   function initPortfolio() {
@@ -2087,14 +2362,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initParallaxEngine();
     InteractiveObjectManager.init();
     // 2. Check Startup State
-    let isReturnFromProjects = false;
-    let isReturnFromProjectsToLiving = false;
-    try {
-      isReturnFromProjects = sessionStorage.getItem('returnFromProjects') === 'true';
-      isReturnFromProjectsToLiving = sessionStorage.getItem('returnFromProjectsToLiving') === 'true';
-    } catch (e) {
-      console.warn('Unable to access sessionStorage:', e);
-    }
+    const projectsReturn = readProjectsReturn();
 
     let isIntroCompleted = false;
     try {
@@ -2105,154 +2373,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ------------------------------------------------------------------------
-    // PATH 1A: Return from /projects -> Living (PC -> Bedroom -> Home continuous)
+    // PATH 1 / 1A: Return from /projects (page was loaded or reloaded)
+    //   1A (Escape):        PC -> Bedroom -> Living, continuous reverse
+    //   1  (Return to Room): PC -> Bedroom, reverse BedroomToPC
+    // Shared with the bfcache `pageshow` handler via restoreFromProjects().
     // ------------------------------------------------------------------------
-    if (isReturnFromProjectsToLiving) {
-      if (freedomSplash) {
-        freedomSplash.style.display = 'none';
-        freedomSplash.classList.add('fade-out');
-      }
-
-      currentRoom = 'living';
-      updateRoomTitle('living');
-      updateActiveNav('home');
-
-      if (uiContainer) {
-        updateUIRoomState('living');
-        uiContainer.classList.add('ui-hidden');
-      }
-
-      if (backdropRect) {
-        backdropRect.classList.add('backdrop-hidden');
-      }
-
-      isScrollLocked = true;
-      hasRevealed = true;
-      InteractiveObjectManager.setInteractiveEnabled(false);
-
-      const pcFrames = preloadSequence('bedroom_pc');
-      const bedroomLivingFrames = preloadSequence('living_bedroom');
-      const livingBaseFrame = bedroomLivingFrames[0];
-
-      const startDoubleReversePlayback = () => {
-        const lastFrame = pcFrames[pcFrames.length - 1];
-        if (lastFrame) {
-          drawFrameToCanvas(activeCanvas, lastFrame);
-        }
-
-        // 1. Play PC -> Bedroom reverse animation
-        playImageSequence(activeCanvas, pcFrames, pcFrames.length - 1, 0, () => {
-          // 2. Immediately without stopping, play Bedroom -> Living reverse animation
-          playImageSequence(activeCanvas, bedroomLivingFrames, bedroomLivingFrames.length - 1, 0, () => {
-            currentRoom = 'living';
-            updateRoomTitle('living');
-            updateActiveNav('home');
-
-            if (uiContainer) {
-              updateUIRoomState('living');
-            }
-
-            if (livingBaseFrame) {
-              drawFrameToCanvas(activeCanvas, livingBaseFrame);
-            }
-
-            InteractiveObjectManager.renderObjects();
-            fadeBackdropIn();
-
-            fadeUIIn(() => {
-              InteractiveObjectManager.setInteractiveEnabled(true);
-              isScrollLocked = false;
-              try {
-                sessionStorage.removeItem('returnFromProjectsToLiving');
-              } catch (e) {}
-            });
-          });
-        });
-      };
-
-      const startFrame = pcFrames[pcFrames.length - 1];
-      if (startFrame && startFrame.complete && startFrame.naturalWidth > 0) {
-        startDoubleReversePlayback();
-      } else if (startFrame) {
-        if (typeof startFrame.decode === 'function') {
-          startFrame.decode().then(startDoubleReversePlayback).catch(startDoubleReversePlayback);
-        } else {
-          startFrame.onload = startDoubleReversePlayback;
-          startFrame.onerror = startDoubleReversePlayback;
-        }
-      } else {
-        startDoubleReversePlayback();
-      }
-      return;
-    }
-
-    // ------------------------------------------------------------------------
-    // PATH 1: Return from /projects (Reverse BedroomToPC Animation -> Bedroom)
-    // ------------------------------------------------------------------------
-    if (isReturnFromProjects) {
-      if (freedomSplash) {
-        freedomSplash.style.display = 'none';
-        freedomSplash.classList.add('fade-out');
-      }
-
-      currentRoom = 'bedroom';
-      updateRoomTitle('bedroom');
-      updateActiveNav('projects');
-
-      if (uiContainer) {
-        updateUIRoomState('bedroom');
-        uiContainer.classList.add('ui-hidden');
-      }
-
-      if (backdropRect) {
-        backdropRect.classList.add('backdrop-hidden');
-      }
-
-      isScrollLocked = true;
-      hasRevealed = true;
-      InteractiveObjectManager.setInteractiveEnabled(false);
-
-      const pcFrames = preloadSequence('bedroom_pc');
-      const bedroomFrames = preloadSequence('living_bedroom');
-      const bedroomBaseFrame = bedroomFrames[bedroomFrames.length - 1];
-
-      const startReversePlayback = () => {
-        const lastFrame = pcFrames[pcFrames.length - 1];
-        if (lastFrame) {
-          drawFrameToCanvas(activeCanvas, lastFrame);
-        }
-
-        playImageSequence(activeCanvas, pcFrames, pcFrames.length - 1, 0, () => {
-          if (bedroomBaseFrame) {
-            drawFrameToCanvas(activeCanvas, bedroomBaseFrame);
-          }
-
-          InteractiveObjectManager.renderObjects();
-          fadeBackdropIn();
-
-          fadeUIIn(() => {
-            InteractiveObjectManager.setInteractiveEnabled(true);
-            isScrollLocked = false;
-            try {
-              sessionStorage.removeItem('returnFromProjects');
-            } catch (e) {}
-          });
-        });
-      };
-
-      const startFrame = pcFrames[pcFrames.length - 1];
-      if (startFrame && startFrame.complete && startFrame.naturalWidth > 0) {
-        startReversePlayback();
-      } else if (startFrame) {
-        if (typeof startFrame.decode === 'function') {
-          startFrame.decode().then(startReversePlayback).catch(startReversePlayback);
-        } else {
-          startFrame.onload = startReversePlayback;
-          startFrame.onerror = startReversePlayback;
-        }
-      } else {
-        startReversePlayback();
-      }
+    if (projectsReturn) {
+      restoreFromProjects(projectsReturn);
       return;
     }
 
@@ -2263,7 +2390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Temporary feature flag: bypass the initial loading screen and entrance sequence
     // to open directly to Living / About Me page. Set to false to restore intro.
-    const BYPASS_LOADING_SCREEN = true;
+    const BYPASS_LOADING_SCREEN = false;
 
     if (BYPASS_LOADING_SCREEN || isIntroCompleted) {
       if (freedomSplash) {
@@ -2287,6 +2414,7 @@ document.addEventListener('DOMContentLoaded', () => {
           drawFrameToCanvas(activeCanvas, baseFrame);
         }
         revealUI();
+        restoreBlogFromHistoryState();
       };
 
       if (baseFrame && baseFrame.complete && baseFrame.naturalWidth > 0) {
@@ -2300,6 +2428,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else {
         revealUI();
+        restoreBlogFromHistoryState();
       }
       return;
     }
@@ -2426,6 +2555,26 @@ document.addEventListener('DOMContentLoaded', () => {
         navigateToRoom('living');
       }
     }
+  });
+
+  // --- Back/Forward Cache Restore ---
+  // When the browser restores this page from the bfcache (Back/Forward from /projects/),
+  // none of the startup code runs again and the page is frozen exactly as it was when
+  // the PC zoom navigated away: last PC frame, UI hidden, scroll lock on. Re-run the
+  // same restoration as a normal return, but only for a real bfcache restore and only
+  // when a Projects return flag is present (e.g. DevTools' bfcache test is left alone).
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    rememberHouseRoom();
+    const dest = readProjectsReturn();
+    if (dest) restoreFromProjects(dest);
+  });
+
+  // --- Browser Back / Forward for the Kitchen Blog modal ---
+  // Same-document traversals between the Blog's history entry and its Kitchen entry.
+  // Back closes the Blog, Forward reopens it; hash-only room changes are handled by hashchange.
+  window.addEventListener('popstate', () => {
+    syncBlogWithHistory();
   });
 
   // --- URL Hash Change Navigation (Back / Forward Browser Buttons) ---

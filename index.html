@@ -17,13 +17,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/alyamama/index.css">
 
   <link rel="preload" as="image" type="image/avif" href="Media/Living_Bedroom/LivingToBedroom0097.avif">
+  <link rel="prefetch" href="projects/">
+  <link rel="prefetch" href="Media/BedroomToPCScreen/BedroomtoPc0562.avif">
 
-  <link rel="stylesheet" href="styles.css?v=20261020_glusight_v12">
+  <link rel="stylesheet" href="styles.css?v=20261022_selectable_v18">
 
-  <!-- Instant Pre-Render Check: Temporarily bypass Freedom loading screen & open directly to Living/About Me -->
+  <!-- Instant Pre-Render Check: hide the Freedom splash on first paint once the intro has already played this session -->
   <script>
     try {
-      document.documentElement.classList.add('intro-completed');
+      if (sessionStorage.getItem('portfolioIntroCompleted') === 'true') {
+        document.documentElement.classList.add('intro-completed');
+      }
     } catch (e) { }
   </script>
 </head>
@@ -406,7 +410,7 @@
                  ========================================================================== -->
             <section class="kb-spread kb-section-hook" id="kb-sec-01" data-section-idx="0">
               <div class="kb-artboard-meta-strip">
-                <span class="kb-meta-left">Projects</span>
+                <span class="kb-meta-left">The Hook</span>
                 <span class="kb-meta-right">Sections / 01</span>
               </div>
               <div class="kb-hero-split">
@@ -622,48 +626,54 @@
                   <p class="kb-caption-sub">Physiological and lifestyle drivers of glucose variability: meals, physical exertion, medication, and sleep.</p>
                 </div>
 
-                <!-- Verified Papers Editorial List -->
+                <!-- Verified Papers Editorial List (Newspaper clippings matching Reference/NewspaperClippings.jpg) -->
                 <div class="kb-papers-list">
-                  <div class="kb-paper-item">
+                  <article class="kb-paper-item">
                     <div class="kb-paper-header">
                       <span class="kb-paper-journal">Diabetologia &bull; 2024</span>
+                      <span class="kb-paper-tag">CLINICAL</span>
                     </div>
                     <h4 class="kb-paper-title">&ldquo;Continuous glucose monitoring in adults with type 2 diabetes: A systematic review and meta-analysis.&rdquo;</h4>
                     <p class="kb-paper-desc">
                       Provides systematic clinical evidence on how continuous glucose tracking supports glycemic awareness and management in everyday life.
                     </p>
-                  </div>
+                  </article>
 
-                  <div class="kb-paper-item">
+                  <article class="kb-paper-item">
                     <div class="kb-paper-header">
-                      <span class="kb-paper-journal">The Journal of Clinical Endocrinology &amp; Metabolism (JCEM) &bull; 2023</span>
+                      <span class="kb-paper-journal">JCEM &bull; 2023</span>
+                      <span class="kb-paper-tag">EVIDENCE</span>
                     </div>
                     <h4 class="kb-paper-title">&ldquo;Effects of Continuous Glucose Monitoring on Glycemic Control in Patients With Diabetes Mellitus: A Systematic Review and Meta-analysis.&rdquo;</h4>
                     <p class="kb-paper-desc">
                       Demonstrates the measurable impact of real-time trend awareness on time in range and glycemic variability reduction.
                     </p>
-                  </div>
+                  </article>
 
-                  <div class="kb-paper-item">
+                  <article class="kb-paper-item">
                     <div class="kb-paper-header">
-                      <span class="kb-paper-journal">Journal of Diabetes Science and Technology (JDST) &bull; 2023</span>
+                      <span class="kb-paper-journal">JDST &bull; 2023</span>
+                      <span class="kb-paper-tag">BEHAVIORAL</span>
                     </div>
                     <h4 class="kb-paper-title">&ldquo;Patient-Reported Usefulness and Challenges in Using Hypoglycemia-Informing Features of Continuous Glucose Monitors to Manage Hypoglycemia.&rdquo;</h4>
                     <p class="kb-paper-desc">
                       Illuminates user experiences, behavioral trust, and the psychological challenge of acting on alert-based uncertainty.
                     </p>
-                  </div>
+                  </article>
 
-                  <div class="kb-paper-item">
+                  <article class="kb-paper-item">
                     <div class="kb-paper-header">
-                      <span class="kb-paper-journal">Sports Medicine and Health Science &bull; 2022</span>
+                      <span class="kb-paper-journal">Sports Med &amp; Health Science &bull; 2022</span>
+                      <span class="kb-paper-tag">PHYSIOLOGY</span>
                     </div>
                     <h4 class="kb-paper-title">&ldquo;Glycemic variability: Importance, relationship with physical activity, and the influence of exercise.&rdquo;</h4>
                     <p class="kb-paper-desc">
                       Highlights how contextual factors like activity and physiological exertion drive fluctuations that single point readings fail to explain.
                     </p>
-                  </div>
+                  </article>
                 </div>
+
+
               </div>
 
               <!-- 04B: Primary Research -->
@@ -676,11 +686,6 @@
                 <p class="kb-body-text">
                   My own experience was only one perspective. To understand the broader challenges of diabetes management, I explored how others monitor their glucose, interpret changing readings, and navigate the uncertainties of everyday life.
                 </p>
-
-                <!-- Participants Triptych Visual -->
-                <div class="kb-triptych-wrap">
-                  <img src="Media/GluSight/ref_02_patients_triptych.jpg" alt="Living with diabetes: diverse participant management styles" class="kb-triptych-img">
-                </div>
 
                 <!-- Participant Cards -->
                 <div class="kb-participants-row">
@@ -727,48 +732,35 @@
                   Looking across the research helped me consider how people experience glucose information differently, while highlighting the importance of understanding what those readings mean and what might happen next.
                 </p>
 
-                <!-- Insights Stack -->
-                <div class="kb-insights-stack">
-                  <!-- Insight 01 -->
-                  <div class="kb-insight-row">
-                    <div class="kb-insight-text-col">
-                      <span class="kb-insight-tag">INSIGHT 01</span>
-                      <h4 class="kb-insight-title">Different Responses, Shared Uncertainty</h4>
-                      <p class="kb-body-text">
-                        People can respond to glucose management in different ways. Understanding these differences is important when exploring how glucose information could support people in their everyday lives.
-                      </p>
-                    </div>
-                    <div class="kb-insight-visual-col">
-                      <img src="Media/GluSight/theme_1_understanding_numbers.png" alt="Understanding numbers insight visualization" class="kb-insight-art-img">
-                    </div>
+                <!-- The Three Connected Themes (Integrated Layout matching Project DetailedLayout-08.png) -->
+                <div class="kb-themes-integrated-container">
+                  <img src="Media/GluSight/themes_3_complete_flow.png" alt="Connected themes: Understanding the Numbers, Uncertainty About What's Next, and Turning Information Into Action" class="kb-themes-canvas-art">
+                  
+                  <!-- Insight 01: Different Responses, Shared Uncertainty -->
+                  <div class="kb-theme-callout kb-theme-1-callout">
+                    <span class="kb-insight-tag">INSIGHT 01</span>
+                    <h4 class="kb-insight-title">Different Responses, Shared Uncertainty</h4>
+                    <p class="kb-body-text">
+                      People can respond to glucose management in different ways. Understanding these differences is important when exploring how glucose information could support people in their everyday lives.
+                    </p>
                   </div>
 
-                  <!-- Insight 02 -->
-                  <div class="kb-insight-row kb-row-reverse">
-                    <div class="kb-insight-text-col">
-                      <span class="kb-insight-tag">INSIGHT 02</span>
-                      <h4 class="kb-insight-title">Understanding What Comes Next</h4>
-                      <p class="kb-body-text">
-                        Knowing the current glucose reading does not necessarily resolve uncertainty about how glucose levels may change afterwards.
-                      </p>
-                    </div>
-                    <div class="kb-insight-visual-col">
-                      <img src="Media/GluSight/theme_2_uncertainty_future.png" alt="Uncertainty of the future insight visualization" class="kb-insight-art-img">
-                    </div>
+                  <!-- Insight 02: Understanding What Comes Next -->
+                  <div class="kb-theme-callout kb-theme-2-callout">
+                    <span class="kb-insight-tag">INSIGHT 02</span>
+                    <h4 class="kb-insight-title">Understanding What Comes Next</h4>
+                    <p class="kb-body-text">
+                      Knowing the current glucose reading does not necessarily resolve uncertainty about how glucose levels may change afterwards.
+                    </p>
                   </div>
 
-                  <!-- Insight 03 -->
-                  <div class="kb-insight-row">
-                    <div class="kb-insight-text-col">
-                      <span class="kb-insight-tag">INSIGHT 03</span>
-                      <h4 class="kb-insight-title">Information Needs Interpretation</h4>
-                      <p class="kb-body-text">
-                        Glucose information is most useful when people can understand what it represents and consider how to respond appropriately.
-                      </p>
-                    </div>
-                    <div class="kb-insight-visual-col">
-                      <img src="Media/GluSight/theme_3_turning_into_action.png" alt="Turning insights into action visualization" class="kb-insight-art-img">
-                    </div>
+                  <!-- Insight 03: Information Needs Interpretation -->
+                  <div class="kb-theme-callout kb-theme-3-callout">
+                    <span class="kb-insight-tag">INSIGHT 03</span>
+                    <h4 class="kb-insight-title">Information Needs Interpretation</h4>
+                    <p class="kb-body-text">
+                      Glucose information is most useful when people can understand what it represents and consider how to respond appropriately.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -889,19 +881,19 @@
             <div class="kb-rail-title">Sections</div>
             <nav class="kb-rail-tabs" aria-label="GluSight Sections">
               <button type="button" class="kb-rail-tab active" data-section="0" data-target="kb-sec-01" aria-label="Section 1: The Hook" title="01. The Hook">
-                <span class="kb-tab-prefix">Sections_</span><span class="kb-tab-num">1</span>
+                <span class="kb-tab-num">01.</span> <span class="kb-tab-name">The Hook</span>
               </button>
               <button type="button" class="kb-rail-tab" data-section="1" data-target="kb-sec-02" aria-label="Section 2: Introducing GluSight" title="02. Introducing GluSight">
-                <span class="kb-tab-prefix">Sections_</span><span class="kb-tab-num">2</span>
+                <span class="kb-tab-num">02.</span> <span class="kb-tab-name">Introducing GluSight</span>
               </button>
               <button type="button" class="kb-rail-tab" data-section="2" data-target="kb-sec-03" aria-label="Section 3: Exploring the Idea" title="03. Exploring the Idea">
-                <span class="kb-tab-prefix">Sections_</span><span class="kb-tab-num">3</span>
+                <span class="kb-tab-num">03.</span> <span class="kb-tab-name">Exploring the Idea</span>
               </button>
               <button type="button" class="kb-rail-tab" data-section="3" data-target="kb-sec-04" aria-label="Section 4: Research &amp; Insights" title="04. Research &amp; Insights">
-                <span class="kb-tab-prefix">Sections_</span><span class="kb-tab-num">4</span>
+                <span class="kb-tab-num">04.</span> <span class="kb-tab-name">Research &amp; Insights</span>
               </button>
               <button type="button" class="kb-rail-tab" data-section="4" data-target="kb-sec-05" aria-label="Section 5: Future Plans &amp; Reflection" title="05. Future Plans &amp; Reflection">
-                <span class="kb-tab-prefix">Sections_</span><span class="kb-tab-num">5</span>
+                <span class="kb-tab-num">05.</span> <span class="kb-tab-name">Future &amp; Reflection</span>
               </button>
             </nav>
           </div>
@@ -915,7 +907,7 @@
 
   <!-- Parallax.js Library by Matthew Wagerfield -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/parallax/3.1.0/parallax.min.js"></script>
-  <script src="script.js?v=20261020_glusight_v12"></script>
+  <script src="script.js?v=20261022_tabs_v13"></script>
 </body>
 
 </html>
