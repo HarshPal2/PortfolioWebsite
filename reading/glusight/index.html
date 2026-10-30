@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GluSight — Harsh (Reading version)</title>
+<meta name="description" content="What if your glucose monitor could tell you what happens next?">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Belleza&family=GFS+Didot&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f3ee; --ink:#1d1b18; --muted:#7a746b; --line:#ddd6ca; --accent:#8a5a2b; --note:#ece6db;
+    --font-heading:'GFS Didot','Didot','Playfair Display',serif;
+    --font-body:'Belleza','Optima','Montserrat',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#161412; --ink:#efe9df; --muted:#9a9388; --line:#2f2b26; --accent:#d3a36a; --note:#211e1a;}
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-underline-offset:3px}
+  a:hover{text-decoration-thickness:2px}
+  .wrap{max-width:680px;margin:0 auto;padding:0 20px}
+  html{scroll-padding-top:76px}
+  header{position:sticky;top:0;z-index:20;padding:14px 0;background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:baseline;justify-content:space-between}
+  .brand{font-family:var(--font-heading);font-size:20px;color:var(--ink);text-decoration:none}
+  nav{display:flex;flex-wrap:wrap;gap:6px 22px}
+  nav a{color:var(--muted);text-decoration:none;font-size:16px}
+  nav a:hover{color:var(--ink)}
+  .notice{background:var(--note);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:28px 0 8px;font-size:15px;color:var(--muted)}
+  .btn{display:inline-block;margin-top:10px;padding:10px 18px;border:1px solid var(--ink);border-radius:999px;color:var(--ink);text-decoration:none;font-size:15px;transition:background .2s,color .2s}
+  .btn:hover,.btn:focus-visible{background:var(--ink);color:var(--bg)}
+  h1,h2{font-family:var(--font-heading);font-weight:400;line-height:1.1;margin:0}
+  h1{font-size:clamp(40px,8vw,64px);margin:56px 0 20px}
+  h2{font-size:clamp(30px,5vw,40px);margin:0 0 24px}
+  section{padding:56px 0 8px;border-top:1px solid var(--line);margin-top:56px}
+  .lede{font-size:21px;color:var(--ink)}
+  .item{margin:0 0 30px}
+  .item h3{margin:0;font-size:19px;font-weight:400;font-family:var(--font-heading)}
+  .meta{color:var(--muted);font-size:15px}
+  .item p{margin:6px 0 0}
+  ol.list,ul.list{list-style:none;padding:0;margin:0}
+  .list li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .list li span{color:var(--muted);font-size:15px}
+  .contact-row{display:flex;flex-wrap:wrap;gap:10px 14px;margin:20px 0}
+  form{display:grid;gap:14px;margin-top:24px}
+  label{font-size:14px;color:var(--muted);display:block;margin-bottom:4px}
+  input,textarea{width:100%;font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+  input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+  textarea{min-height:130px;resize:vertical}
+  button.btn{background:transparent;cursor:pointer;font:inherit;font-size:15px;justify-self:start}
+  .fine{font-size:14px;color:var(--muted)}
+
+  .deck{margin:0 -20px}
+  .track{list-style:none;margin:0;padding:4px 20px 8px;display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 20px;-webkit-overflow-scrolling:touch;scrollbar-width:none;outline-offset:2px}
+  .track::-webkit-scrollbar{display:none}
+  .slide{flex:0 0 88%;scroll-snap-align:start}
+  .card{display:flex;flex-direction:column;height:100%;color:inherit;text-decoration:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--note);transition:transform .25s,border-color .25s}
+  .card:hover,.card:focus-visible{transform:translateY(-3px);border-color:var(--accent);outline:none}
+  .card-img{display:block;aspect-ratio:4/3;background:var(--line);overflow:hidden}
+  .card-img img{display:block;width:100%;height:100%;object-fit:cover}
+  .card-body{display:flex;flex-direction:column;gap:6px;padding:18px 20px 22px;flex:1}
+  .card-no{font-size:13px;letter-spacing:.12em;color:var(--muted)}
+  .card-title{font-family:var(--font-heading);font-size:26px;line-height:1.15}
+  .card-meta{font-size:14px;color:var(--muted)}
+  .card-desc{font-size:16px;line-height:1.55}
+  .card-cta{margin-top:auto;padding-top:10px;color:var(--accent);font-size:15px}
+  .deck-ui{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px 0}
+  .arrow{width:42px;height:42px;border-radius:50%;border:1px solid var(--ink);background:transparent;color:var(--ink);font:inherit;font-size:18px;cursor:pointer;transition:background .2s,color .2s}
+  .arrow:hover,.arrow:focus-visible{background:var(--ink);color:var(--bg);outline:none}
+  .arrow[disabled]{opacity:.3;cursor:default;background:transparent;color:var(--ink)}
+  .dots{display:flex;gap:8px}
+  .dot{width:9px;height:9px;padding:0;border-radius:50%;border:1px solid var(--ink);background:transparent;cursor:pointer}
+  .dot[aria-selected="true"]{background:var(--ink)}
+  @media (prefers-reduced-motion:no-preference){.track{scroll-behavior:smooth}}
+  @media (min-width:720px){.deck{margin:0}.track{padding-left:0;padding-right:0;scroll-padding:0}.slide{flex-basis:84%}.deck-ui{padding:12px 0 0}}
+  footer{margin:72px 0 48px;padding-top:24px;border-top:1px solid var(--line);font-size:15px;color:var(--muted)}
+  footer nav{margin-bottom:14px}
+  .skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;background:var(--bg);padding:8px;z-index:9}
+
+  html{scroll-padding-top:76px}
+  header{position:sticky;top:0;z-index:20;padding:14px 0;background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  figure{margin:32px 0}
+  figure img{display:block;width:100%;height:auto;border-radius:8px;background:var(--note)}
+  figcaption{font-size:14px;color:var(--muted);margin-top:8px}
+  blockquote{margin:28px 0;padding-left:18px;border-left:2px solid var(--accent);font-family:var(--font-heading);font-size:21px;line-height:1.45}
+  h3.sub{font-family:var(--font-heading);font-weight:400;font-size:24px;margin:44px 0 8px}
+  .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 20px;margin:26px 0 8px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .meta-grid dt{font-size:13px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+  .meta-grid dd{margin:2px 0 0}
+  .pillar{margin:0 0 26px}
+  .pillar .k{font-size:13px;color:var(--muted);letter-spacing:.08em}
+  .pillar h3{font-family:var(--font-heading);font-weight:400;font-size:22px;margin:2px 0 4px}
+  .pillar p{margin:0}
+  .crumbs{font-size:15px;margin:36px 0 0;color:var(--muted)}
+  .pager{display:flex;justify-content:space-between;gap:16px;margin:48px 0 0;padding-top:20px;border-top:1px solid var(--line);font-size:16px}
+
+  .toc{display:flex;flex-wrap:wrap;gap:8px 20px;margin:28px 0 0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .toc a{font-size:16px;color:var(--muted);text-decoration:none}.toc a:hover{color:var(--ink)}
+  .fine{font-size:16px}
+  figcaption{font-size:16px}
+  .meta{font-size:16px}
+  .sketches{display:grid;grid-template-columns:1fr;gap:8px}
+  @media (min-width:720px){.sketches{grid-template-columns:repeat(3,1fr);gap:16px;margin:0 -60px}}
+  .sketches figure{margin:16px 0}
+  figure.phone{max-width:300px;margin:20px auto}
+  .screen{margin:12px 0 0}.screen .k,.finding .k,.pillar .k{font-size:16px;letter-spacing:.08em;color:var(--accent)}
+  .finding{margin:0 0 20px;padding:22px 20px;border:1px solid var(--line);border-radius:14px;background:var(--note)}
+  .finding h3{font-family:var(--font-heading);font-weight:400;font-size:24px;line-height:1.25;margin:4px 0 12px}
+  blockquote.q{margin:0 0 14px;padding-left:14px;border-left:2px solid var(--accent);font-size:19px;line-height:1.5;font-style:italic}
+  .qn,.ctx{display:block;font-size:16px;font-style:normal;color:var(--muted);line-height:1.5}
+  .qn{margin-top:4px}.ctx{margin:0 0 14px}
+  .take{margin:12px 0 0;padding-top:12px;border-top:1px dashed var(--line);font-size:17px}
+  .tl{display:block;font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+  .papers li div span{display:block;margin-top:4px;color:var(--muted);font-size:16px}
+  .pillar .k{font-size:16px}
+  .crumbs,.btn,.meta-grid dt,.pager,footer{font-size:16px}
+  .screen{margin-top:44px}.screen h3.sub{margin-top:2px}.screen .k{display:block}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header>
+  <div class="wrap">
+    <div class="bar">
+      <a class="brand" href="../../reading/">Harsh</a>
+      <nav aria-label="Sections">
+        <a href="../#about">About</a>
+        <a href="../#projects">Projects</a>
+        <a href="../#case-study">Case study</a>
+        <a href="../#contact">Contact</a>
+      </nav>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <main id="main">
+    <p class="crumbs"><a href="../#projects">&larr; All projects</a> &middot; <span style="text-transform:uppercase;letter-spacing:.06em;font-size:16px">CASE STUDY — MEDICAL UX/UI</span></p>
+    <h1>GluSight</h1>
+    <p class="lede">What if your glucose monitor could tell you what happens next?</p>
+    <dl class="meta-grid"><div><dt>Discipline</dt><dd>Medical UX/UI</dd></div><div><dt>Timeline</dt><dd>2026</dd></div><div><dt>Role</dt><dd>Research &amp; User Interface</dd></div><div><dt>Medium</dt><dd>Design System &amp; Predictive UI</dd></div></dl>
+    <figure><img src="../img/glusight-ref-01-hero-phone.webp" width="1179" height="737" alt="GluSight predictive glucose interface on a mobile device" loading="lazy" decoding="async"><figcaption>The GluSight concept: the current reading with a prediction graph.</figcaption></figure>
+    <p class="fine">GluSight is an independent design concept. It has not been clinically validated or tested with users.</p>
+    <nav class="toc" aria-label="Case study sections"><a href="#hook">01 The Hook</a><a href="#intro">02 Introducing GluSight</a><a href="#screens">03 A Closer Look</a><a href="#research">04 Research &amp; Insights</a><a href="#future">05 Future Plans &amp; Reflection</a></nav>
+
+    <section id="hook">
+      <h2>The Hook</h2>
+      <p class="lede">Living with diabetes means more than keeping track of numbers.</p>
+      <p>GluSight explores how predictive insights could help people better understand their glucose levels and prepare for what&rsquo;s ahead.</p>
+    </section>
+
+    <section id="intro">
+      <h2>Introducing GluSight</h2>
+      <p>GluSight is a concept exploring how predictive glucose insights could help people understand possible changes in their glucose levels and prepare for what&rsquo;s ahead.</p>
+      <h3 class="sub">The Idea</h3>
+      <p>Instead of focusing only on the current reading, GluSight explores how a possible future glucose trend could help people anticipate changes and better understand their glucose information.</p>
+      <h3 class="sub">Designed Around Anticipation</h3>
+      <p>The concept explores how presenting current glucose information alongside a possible future trend could help users make sense of what they are seeing and consider what might happen next.</p>
+      <div class="pillar"><span class="k">FEATURE 01</span><h3>Current Glucose</h3><p>Understand the present through a clear view of the current glucose reading and its trend.</p></div>
+      <div class="pillar"><span class="k">FEATURE 02</span><h3>Predicted Glucose Trend</h3><p>Explore how glucose levels might change over the coming period through a visual projection of a possible future trend.</p></div>
+      <div class="pillar"><span class="k">FEATURE 03</span><h3>Communicating Uncertainty</h3><p>Distinguish observed readings from estimated future values, helping users recognise that predictions are not guarantees.</p></div>
+      <div class="pillar"><span class="k">FEATURE 04</span><h3>Contextual Information</h3><p>Explore how relevant factors, such as meals, physical activity, medication, stress, and sleep, could help users make sense of changing glucose patterns.</p></div>
+    </section>
+
+    <section id="screens">
+      <h2>A Closer Look at GluSight</h2>
+      <p>The interface is built around three screens: Home, Log Meal and Settings. This section explains what each one is intended to do and the design thinking behind it. They are concept screens showing sample data, and they have not been tested with users.</p>
+      <h3 class="sub">Where the Screens Started</h3>
+      <p>Before the concept screens, I drew three rough pencil sketches. They are shown here as drawn, in the order I drew them, and are lightly cropped and brightened only so they can be read.</p>
+      <div class="sketches">
+        <figure><img src="../img/glusight-sketch-1.webp" width="625" height="1100" alt="Pencil sketch of a phone screen with a large glucose reading and rising arrow, a note on how far above normal it is, a Log Meal button, two suggested actions and a graph" loading="lazy" decoding="async"><figcaption><strong>Sketch 1.</strong> The reading with a direction arrow, how far it sits above normal, a Log Meal button, two suggested actions (drink water, go for a walk) and a graph.</figcaption></figure>
+        <figure><img src="../img/glusight-sketch-2.webp" width="613" height="1100" alt="Pencil sketch of a phone screen showing a low glucose alert at night with a short message and the alarm set to vibrate" loading="lazy" decoding="async"><figcaption><strong>Sketch 2.</strong> A low-glucose alert at night, with a short plain message and the alarm set to vibrate.</figcaption></figure>
+        <figure><img src="../img/glusight-sketch-3.webp" width="671" height="1100" alt="Pencil sketch of a phone screen with a glucose reading and direction arrow, an expected range ahead, and a graph that continues forward" loading="lazy" decoding="async"><figcaption><strong>Sketch 3.</strong> The reading with its direction, an expected range ahead and a graph that continues forward.</figcaption></figure>
+      </div>
+      <div class="screen">
+        <span class="k">01</span><h3 class="sub">Home: The Present and a Possible Future</h3>
+        <p>The Home screen puts the current glucose reading at the centre, with its time and a trend label, and places a graph beneath it. Recorded glucose is drawn as a solid line and a predicted continuation as a dashed line, with the target range shaded so values can be read against it.</p>
+        <p><strong>Design decision:</strong> Two different line styles keep what has been measured visibly separate from what is estimated. A short note and a confidence indicator beneath the graph frame the prediction as an estimate based on past patterns, not a certainty.</p>
+        <figure class="phone"><img src="../img/glusight-screen-home.webp" width="430" height="932" alt="GluSight Home screen with the current glucose reading, a trend label, a prediction graph and a confidence indicator" loading="lazy" decoding="async"><figcaption>Home: current reading, trend, and a prediction graph with a confidence indicator.</figcaption></figure>
+      </div>
+      <div class="screen">
+        <span class="k">02</span><h3 class="sub">Log Meal: Adding Context</h3>
+        <p>The Log Meal screen lets someone record what they ate by choosing a quick category (Sugary, Heavy Meal or Light Meal) or describing the meal in their own words. The time of logging is shown and can be changed.</p>
+        <p><strong>Design decision:</strong> The concept explores how meal context could sit alongside glucose readings, so a change might be understood in relation to what happened rather than as a number on its own. Quick categories are intended to keep logging fast.</p>
+        <figure class="phone"><img src="../img/glusight-screen-log-meal.webp" width="430" height="932" alt="GluSight Log Meal screen with quick categories and a free-text description" loading="lazy" decoding="async"><figcaption>Log Meal: quick categories and a free-text description.</figcaption></figure>
+      </div>
+      <div class="screen">
+        <span class="k">03</span><h3 class="sub">Settings: Personalisation and Control</h3>
+        <p>Settings groups three things: health setup details (diabetes type, target range, weight and age) that are intended to personalise predictions; alert controls for predicted high and low alerts, silent mode and alert sensitivity; and preferences such as how often to be asked about food.</p>
+        <p><strong>Design decision:</strong> The concept treats prediction alerts as optional and adjustable, so people can decide how and when predictions reach them.</p>
+        <figure class="phone"><img src="../img/glusight-screen-settings.webp" width="430" height="932" alt="GluSight Settings screen with health setup, alert controls and preferences" loading="lazy" decoding="async"><figcaption>Settings: health setup, alert controls and preferences.</figcaption></figure>
+      </div>
+    </section>
+
+    <section id="research">
+      <h2>Research &amp; Insights</h2>
+      <p>Three short interviews and some published research, kept separate from my own interpretations. The sample is small and the concept is untested.</p>
+      <h3 class="sub">Type 1, Type 2 and Prediabetes</h3>
+      <p>Three consenting, anonymised interviews: type 1, type 2 and prediabetic. The type 2 participant spoke Hindi, so those quotes are my translation. A very small sample that shaped my thinking but does not validate the concept.</p>
+      <div class="finding"><span class="k">01</span><h3>Highs cause stress, and worrying seems to make it worse</h3><blockquote class="q">&ldquo;Stress is the only thing that goes through my mind.&rdquo;</blockquote><blockquote class="q">&ldquo;When I thought about it too much, my sugar would go up. It&rsquo;s all a game of the mind.&rdquo;<span class="qn">Translated from Hindi</span></blockquote><blockquote class="q">&ldquo;Now I&rsquo;m not conscious about it, but earlier, I used to be.&rdquo;</blockquote><p class="take"><span class="tl">Takeaway</span>This pointed toward keeping the main screen calm and avoiding wording that adds to worry.</p></div>
+      <div class="finding"><span class="k">02</span><h3>Lows cause panic, especially outdoors</h3><blockquote class="q">&ldquo;It can cause a moment of panic, especially when I&rsquo;m outdoors.&rdquo;</blockquote><p class="ctx">Another participant also described dizziness from lows and keeping a toffee at hand.</p><p class="take"><span class="tl">Takeaway</span>This pointed toward a low alert that is short, plain and quick to act on.</p></div>
+      <div class="finding"><span class="k">03</span><h3>Night checking varies</h3><blockquote class="q">&ldquo;Every night, I have to make sure it&rsquo;s normal.&rdquo;</blockquote><p class="ctx">Another participant said she has never done this.</p><p class="take"><span class="tl">Takeaway</span>Habits differed a lot, so night behaviour could not be assumed to be the same for everyone.</p></div>
+      <div class="finding"><span class="k">04</span><h3>Re-checking to see the direction</h3><blockquote class="q">&ldquo;I had to keep checking the monitor to see if it&rsquo;s getting worse or if it&rsquo;s getting better.&rdquo;</blockquote><blockquote class="q">&ldquo;I have to make sure that whatever I&rsquo;m going to have next is not going to make my levels worse.&rdquo;</blockquote><p class="take"><span class="tl">Takeaway</span>This pointed toward showing direction of change alongside the number.</p></div>
+      <div class="finding"><span class="k">05</span><h3>Distrust of accuracy</h3><blockquote class="q">&ldquo;No machine is accurate. The lab test is the best.&rdquo;<span class="qn">Translated from Hindi</span></blockquote><p class="ctx">One participant compared a home reading of 150 with a lab result of 120.</p><p class="take"><span class="tl">Takeaway</span>This pointed toward being honest that readings are estimates.</p></div>
+
+      <h3 class="sub">Learning From Existing Research</h3>
+      <p>Published research on glucose monitoring and variability gave context. None of it evaluates GluSight.</p>
+      <ul class="list papers">
+        <li><div>&ldquo;Continuous glucose monitoring in adults with type 2 diabetes: A systematic review and meta-analysis.&rdquo;<br><span>Diabetologia &middot; 2024</span></div></li>
+        <li><div>&ldquo;Patient-Reported Usefulness and Challenges in Using Hypoglycemia-Informing Features of Continuous Glucose Monitors to Manage Hypoglycemia.&rdquo;<br><span>Published 2023</span></div></li>
+        <li><div>&ldquo;Glycemic variability: Importance, relationship with physical activity, and the influence of exercise.&rdquo;<br><span>Sports Medicine &amp; Health Science &middot; 2021</span></div></li>
+      </ul>
+
+      <h3 class="sub">What Shaped the Concept</h3>
+      <p>My interpretations, not findings. They still need testing with more people.</p>
+      <div class="pillar"><span class="k">ASSUMPTION 01</span><h3>People May Respond Differently</h3><p>Everyone lives with glucose differently.</p></div>
+      <div class="pillar"><span class="k">ASSUMPTION 02</span><h3>The Current Reading May Not Be Enough</h3><p>Knowing the number does not say where it is heading.</p></div>
+      <div class="pillar"><span class="k">ASSUMPTION 03</span><h3>Information May Need Interpretation</h3><p>A number helps most when it comes with meaning.</p></div>
+      <h3 class="sub">From Insight to Opportunity</h3>
+      <p>The opportunity: showing where glucose may be heading, without presenting an estimate as a certainty.</p>
+    </section>
+
+    <section id="future">
+      <h2>Future Plans &amp; Reflection</h2>
+      <h3 class="sub">Looking Beyond Monitoring</h3>
+      <p>GluSight explores how predictive glucose insights could extend the monitoring experience beyond current readings. Further work would focus on understanding how people interpret predicted trends, respond to uncertainty, and use these insights in everyday life.</p>
+      <h3 class="sub">What Comes Next?</h3>
+      <p>The next stage would be to explore how people understand possible future glucose trends, how uncertainty should be communicated, and whether these insights could support meaningful decisions in everyday life.</p>
+      <div class="pillar"><span class="k">01</span><h3>Testing the Understanding of Predictions</h3><p>Explore whether users can distinguish current glucose readings from estimated future values and correctly interpret what a predicted trend represents.</p></div>
+      <div class="pillar"><span class="k">02</span><h3>Communicating Uncertainty</h3><p>Investigate how prediction ranges, visual distinctions, and supporting explanations could communicate uncertainty without making future glucose changes appear guaranteed.</p></div>
+      <div class="pillar"><span class="k">03</span><h3>Understanding Context</h3><p>Explore how contextual information, such as meals, physical activity, medication, stress, and sleep, could help users interpret glucose trends without overwhelming them with information.</p></div>
+      <div class="pillar"><span class="k">04</span><h3>Evaluating the Experience</h3><p>Conduct usability research to understand how people navigate the concept, interpret its visualisations, and decide what information they need to make sense of their glucose data.</p></div>
+      <div class="pillar"><span class="k">05</span><h3>Recognising the Limitations</h3><p>Investigate how the concept should communicate the limitations of predictions and avoid encouraging users to treat estimates as guaranteed outcomes or substitutes for appropriate medical guidance.</p></div>
+      <h3 class="sub">Final Reflection</h3>
+      <p>GluSight began with a question about what glucose monitoring could offer beyond the present reading. The concept explores how communicating possible future trends might help people make sense of their glucose information. The next step is to understand whether people can interpret these predictions clearly, trust them appropriately, and find them useful in everyday life.</p>
+    </section>
+
+    <p><a class="btn" href="../../projects/">See this project in the 3D house</a></p>
+    <div class="pager"><span></span><a href="../cabin-in-the-woods/">Cabin in the Woods &rarr;</a></div>
+  </main>
+  <footer>
+    <nav aria-label="Footer"><a href="../#about">About</a><a href="../#projects">Projects</a><a href="../#contact">Contact</a><a href="../../">3D house</a></nav>
+    &copy; 2026 Harsh
+  </footer>
+</div>
+</body>
+</html>

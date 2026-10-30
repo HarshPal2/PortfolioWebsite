@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biophilic Interior — Harsh (Reading version)</title>
+<meta name="description" content="A serene spatial sanctuary investigating the symbiosis of raw timber, tranquil water, and living flora.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Belleza&family=GFS+Didot&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f3ee; --ink:#1d1b18; --muted:#7a746b; --line:#ddd6ca; --accent:#8a5a2b; --note:#ece6db;
+    --font-heading:'GFS Didot','Didot','Playfair Display',serif;
+    --font-body:'Belleza','Optima','Montserrat',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#161412; --ink:#efe9df; --muted:#9a9388; --line:#2f2b26; --accent:#d3a36a; --note:#211e1a;}
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-underline-offset:3px}
+  a:hover{text-decoration-thickness:2px}
+  .wrap{max-width:680px;margin:0 auto;padding:0 20px}
+  html{scroll-padding-top:76px}
+  header{position:sticky;top:0;z-index:20;padding:14px 0;background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:baseline;justify-content:space-between}
+  .brand{font-family:var(--font-heading);font-size:20px;color:var(--ink);text-decoration:none}
+  nav{display:flex;flex-wrap:wrap;gap:6px 22px}
+  nav a{color:var(--muted);text-decoration:none;font-size:16px}
+  nav a:hover{color:var(--ink)}
+  .notice{background:var(--note);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:28px 0 8px;font-size:15px;color:var(--muted)}
+  .btn{display:inline-block;margin-top:10px;padding:10px 18px;border:1px solid var(--ink);border-radius:999px;color:var(--ink);text-decoration:none;font-size:15px;transition:background .2s,color .2s}
+  .btn:hover,.btn:focus-visible{background:var(--ink);color:var(--bg)}
+  h1,h2{font-family:var(--font-heading);font-weight:400;line-height:1.1;margin:0}
+  h1{font-size:clamp(40px,8vw,64px);margin:56px 0 20px}
+  h2{font-size:clamp(30px,5vw,40px);margin:0 0 24px}
+  section{padding:56px 0 8px;border-top:1px solid var(--line);margin-top:56px}
+  .lede{font-size:21px;color:var(--ink)}
+  .item{margin:0 0 30px}
+  .item h3{margin:0;font-size:19px;font-weight:400;font-family:var(--font-heading)}
+  .meta{color:var(--muted);font-size:15px}
+  .item p{margin:6px 0 0}
+  ol.list,ul.list{list-style:none;padding:0;margin:0}
+  .list li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .list li span{color:var(--muted);font-size:15px}
+  .contact-row{display:flex;flex-wrap:wrap;gap:10px 14px;margin:20px 0}
+  form{display:grid;gap:14px;margin-top:24px}
+  label{font-size:14px;color:var(--muted);display:block;margin-bottom:4px}
+  input,textarea{width:100%;font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+  input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+  textarea{min-height:130px;resize:vertical}
+  button.btn{background:transparent;cursor:pointer;font:inherit;font-size:15px;justify-self:start}
+  .fine{font-size:14px;color:var(--muted)}
+  footer{margin:72px 0 48px;padding-top:24px;border-top:1px solid var(--line);font-size:15px;color:var(--muted)}
+  footer nav{margin-bottom:14px}
+  .skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;background:var(--bg);padding:8px;z-index:9}
+
+  html{scroll-padding-top:76px}
+  header{position:sticky;top:0;z-index:20;padding:14px 0;background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  figure{margin:32px 0}
+  figure img{display:block;width:100%;height:auto;border-radius:8px;background:var(--note)}
+  figcaption{font-size:14px;color:var(--muted);margin-top:8px}
+  blockquote{margin:28px 0;padding-left:18px;border-left:2px solid var(--accent);font-family:var(--font-heading);font-size:21px;line-height:1.45}
+  h3.sub{font-family:var(--font-heading);font-weight:400;font-size:24px;margin:44px 0 8px}
+  .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 20px;margin:26px 0 8px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .meta-grid dt{font-size:13px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+  .meta-grid dd{margin:2px 0 0}
+  .pillar{margin:0 0 26px}
+  .pillar .k{font-size:13px;color:var(--muted);letter-spacing:.08em}
+  .pillar h3{font-family:var(--font-heading);font-weight:400;font-size:22px;margin:2px 0 4px}
+  .pillar p{margin:0}
+  .crumbs{font-size:15px;margin:36px 0 0;color:var(--muted)}
+  .pager{display:flex;justify-content:space-between;gap:16px;margin:48px 0 0;padding-top:20px;border-top:1px solid var(--line);font-size:16px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header>
+  <div class="wrap">
+    <div class="bar">
+      <a class="brand" href="../../reading/">Harsh</a>
+      <nav aria-label="Sections">
+        <a href="../#about">About</a>
+        <a href="../#projects">Projects</a>
+        <a href="../#case-study">Case study</a>
+        <a href="../#contact">Contact</a>
+      </nav>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <main id="main">
+    <p class="crumbs"><a href="../#projects">&larr; All projects</a> &middot; <span style="text-transform:uppercase;letter-spacing:.06em;font-size:13px">VISUALS — SPATIAL &amp; INTERIOR ARCHITECTURE</span></p>
+    <h1>Biophilic Interior</h1>
+    <p class="lede">A serene spatial sanctuary investigating the symbiosis of raw timber, tranquil water, and living flora.</p>
+    <dl class="meta-grid"><div><dt>Discipline</dt><dd>Spatial &amp; Interior CGI</dd></div><div><dt>Timeline</dt><dd>2025</dd></div><div><dt>Role</dt><dd>Spatial Designer &amp; Lighting</dd></div><div><dt>Medium</dt><dd>Blender Cycles &amp; Substance 3D</dd></div></dl>
+    <p>An interior architectural exploration into biophilic living environments, examining how natural lighting, organic cedar textures, reflective water features, and verdant courtyard vegetation can soften contemporary spaces into contemplative sanctuaries.</p><figure><img src="../img/biophilic-environment-img.webp" width="1400" height="788" alt="Biophilic Interior master perspective with indoor pool and slatted divider" loading="lazy" decoding="async"><figcaption>Master perspective across the reflective indoor emerald pool, vertical cedar slat screen, and open-air garden terrace.</figcaption></figure><h3 class="sub">Biophilic Context</h3><p>Nature as an integral architectural dimension rather than decorative afterthought.</p><blockquote>“Biophilic design is not simply placing plants in a room; it is sculpting sunlight, water, and organic tactile grain into a continuous sensory sanctuary.”</blockquote><figure><img src="../img/biophilic-environment-img-8.webp" width="1400" height="788" alt="Elevated architectural study of the lounge and garden veranda" loading="lazy" decoding="async"><figcaption>Elevated architectural study revealing the uninterrupted threshold between interior lounge seating and exterior gravel courtyard.</figcaption></figure><figure><img src="../img/biophilic-environment-img-4.webp" width="1400" height="788" alt="Suspended timber daybed swing with botanical upholstery" loading="lazy" decoding="async"><figcaption>Suspended oak daybed upholstered in organic botanical motif textiles, catching dappled pergola sunlight.</figcaption></figure><figure><img src="../img/biophilic-environment-img-3.webp" width="1400" height="788" alt="Spindle armchair and teak tea table" loading="lazy" decoding="async"><figcaption>Intimate sitting nook featuring a spindle-back timber armchair, slatted teak tea table, and ceramic tea set.</figcaption></figure><figure><img src="../img/biophilic-environment-img-6.webp" width="1400" height="788" alt="Curved tambour oak credenza with ambient backlighting" loading="lazy" decoding="async"><figcaption>Custom low-profile oak credenza with curved corners, tambour sliding slats, and warm ambient backlighting.</figcaption></figure><figure><img src="../img/biophilic-environment-img-9.webp" width="1400" height="788" alt="Ceramic still life with meadow wildflowers and doughnut vase" loading="lazy" decoding="async"><figcaption>Ceramic still life studying porous earthenware clay, sculptural donut silhouette, and delicate meadow botanicals.</figcaption></figure><h3 class="sub">Material Harmony</h3><p>Natural unfinished white oak, textured terrazzo flooring, hand-turned porous ceramics, and water-tempered emerald glass coalesce into a calm tactile equilibrium, grounding the mind through material honesty.</p>
+    <blockquote>“Where the boundaries between dwelling and landscape gently dissolve into stillness.”</blockquote>
+    
+    <p><a class="btn" href="../../projects/">See this project in the 3D house</a></p>
+    <div class="pager"><a href="../product-renders/">&larr; Product Renders</a><a href="../poster-collection/">Poster Collection &rarr;</a></div>
+  </main>
+  <footer>
+    <nav aria-label="Footer"><a href="../#about">About</a><a href="../#projects">Projects</a><a href="../#contact">Contact</a><a href="../../">3D house</a></nav>
+    &copy; 2026 Harsh
+  </footer>
+</div>
+</body>
+</html>

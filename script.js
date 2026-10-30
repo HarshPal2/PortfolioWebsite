@@ -14,10 +14,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const roomTitleEl = document.querySelector('.freedom-title h1');
 
   // --- Entrance Sequence Timing Constants ---
-  const FREEDOM_FADE_DURATION = 800;    // Duration (ms) for Freedom title to smoothly fade out to 0 opacity
+  const FREEDOM_FADE_DURATION = 500;    // Duration (ms) for Freedom title to smoothly fade out to 0 opacity
+  const ENTRANCE_START_DELAY = FREEDOM_FADE_DURATION + 150; // The walkthrough starts just after the Freedom fade has finished (overlapping it caused hitches in the first frames)
+
+  // Desktop only: if the first frames are not ready within this time the connection is too slow to
+  // play the entrance smoothly, so the intro is skipped and the visitor lands on the room directly.
+  const SLOW_CONNECTION_BUFFER_MS = 2500;
+
+  // After the intro, hotspots and navigation stay locked until the main transitions leading out of the
+  // current room (see BackgroundAssetQueue._roomPriority) are loaded enough to play without stalling:
+  // their opening frames plus at least ROOM_READY_MIN_FRACTION of all frames. The wait is capped so the
+  // page never dead-ends.
+  const ROOM_READY_FRAMES = 24;          // opening frames the background queue fetches first for the other transitions
+  const ROOM_READY_MIN_FRACTION = 0.85;
+  const ROOM_READY_MAX_WAIT_MS = 10000;
+
+  // A transition starts as soon as its first SEQUENCE_HEAD_FRAMES frames (in playback order) are ready;
+  // the rest stream in behind the animation. If even those are not ready in time, it cuts to the room.
+  const SEQUENCE_HEAD_FRAMES = 16;
 
   let hasRevealed = false;
   let isScrollLocked = false;
+  let interactionGateClosed = false; // true while the first room's transitions are still loading
   let currentRoom = 'living';
   let currentAnimId = null;
   let currentActiveFrameImg = null;
@@ -34,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'living_kitchen': { folder: 'Media/Living_Kitchen/', prefix: 'LivingToKitchen', start: 146, count: 24 },
     'living_pool': { folder: 'Media/Living_Pool/', prefix: 'LivingToPool', start: 171, count: 48 },
     'living_office': { folder: 'Media/Living_Office/', prefix: 'LivingToOffice', start: 220, count: 48 },
-    'office_bedroom': { folder: 'Media/Office_Bedroom/', prefix: 'OfficeToBedroom', start: 269, count: 48 },
+    'office_bedroom': { folder: 'Media/Office_Bedroom/', prefix: 'OfficeToBedroom', start: 268, count: 48 },
     'bedroom_kitchen': { folder: 'Media/Bedroom_Kitchen/', prefix: 'BedroomToKitchen', start: 318, count: 24 },
     'kitchen_pool': { folder: 'Media/Kitchen_Pool/', prefix: 'KitchenToPool', start: 343, count: 48 },
     'pool_office': { folder: 'Media/Pool_Office/', prefix: 'PoolToOffice', start: 392, count: 48 },
@@ -123,6 +141,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return img;
   }
 
+  // Frame indices (0-based, in playback order) that a transition leaving `room` plays first.
+  // Reverse connections play their sequence backwards, so their "head" is the end of the sequence.
+  function transitionHeadIndices(room, seqKey, n) {
+    const seq = sequences[seqKey];
+    if (!seq) return [];
+    let reverse = false;
+    for (const key in roomConnections) {
+      if (key.indexOf(room + '-') === 0 && roomConnections[key].seq === seqKey) {
+        reverse = roomConnections[key].reverse;
+        break;
+      }
+    }
+    const count = Math.min(n, seq.count);
+    const out = [];
+    for (let i = 0; i < count; i++) out.push(reverse ? seq.count - 1 - i : i);
+    return out;
+  }
+
   // --- Progressive Background Asset Queue ---
   // Loads non-critical sequences in small, throttled batches during idle time.
   // Prioritizes outgoing transitions from currentRoom. Never chokes the main thread.
@@ -130,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     _queue: [],
     _activeLoading: 0,
     _concurrency: 3, // at most 3 images loading concurrently
+    _gateConcurrency: 6, // ... or 6 while the post-intro interaction lock is waiting for them
     _isPaused: false,
     _hasStarted: false,
 
@@ -139,6 +176,16 @@ document.addEventListener('DOMContentLoaded', () => {
       'kitchen': ['bedroom_kitchen', 'office_kitchen', 'kitchen_pool', 'living_kitchen'],
       'poolroom': ['pool_bedroom', 'kitchen_pool', 'pool_office', 'living_pool'],
       'office': ['living_office', 'office_bedroom', 'office_kitchen', 'pool_office']
+    },
+
+    // The transitions people use most from each room (nav order: Projects, Blog, ...). They are loaded
+    // first, completely, and are the ones the post-intro interaction lock waits for.
+    _roomPriority: {
+      'living': ['living_bedroom', 'living_kitchen'],
+      'bedroom': ['bedroom_pc', 'bedroom_kitchen', 'living_bedroom'],
+      'kitchen': ['living_kitchen', 'bedroom_kitchen'],
+      'poolroom': ['living_pool', 'kitchen_pool'],
+      'office': ['living_office', 'pool_office']
     },
 
     start() {
@@ -161,29 +208,55 @@ document.addEventListener('DOMContentLoaded', () => {
       // Queue ONLY the sequences reachable from this room. The set is small enough
       // (<= 5) to fit inside MAX_CACHED_SEQUENCES, so nothing is evicted and re-queued.
       const adjacent = this._roomAdjacency[room] || [];
-      const priorityOrder = adjacent;
 
-      const newQueue = [];
-      priorityOrder.forEach((seqKey) => {
-        const seq = sequences[seqKey];
-        if (!seq) return;
+      const pending = adjacent.filter((seqKey) => {
+        if (!sequences[seqKey]) return false;
         const cached = frameCache[seqKey];
-        if (cached && cached.every((img) => img.complete && img.naturalWidth > 0)) {
-          return;
-        }
-        for (let i = 1; i <= seq.count; i++) {
-          newQueue.push({ seqKey, index: i });
+        return !(cached && cached.every((img) => img.complete && img.naturalWidth > 0));
+      });
+
+      const priority = (this._roomPriority[room] || []).filter((k) => pending.indexOf(k) !== -1);
+      const others = pending.filter((k) => priority.indexOf(k) === -1);
+
+      // Round 1: the priority transitions, one after another, each in playback order.
+      const priorityQueue = [];
+      priority.forEach((seqKey) => {
+        transitionHeadIndices(room, seqKey, sequences[seqKey].count).forEach((i) => {
+          priorityQueue.push({ seqKey, index: i + 1 });
+        });
+      });
+
+      // Round 2: the opening frames of every other outgoing transition, interleaved.
+      // Round 3: everything else, as before.
+      const heads = {};
+      others.forEach((seqKey) => {
+        heads[seqKey] = transitionHeadIndices(room, seqKey, ROOM_READY_FRAMES);
+      });
+      const headQueue = [];
+      for (let i = 0; i < ROOM_READY_FRAMES; i++) {
+        others.forEach((seqKey) => {
+          if (i < heads[seqKey].length) headQueue.push({ seqKey, index: heads[seqKey][i] + 1 });
+        });
+      }
+      const tailQueue = [];
+      others.forEach((seqKey) => {
+        const headSet = new Set(heads[seqKey]);
+        for (let i = 1; i <= sequences[seqKey].count; i++) {
+          if (!headSet.has(i - 1)) tailQueue.push({ seqKey, index: i });
         }
       });
 
-      this._queue = newQueue;
+      this._queue = priorityQueue.concat(headQueue, tailQueue);
       this._pump();
     },
 
     _pump() {
       if (this._isPaused) return;
 
-      while (this._activeLoading < this._concurrency && this._queue.length > 0) {
+      // While the page is locked waiting for the first transitions, nothing else is competing for the
+      // network, so fetch more frames at once; back to the normal limit once interaction is open.
+      const limit = interactionGateClosed ? this._gateConcurrency : this._concurrency;
+      while (this._activeLoading < limit && this._queue.length > 0) {
         const item = this._queue.shift();
         const seq = sequences[item.seqKey];
         if (!seq) continue;
@@ -544,7 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const roomTitles = {
     'living': 'Freedom',
     'bedroom': 'Projects',
-    'kitchen': 'Blog',
+    'kitchen': 'Case Study',
     'poolroom': 'About Me',
     'office': 'Contact'
   };
@@ -776,7 +849,40 @@ document.addEventListener('DOMContentLoaded', () => {
   // Wait until every frame has settled (loaded or failed) or the timeout elapses.
   // Resolves with the fraction of frames that loaded successfully (0..1).
   const SEQUENCE_READY_TIMEOUT_MS = 2000;
-  const SEQUENCE_MIN_PLAYABLE_FRACTION = 0.85;
+
+  // Resolves true as soon as the first `count` frames of a playback (in playback order, from startIdx
+  // towards endIdx) have loaded, or false if they have not within maxWaitMs.
+  function awaitSequenceHead(frames, startIdx, endIdx, count, maxWaitMs) {
+    return new Promise((resolve) => {
+      const step = startIdx <= endIdx ? 1 : -1;
+      const head = [];
+      for (let i = startIdx, n = 0; n < count && (step > 0 ? i <= endIdx : i >= endIdx); i += step, n++) {
+        head.push(frames[i]);
+      }
+      const start = performance.now();
+      const check = () => {
+        if (head.every((img) => img && img.complete && img.naturalWidth > 0)) {
+          resolve(true);
+          return;
+        }
+        if (performance.now() - start >= maxWaitMs) {
+          resolve(false);
+          return;
+        }
+        setTimeout(check, 30);
+      };
+      check();
+    });
+  }
+
+  // Decodes the first few frames of a transition while the old room's UI is still fading out, so the
+  // first draws of the animation are cheap. Fire-and-forget; failures are harmless.
+  function warmSequenceHead(frames, reverse, count) {
+    const ordered = reverse ? frames.slice().reverse() : frames;
+    ordered.slice(0, count).forEach((img) => {
+      if (img && typeof img.decode === 'function') img.decode().catch(() => {});
+    });
+  }
 
   function awaitSequenceReady(frames, maxWaitMs) {
     return new Promise((resolve) => {
@@ -807,7 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Unified Room-to-Room Transition Controller ---
   function navigateToRoom(destRoom, onComplete) {
-    if (isScrollLocked) return;
+    if (isScrollLocked || interactionGateClosed) return;
     if (currentRoom === destRoom) return;
 
     const connKey = `${currentRoom}-${destRoom}`;
@@ -825,7 +931,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start fetching this transition's frames immediately (they download while the
     // UI fades out) and stop background prefetch from competing with them.
     BackgroundAssetQueue.pause();
-    preloadSequence(conn.seq);
+    warmSequenceHead(preloadSequence(conn.seq), conn.reverse, 4);
 
     let hasCompletedTransition = false;
     let safetyTimer = null;
@@ -899,9 +1005,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let uiDone = false;
     let backdropDone = false;
 
+    let animationStarted = false;
     const startAnimation = () => {
       if (!uiDone || !backdropDone) return;
-      if (hasCompletedTransition) return;
+      if (hasCompletedTransition || animationStarted) return;
+      animationStarted = true;
 
       const frames = preloadSequence(conn.seq);
       const activeCanvas = getActiveCanvas();
@@ -911,15 +1019,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       BackgroundAssetQueue.pause();
 
-      // Frames are now loaded on demand, so a click made before the background
-      // prefetch finished may find the sequence only partly downloaded. Give it a
-      // short window to arrive; if it still isn't usable (slow connection), cut
-      // straight to the destination room instead of stuttering through a mostly
-      // empty animation (which previously froze the canvas until the 6 s safety timer).
-      awaitSequenceReady(frames, SEQUENCE_READY_TIMEOUT_MS).then((loadedFraction) => {
+      // Frames are loaded on demand, so a click made before the background prefetch finished may find
+      // the sequence only partly downloaded. The animation starts as soon as its opening frames are
+      // in (the rest stream in behind it); if even those do not arrive in time (very slow connection),
+      // cut straight to the destination room instead of freezing the canvas until the 6 s safety timer.
+      awaitSequenceHead(frames, startIdx, endIdx, SEQUENCE_HEAD_FRAMES, SEQUENCE_READY_TIMEOUT_MS).then((headReady) => {
         if (hasCompletedTransition) return;
-        if (loadedFraction < SEQUENCE_MIN_PLAYABLE_FRACTION) {
-          console.warn(`[Transition] ${connKey}: only ${Math.round(loadedFraction * 100)}% of frames loaded — skipping animation`);
+        if (!headReady) {
+          console.warn(`[Transition] ${connKey}: opening frames not loaded — skipping animation`);
           completeTransition();
           return;
         }
@@ -1055,7 +1162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     kitchenBlog: Object.freeze({
       id: 'kitchenBlog',
       room: 'kitchen',
-      label: 'Kitchen Blog Lab',
+      label: 'Case Study',
       shape: 'rect',
       bounds: Object.freeze({
         left: '41%',
@@ -1321,7 +1428,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     handleObjectClick(config, objEl) {
-      if (isScrollLocked) return;
+      if (isScrollLocked || interactionGateClosed) return;
       this.hideTooltip();
 
       if (typeof config.onClick === 'function') {
@@ -1793,17 +1900,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Paged slides: exactly one kb-spread is visible at a time.
+  function isKitchenTableMode() {
+    return !!(kitchenBlogStage && kitchenBlogStage.classList.contains('kb-table-mode'));
+  }
+
+  function showKitchenPage(idx, animate) {
+    // Marble-table mode (table.js): every section stays visible and the column scrolls.
+    if (isKitchenTableMode()) {
+      const target = document.getElementById(KITCHEN_SPREADS[idx].id);
+      if (target && contentBody) {
+        const top = target.getBoundingClientRect().top - contentBody.getBoundingClientRect().top + contentBody.scrollTop;
+        try { contentBody.scrollTo({ top: Math.max(0, top - 8), behavior: animate ? 'smooth' : 'auto' }); }
+        catch (e) { contentBody.scrollTop = Math.max(0, top - 8); }
+      }
+      const tCount = document.getElementById('kb-pager-count');
+      if (tCount) tCount.textContent = `${KITCHEN_SPREADS[idx].num} / 05`;
+      return;
+    }
+    KITCHEN_SPREADS.forEach((spread, i) => {
+      const el = document.getElementById(spread.id);
+      if (!el) return;
+      const on = i === idx;
+      el.classList.toggle('kb-page-active', on);
+      el.setAttribute('aria-hidden', on ? 'false' : 'true');
+      if (on && animate) {
+        el.classList.remove('kb-page-enter');
+        void el.offsetWidth;
+        el.classList.add('kb-page-enter');
+      }
+    });
+    if (contentBody) contentBody.scrollTop = 0;
+    const prev = document.getElementById('kb-prev');
+    const next = document.getElementById('kb-next');
+    const count = document.getElementById('kb-pager-count');
+    if (prev) prev.disabled = idx <= 0;
+    if (next) next.disabled = idx >= KITCHEN_SPREADS.length - 1;
+    if (count) count.textContent = `${KITCHEN_SPREADS[idx].num} / 05`;
+  }
+
   function setKitchenDial(dialIdx) {
+    const prevIdx = activeSpreadIdx;
     activeKitchenDial = Math.max(0, Math.min(STOVE_DIAL_TARGETS.length - 1, dialIdx));
     activeSpreadIdx = activeKitchenDial;
-    const targetId = STOVE_DIAL_TARGETS[activeKitchenDial];
-    if (targetId && contentBody) {
-      const targetSec = document.getElementById(targetId);
-      if (targetSec) {
-        const targetTop = targetSec.getBoundingClientRect().top - contentBody.getBoundingClientRect().top + contentBody.scrollTop;
-        contentBody.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
-      }
-    }
+    showKitchenPage(activeSpreadIdx, activeSpreadIdx !== prevIdx);
     updateKitchenUI();
   }
 
@@ -1849,6 +1989,7 @@ document.addEventListener('DOMContentLoaded', () => {
     activeSpreadIdx = 0;
     activeKitchenDial = 0;
     kitchenDialRotations = [0, 0, 0, 0, 0];
+    showKitchenPage(0, false);
     if (contentBody) contentBody.scrollTop = 0;
     updateKitchenUI();
   }
@@ -1873,6 +2014,9 @@ document.addEventListener('DOMContentLoaded', () => {
       isKitchenRetracting = false;
       if (typeof InteractiveObjectManager !== 'undefined') {
         InteractiveObjectManager.renderObjects();
+        // The room-ready gate may have opened while the Blog was up (it skips enabling then),
+        // so re-enable hotspots here unless the gate is still closed.
+        if (!interactionGateClosed && hasRevealed) InteractiveObjectManager.setInteractiveEnabled(true);
       }
     }, 600);
   }
@@ -1933,8 +2077,30 @@ document.addEventListener('DOMContentLoaded', () => {
   function restoreBlogFromHistoryState() {
     if (currentRoom === 'kitchen' && historyHasBlogState() && !isKitchenBlogOpen()) {
       openKitchenBlog({ fromHistory: true });
+      return;
+    }
+    // Arrived from the Projects page's "Read full case study in Kitchen Blog" button:
+    // land in the Kitchen with the Blog window already open (flag is one-shot and expires).
+    let wantsBlog = false;
+    try {
+      const t = parseInt(sessionStorage.getItem('openKitchenBlogOnArrival') || '0', 10);
+      sessionStorage.removeItem('openKitchenBlogOnArrival');
+      wantsBlog = t > 0 && (Date.now() - t) < 30000;
+    } catch (e) {}
+    if (wantsBlog && currentRoom === 'kitchen' && !isKitchenBlogOpen()) {
+      openKitchenBlog();
     }
   }
+
+  // Scroll-spy hook for the marble-table mode: updates counter and rail without scrolling.
+  window.kbSetActiveSection = function (idx) {
+    if (typeof idx !== 'number' || idx < 0 || idx >= KITCHEN_SPREADS.length || idx === activeSpreadIdx) return;
+    activeSpreadIdx = idx;
+    activeKitchenDial = idx;
+    const tCount = document.getElementById('kb-pager-count');
+    if (tCount) tCount.textContent = `${KITCHEN_SPREADS[idx].num} / 05`;
+    updateKitchenUI();
+  };
 
   window.openKitchenBlog = openKitchenBlog;
   window.closeKitchenBlog = closeKitchenBlog;
@@ -1956,36 +2122,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: false });
   }
 
-  // Synchronize GluSight active spread and dials with scroll position inside content-body-scrollable
+  // Pager buttons, arrow keys and horizontal swipe
+  const kbPrevBtn = document.getElementById('kb-prev');
+  const kbNextBtn = document.getElementById('kb-next');
+  if (kbPrevBtn) kbPrevBtn.addEventListener('click', () => setKitchenDial(activeKitchenDial - 1));
+  if (kbNextBtn) kbNextBtn.addEventListener('click', () => setKitchenDial(activeKitchenDial + 1));
+  document.addEventListener('keydown', (e) => {
+    if (!kitchenBlogStage || !kitchenBlogStage.classList.contains('is-open') || isKitchenRetracting) return;
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    const t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); setKitchenDial(activeKitchenDial + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); setKitchenDial(activeKitchenDial - 1); }
+  });
   if (contentBody) {
-    let scrollDebounce = null;
-    contentBody.addEventListener('scroll', () => {
-      if (scrollDebounce) cancelAnimationFrame(scrollDebounce);
-      scrollDebounce = requestAnimationFrame(() => {
-        const bodyRect = contentBody.getBoundingClientRect();
-        const threshold = bodyRect.top + bodyRect.height * 0.35;
-        const isBottom = contentBody.scrollTop + contentBody.clientHeight >= contentBody.scrollHeight - 60;
-        let foundIdx = 0;
-        if (isBottom) {
-          foundIdx = KITCHEN_SPREADS.length - 1;
-        } else {
-          KITCHEN_SPREADS.forEach((spread, idx) => {
-            const el = document.getElementById(spread.id);
-            if (el) {
-              const rect = el.getBoundingClientRect();
-              if (rect.top <= threshold) {
-                foundIdx = idx;
-              }
-            }
-          });
-        }
-        if (foundIdx !== activeSpreadIdx) {
-          activeSpreadIdx = foundIdx;
-          activeKitchenDial = KITCHEN_SPREADS[activeSpreadIdx].dialIdx;
-          kitchenDialRotations[activeKitchenDial] = (activeSpreadIdx % 3) * 45;
-          updateKitchenUI();
-        }
-      });
+    let sx = 0, sy = 0, tracking = false;
+    contentBody.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) { tracking = false; return; }
+      tracking = true; sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+    }, { passive: true });
+    contentBody.addEventListener('touchend', (e) => {
+      if (!tracking) return;
+      tracking = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) setKitchenDial(activeKitchenDial + (dx < 0 ? 1 : -1));
     }, { passive: true });
   }
 
@@ -2201,7 +2362,46 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- Unified UI Reveal Helper ---
-  function revealUI() {
+  // True once the main transitions leaving `room` can play without stalling: their first frames are
+  // loaded and so are at least ROOM_READY_MIN_FRACTION of all frames.
+  function roomTransitionsReady(room) {
+    const adjacent = BackgroundAssetQueue._roomAdjacency[room] || [];
+    const keys = (BackgroundAssetQueue._roomPriority[room] || adjacent).filter((k) => adjacent.indexOf(k) !== -1);
+    return keys.every((seqKey) => {
+      const frames = initSequenceFrames(seqKey);
+      const settled = frames.filter((img) => img.complete && img.src).length;
+      const headReady = transitionHeadIndices(room, seqKey, SEQUENCE_HEAD_FRAMES).every((i) => frames[i] && frames[i].complete);
+      return headReady && settled >= Math.ceil(frames.length * ROOM_READY_MIN_FRACTION);
+    });
+  }
+
+  // Keeps hotspots and navigation locked (text and nav stay visible) until the room's transitions
+  // are playable, so a click never waits on frames that are still downloading.
+  let interactionGateTimer = null;
+  function holdInteractionUntilRoomReady() {
+    if (roomTransitionsReady(currentRoom)) return;
+    interactionGateClosed = true;
+    if (typeof InteractiveObjectManager !== 'undefined') {
+      InteractiveObjectManager.setInteractiveEnabled(false);
+    }
+    const startedAt = performance.now();
+    if (interactionGateTimer) clearInterval(interactionGateTimer);
+    interactionGateTimer = setInterval(() => {
+      const timedOut = performance.now() - startedAt > ROOM_READY_MAX_WAIT_MS;
+      if (!timedOut && !roomTransitionsReady(currentRoom)) return;
+      clearInterval(interactionGateTimer);
+      interactionGateTimer = null;
+      interactionGateClosed = false;
+      console.log(`[Preloader] ${timedOut ? 'Wait cap reached' : 'Transitions ready'} — unlocking interaction`);
+      const modalOpen = (typeof isKitchenBlogOpen === 'function' && isKitchenBlogOpen()) ||
+        (typeof isContactInterfaceOpen === 'function' && isContactInterfaceOpen());
+      if (hasRevealed && !isScrollLocked && !modalOpen && typeof InteractiveObjectManager !== 'undefined') {
+        InteractiveObjectManager.setInteractiveEnabled(true);
+      }
+    }, 120);
+  }
+
+  function revealUI(opts) {
     hasRevealed = true;
 
     if (uiContainer) {
@@ -2224,6 +2424,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof BackgroundAssetQueue !== 'undefined') {
       BackgroundAssetQueue.reprioritize(currentRoom);
       BackgroundAssetQueue.start();
+    }
+
+    if (opts && opts.gate) {
+      holdInteractionUntilRoomReady();
     }
   }
 
@@ -2392,10 +2596,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // to open directly to Living / About Me page. Set to false to restore intro.
     const BYPASS_LOADING_SCREEN = false;
 
-    if (BYPASS_LOADING_SCREEN || isIntroCompleted) {
+    // Lands straight on the requested room (no entrance). `fadeSplash` lets the Freedom splash
+    // dissolve instead of disappearing, for the case where the intro is skipped after loading began.
+    const landDirectly = (fadeSplash) => {
       if (freedomSplash) {
-        freedomSplash.style.display = 'none';
-        freedomSplash.classList.add('fade-out');
+        if (fadeSplash) {
+          freedomSplash.style.transition = `opacity ${FREEDOM_FADE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+          freedomSplash.classList.add('fade-out');
+          setTimeout(() => { freedomSplash.style.display = 'none'; }, FREEDOM_FADE_DURATION);
+        } else {
+          freedomSplash.style.display = 'none';
+          freedomSplash.classList.add('fade-out');
+        }
       }
 
       currentRoom = targetRoom;
@@ -2413,7 +2625,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (baseFrame) {
           drawFrameToCanvas(activeCanvas, baseFrame);
         }
-        revealUI();
+        revealUI({ gate: true });
         restoreBlogFromHistoryState();
       };
 
@@ -2427,9 +2639,13 @@ document.addEventListener('DOMContentLoaded', () => {
           baseFrame.onerror = drawRoomAndReveal;
         }
       } else {
-        revealUI();
+        revealUI({ gate: true });
         restoreBlogFromHistoryState();
       }
+    };
+
+    if (BYPASS_LOADING_SCREEN || isIntroCompleted) {
+      landDirectly(false);
       return;
     }
 
@@ -2448,6 +2664,31 @@ document.addEventListener('DOMContentLoaded', () => {
       uiContainer.classList.remove('revealed', 'visible');
     }
 
+    // --- Slow-connection guard (desktop only) ---
+    // A visitor whose connection cannot deliver the opening frames quickly would see a choppy
+    // walkthrough, so the intro is skipped for them and they land on the room directly.
+    const isDesktopViewport = window.matchMedia('(min-width: 1024px) and (pointer: fine)').matches;
+    const netInfo = navigator.connection || null;
+    const reportsSlowNetwork = !!(netInfo && (netInfo.saveData || /^(slow-2g|2g|3g)$/.test(netInfo.effectiveType || '')));
+    let introDecided = false; // set once the intro has either started or been skipped
+
+    function skipIntro(reason) {
+      if (introDecided) return;
+      introDecided = true;
+      console.log(`[Intro] Skipped (${reason}) — landing on ${targetRoom}`);
+      try {
+        sessionStorage.setItem('portfolioIntroCompleted', 'true');
+      } catch (e) {
+        console.warn('Unable to write to sessionStorage:', e);
+      }
+      landDirectly(true);
+    }
+
+    if (isDesktopViewport && reportsSlowNetwork) {
+      skipIntro('browser reports a slow or data-saving connection');
+      return;
+    }
+
     const entranceFrames = initSequenceFrames('entrance');
     const firstEntranceFrame = entranceFrames[0];
     if (firstEntranceFrame && !firstEntranceFrame.src && firstEntranceFrame._targetSrc) {
@@ -2458,6 +2699,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * Called once — after critical buffer frames and living base image are ready.
      */
     function onAssetsReady() {
+      if (introDecided) return; // the intro was already skipped as too slow
+      introDecided = true;
       console.log('[Preloader] Buffer ready — streaming remaining frames and starting entrance');
 
       // Immediately begin streaming remaining entrance frames (18 to 95) in strict playback order
@@ -2477,42 +2720,36 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       pumpStream();
 
-      // Step 1: Fade loading indicator out first
-      AssetLoader.fadeOutIndicator().then(() => {
-        // Step 2: Fade Freedom splash out smoothly
-        if (freedomSplash) {
-          freedomSplash.style.transition = `opacity ${FREEDOM_FADE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;
-          freedomSplash.classList.add('fade-out');
-        }
+      // The Freedom splash (with its loading label) fades out in one step, then the walkthrough starts.
+      if (freedomSplash) {
+        freedomSplash.style.transition = `opacity ${FREEDOM_FADE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+        freedomSplash.classList.add('fade-out');
+        setTimeout(() => { freedomSplash.style.display = 'none'; }, FREEDOM_FADE_DURATION);
+      }
+      AssetLoader.fadeOutIndicator();
 
-        // Step 3: After Freedom has fully faded, begin the entrance animation
-        setTimeout(() => {
-          if (freedomSplash) {
-            freedomSplash.style.display = 'none';
+      setTimeout(() => {
+        // Entrance sequence plays smoothly
+        playImageSequence(activeCanvas, entranceFrames, 0, entranceFrames.length - 1, () => {
+          try {
+            sessionStorage.setItem('portfolioIntroCompleted', 'true');
+            document.documentElement.classList.add('intro-completed');
+          } catch (e) {
+            console.warn('Unable to write to sessionStorage:', e);
           }
-
-          // Entrance sequence plays smoothly
-          playImageSequence(activeCanvas, entranceFrames, 0, entranceFrames.length - 1, () => {
-            try {
-              sessionStorage.setItem('portfolioIntroCompleted', 'true');
-              document.documentElement.classList.add('intro-completed');
-            } catch (e) {
-              console.warn('Unable to write to sessionStorage:', e);
-            }
-            const livingBase = getRoomBaseFrame('living');
-            if (livingBase) {
-              drawFrameToCanvas(activeCanvas, livingBase);
-            }
-            if (targetRoom && targetRoom !== 'living') {
-              currentRoom = 'living';
-              revealUI();
-              navigateToRoom(targetRoom);
-            } else {
-              revealUI();
-            }
-          });
-        }, FREEDOM_FADE_DURATION);
-      });
+          const livingBase = getRoomBaseFrame('living');
+          if (livingBase) {
+            drawFrameToCanvas(activeCanvas, livingBase);
+          }
+          if (targetRoom && targetRoom !== 'living') {
+            currentRoom = 'living';
+            revealUI();
+            navigateToRoom(targetRoom);
+          } else {
+            revealUI({ gate: true });
+          }
+        });
+      }, ENTRANCE_START_DELAY);
     }
 
     // Draw the first entrance frame immediately when available
@@ -2538,6 +2775,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Start preloading immediately at t=0
     AssetLoader.loadCriticalAssets(onAssetsReady);
+    if (isDesktopViewport) {
+      setTimeout(() => skipIntro(`first frames not ready within ${SLOW_CONNECTION_BUFFER_MS}ms`), SLOW_CONNECTION_BUFFER_MS);
+    }
   }
 
   // --- Global Escape Key Navigation (Return to About Me / Living) ---

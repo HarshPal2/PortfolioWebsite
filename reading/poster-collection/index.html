@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poster Collection — Harsh (Reading version)</title>
+<meta name="description" content="A curated collection exploring speculative cinema, lucid dreamscapes, and whimsical character typography.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Belleza&family=GFS+Didot&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f3ee; --ink:#1d1b18; --muted:#7a746b; --line:#ddd6ca; --accent:#8a5a2b; --note:#ece6db;
+    --font-heading:'GFS Didot','Didot','Playfair Display',serif;
+    --font-body:'Belleza','Optima','Montserrat',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#161412; --ink:#efe9df; --muted:#9a9388; --line:#2f2b26; --accent:#d3a36a; --note:#211e1a;}
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-underline-offset:3px}
+  a:hover{text-decoration-thickness:2px}
+  .wrap{max-width:680px;margin:0 auto;padding:0 20px}
+  html{scroll-padding-top:76px}
+  header{position:sticky;top:0;z-index:20;padding:14px 0;background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:baseline;justify-content:space-between}
+  .brand{font-family:var(--font-heading);font-size:20px;color:var(--ink);text-decoration:none}
+  nav{display:flex;flex-wrap:wrap;gap:6px 22px}
+  nav a{color:var(--muted);text-decoration:none;font-size:16px}
+  nav a:hover{color:var(--ink)}
+  .notice{background:var(--note);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:28px 0 8px;font-size:15px;color:var(--muted)}
+  .btn{display:inline-block;margin-top:10px;padding:10px 18px;border:1px solid var(--ink);border-radius:999px;color:var(--ink);text-decoration:none;font-size:15px;transition:background .2s,color .2s}
+  .btn:hover,.btn:focus-visible{background:var(--ink);color:var(--bg)}
+  h1,h2{font-family:var(--font-heading);font-weight:400;line-height:1.1;margin:0}
+  h1{font-size:clamp(40px,8vw,64px);margin:56px 0 20px}
+  h2{font-size:clamp(30px,5vw,40px);margin:0 0 24px}
+  section{padding:56px 0 8px;border-top:1px solid var(--line);margin-top:56px}
+  .lede{font-size:21px;color:var(--ink)}
+  .item{margin:0 0 30px}
+  .item h3{margin:0;font-size:19px;font-weight:400;font-family:var(--font-heading)}
+  .meta{color:var(--muted);font-size:15px}
+  .item p{margin:6px 0 0}
+  ol.list,ul.list{list-style:none;padding:0;margin:0}
+  .list li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .list li span{color:var(--muted);font-size:15px}
+  .contact-row{display:flex;flex-wrap:wrap;gap:10px 14px;margin:20px 0}
+  form{display:grid;gap:14px;margin-top:24px}
+  label{font-size:14px;color:var(--muted);display:block;margin-bottom:4px}
+  input,textarea{width:100%;font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+  input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+  textarea{min-height:130px;resize:vertical}
+  button.btn{background:transparent;cursor:pointer;font:inherit;font-size:15px;justify-self:start}
+  .fine{font-size:14px;color:var(--muted)}
+  footer{margin:72px 0 48px;padding-top:24px;border-top:1px solid var(--line);font-size:15px;color:var(--muted)}
+  footer nav{margin-bottom:14px}
+  .skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;background:var(--bg);padding:8px;z-index:9}
+
+  html{scroll-padding-top:76px}
+  header{position:sticky;top:0;z-index:20;padding:14px 0;background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  figure{margin:32px 0}
+  figure img{display:block;width:100%;height:auto;border-radius:8px;background:var(--note)}
+  figcaption{font-size:14px;color:var(--muted);margin-top:8px}
+  blockquote{margin:28px 0;padding-left:18px;border-left:2px solid var(--accent);font-family:var(--font-heading);font-size:21px;line-height:1.45}
+  h3.sub{font-family:var(--font-heading);font-weight:400;font-size:24px;margin:44px 0 8px}
+  .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 20px;margin:26px 0 8px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .meta-grid dt{font-size:13px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+  .meta-grid dd{margin:2px 0 0}
+  .pillar{margin:0 0 26px}
+  .pillar .k{font-size:13px;color:var(--muted);letter-spacing:.08em}
+  .pillar h3{font-family:var(--font-heading);font-weight:400;font-size:22px;margin:2px 0 4px}
+  .pillar p{margin:0}
+  .crumbs{font-size:15px;margin:36px 0 0;color:var(--muted)}
+  .pager{display:flex;justify-content:space-between;gap:16px;margin:48px 0 0;padding-top:20px;border-top:1px solid var(--line);font-size:16px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header>
+  <div class="wrap">
+    <div class="bar">
+      <a class="brand" href="../../reading/">Harsh</a>
+      <nav aria-label="Sections">
+        <a href="../#about">About</a>
+        <a href="../#projects">Projects</a>
+        <a href="../#case-study">Case study</a>
+        <a href="../#contact">Contact</a>
+      </nav>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <main id="main">
+    <p class="crumbs"><a href="../#projects">&larr; All projects</a> &middot; <span style="text-transform:uppercase;letter-spacing:.06em;font-size:13px">GRAPHICS — EDITORIAL &amp; SPECULATIVE POSTER DESIGN</span></p>
+    <h1>Poster Collection</h1>
+    <p class="lede">A curated collection exploring speculative cinema, lucid dreamscapes, and whimsical character typography.</p>
+    <dl class="meta-grid"><div><dt>Discipline</dt><dd>Poster &amp; Art Direction</dd></div><div><dt>Timeline</dt><dd>2025 — 2026</dd></div><div><dt>Role</dt><dd>Graphic Designer &amp; Illustrator</dd></div><div><dt>Medium</dt><dd>Digital Collage &amp; Vector Art</dd></div></dl>
+    <p>A dual-themed poster exhibition examining two distinct graphic design explorations: the SOMNIUM speculative sci-fi series centered on neural dream-recording technology, alongside an expressive, playful series of character prints celebrating warmth, color, and witty typography.</p><figure><img src="../img/posters-poster-1iteration-1.webp" width="1400" height="1980" alt="SOMNIA speculative sci-fi poster" loading="lazy" decoding="async"><figcaption>SOMNIA — Speculative sci-fi poster exploring cinematic neural recording, surreal scale, and monolithic topography.</figcaption></figure><h3 class="sub">The Somnium Triptych</h3><p>Narrative tension, neural interfaces, and the subconscious imagination.</p><blockquote>“Poster design is storytelling captured in a single frame. It orchestrates typographic tension, narrative ambiguity, and chromatic atmosphere to invite curiosity.”</blockquote><figure><img src="../img/posters-harsh-590028088-4-5.webp" width="1400" height="1980" alt="SOMNIUM Dreams cosmic illustration poster" loading="lazy" decoding="async"><figcaption>SOMNIUM Dreams — Rich atmospheric digital painting capturing the transition between deep sleep and vivid cosmic imagination.</figcaption></figure><figure><img src="../img/posters-poster-4somnium4.webp" width="1400" height="1980" alt="SOMNIUM Dreamplay surrealist architectural reflection poster" loading="lazy" decoding="async"><figcaption>SOMNIUM Dreamplay — Surrealist optical inversion fusing European urban architecture, floating pillows, and camera recording UI.</figcaption></figure><h3 class="sub">Character &amp; Wit</h3><p>Playful typographic character prints designed to bring spontaneous charm.</p><blockquote>“Balancing conceptual gravitas with lighthearted graphic levity — exploring how simple silhouettes and expressive lettering evoke instant joy.”</blockquote><figure><img src="../img/posters-poster-1-harsh.webp" width="1400" height="1980" alt="You Make My Heart Go Quack character poster" loading="lazy" decoding="async"><figcaption>Heart Go Quack — Graphic character illustration celebrating bold flat colors and cheerful lettering.</figcaption></figure><figure><img src="../img/posters-poster-2-harsh.webp" width="1400" height="1980" alt="Cat-itude is everything character poster" loading="lazy" decoding="async"><figcaption>Cat-itude Is Everything — Minimalist feline silhouette with heart tail on chocolate ground.</figcaption></figure><figure><img src="../img/posters-poster-3-harsh.webp" width="1400" height="1980" alt="Too Cool to Fall character poster" loading="lazy" decoding="async"><figcaption>Too Cool to Fall — Tongue-in-cheek illustration featuring soft denim blue tones and rose accent.</figcaption></figure>
+    <blockquote>“From speculative cosmic cinema to lighthearted character wit, every print explores the rhythm of typography and visual joy.”</blockquote>
+    
+    <p><a class="btn" href="../../projects/">See this project in the 3D house</a></p>
+    <div class="pager"><a href="../biophilic-interior/">&larr; Biophilic Interior</a><span></span></div>
+  </main>
+  <footer>
+    <nav aria-label="Footer"><a href="../#about">About</a><a href="../#projects">Projects</a><a href="../#contact">Contact</a><a href="../../">3D house</a></nav>
+    &copy; 2026 Harsh
+  </footer>
+</div>
+</body>
+</html>

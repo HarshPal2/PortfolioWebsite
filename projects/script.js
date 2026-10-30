@@ -665,6 +665,7 @@
     try {
       sessionStorage.removeItem('returnFromProjects');
       sessionStorage.removeItem('returnFromProjectsToLiving');
+      sessionStorage.setItem('openKitchenBlogOnArrival', String(Date.now()));   // house opens the Blog window on arrival
     } catch (err) { }
   }, true);
 

@@ -20,7 +20,7 @@
   <link rel="prefetch" href="projects/">
   <link rel="prefetch" href="Media/BedroomToPCScreen/BedroomtoPc0562.avif">
 
-  <link rel="stylesheet" href="styles.css?v=20261022_selectable_v18">
+  <link rel="stylesheet" href="styles.css?v=20261029_table_v1">
 
   <!-- Instant Pre-Render Check: hide the Freedom splash on first paint once the intro has already played this session -->
   <script>
@@ -70,13 +70,20 @@
   <!-- Minimal Architectural UI Overlay (Completely isolated viewport overlay) -->
   <div id="ui-container" class="ui-container ui-hidden">
 
+      <!-- Lo-fi (text-only) version switch -->
+      <a href="reading/" class="lofi-btn" id="lofi-btn" aria-label="Switch to the lo-fi, text-only version of this portfolio" title="Lo-fi version">
+        <svg class="lofi-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4"/><path d="M10 12h6M10 15.5h6M10 8.5h2"/></svg>
+        <span class="lofi-label">LO-FI</span>
+      </a>
+
+
       <!-- Layer 3: Navigation Header -->
       <div class="parallax-layer layer-nav" data-depth="0.18">
         <header class="top-header stagger-1">
           <nav class="nav-bar">
             <a href="#home" class="nav-link active" data-nav="home">Home</a>
             <a href="#projects" class="nav-link" data-nav="projects">Projects</a>
-            <a href="#blog" class="nav-link" data-nav="blog">Blog</a>
+            <a href="#blog" class="nav-link" data-nav="blog">Case Study</a>
             <a href="#about-me" class="nav-link" data-nav="about-me">About Me</a>
             <a href="#contact" class="nav-link" data-nav="contact">Contact</a>
           </nav>
@@ -152,7 +159,7 @@
         </section>
 
         <!-- Kitchen / Blog Introduction -->
-        <section class="kitchen-main" id="kitchen-main" aria-label="Blog Introduction">
+        <section class="kitchen-main" id="kitchen-main" aria-label="Case Study Introduction">
           <div class="kitchen-block">
             <!-- Heading -->
             <div class="headline-wrapper stagger-3">
@@ -169,10 +176,10 @@
             <!-- Orange Accent Line -->
             <div class="orange-accent-line stagger-4"></div>
 
-            <!-- Blogs CTA Button -->
+            <!-- Case Study CTA Button -->
             <div class="kitchen-cta-wrapper stagger-4">
               <button type="button" class="explore-projects-btn kitchen-intro-btn" id="kitchen-intro-btn">
-                <span>Blogs</span>
+                <span>Case Study</span>
                 <span class="btn-arrow" aria-hidden="true">→</span>
               </button>
             </div>
@@ -382,7 +389,7 @@
             </button>
           </div>
           <div class="kb-header-center">
-            <span class="kb-header-title">Kitchen Blog &bull; GluSight Case Study</span>
+            <span class="kb-header-title" id="kb-header-title">Case Study &bull; GluSight</span>
           </div>
           <div class="kb-header-right">
             <div class="kb-header-sections" id="kitchen-header-sections">
@@ -398,6 +405,13 @@
           <aside class="kb-rail kb-rail-left" aria-label="Category Rail">
             <div class="kb-rail-inner">
               <span class="kb-rail-tag-projects">Projects</span>
+              <nav class="kb-project-tabs" id="kb-project-tabs" aria-label="Kitchen Blog projects">
+                <button type="button" class="kb-project-tab active" data-project="glusight" aria-pressed="true">GluSight</button>
+                <button type="button" class="kb-project-tab" data-project="cabin" aria-pressed="false">Cabin in the Woods</button>
+                <button type="button" class="kb-project-tab" data-project="product" aria-pressed="false">Product Renders</button>
+                <button type="button" class="kb-project-tab" data-project="biophilic" aria-pressed="false">Biophilic Interior</button>
+                <button type="button" class="kb-project-tab" data-project="posters" aria-pressed="false">Poster Collection</button>
+              </nav>
             </div>
           </aside>
 
@@ -408,7 +422,7 @@
             <!-- ==========================================================================
                  SECTION 01 — THE HOOK
                  ========================================================================== -->
-            <section class="kb-spread kb-section-hook" id="kb-sec-01" data-section-idx="0">
+            <section class="kb-spread kb-section-hook kb-page-active" id="kb-sec-01" data-section-idx="0">
               <div class="kb-artboard-meta-strip">
                 <span class="kb-meta-left">The Hook</span>
                 <span class="kb-meta-right">Sections / 01</span>
@@ -449,8 +463,8 @@
 
               <!-- System Hero Visual -->
               <div class="kb-system-hero-wrap">
-                <img src="Media/GluSight/glusight_hero_full.png" alt="GluSight integrated system: continuous sensor disc and mobile anticipation interface" class="kb-system-hero-img">
-                <p class="kb-caption-sub">GluSight integrated system: continuous sensor disc and mobile anticipation interface.</p>
+                <img src="Media/GluSight/glusight_hero_full.png" alt="Concept visualisation of the GluSight system: a sensor disc and the mobile interface" class="kb-system-hero-img">
+                <p class="kb-caption-sub">Concept visualisation of the GluSight system: a sensor disc and the mobile interface.</p>
               </div>
 
               <!-- Two Conceptual Pillars -->
@@ -491,7 +505,7 @@
                     Explore how glucose levels might change over the coming period through a visual projection of a possible future trend.
                   </p>
                   <div class="kb-feature-asset-wrap">
-                    <img src="Media/GluSight/glusight_phone_ui_screen.png" alt="GluSight predicted glucose trend horizon screen" class="kb-feature-asset-img">
+                    <img src="Media/GluSight/glusight_crop_prediction_graph.png" alt="Prediction graph from the GluSight Home screen: recorded glucose as a solid line and a predicted continuation as a dashed line" class="kb-feature-asset-img">
                   </div>
                 </div>
 
@@ -502,7 +516,7 @@
                     Distinguish observed readings from estimated future values, helping users recognise that predictions are not guarantees.
                   </p>
                   <div class="kb-feature-asset-wrap">
-                    <img src="Media/GluSight/glusight_confidence_corridor.svg" alt="Confidence corridor distinguishing observed from estimated glucose readings" class="kb-feature-asset-img svg-corridor">
+                    <img src="Media/GluSight/glusight_crop_confidence_note.png" alt="Confidence indicator and a note saying the prediction is based on past patterns, from the GluSight Home screen" class="kb-feature-asset-img">
                   </div>
                 </div>
 
@@ -513,7 +527,7 @@
                     Explore how relevant factors, such as meals, physical activity, medication, stress, and sleep, could help users make sense of changing glucose patterns.
                   </p>
                   <div class="kb-feature-asset-wrap">
-                    <img src="Media/GluSight/glusight_process_wireframes_notebook.png" alt="Contextual factors and activity wireframe progression" class="kb-feature-asset-img">
+                    <img src="Media/GluSight/glusight_screen_log_meal.png" alt="GluSight Log Meal screen with quick meal categories and a free-text description" class="kb-feature-asset-img">
                   </div>
                 </div>
               </div>
@@ -524,72 +538,105 @@
                  ========================================================================== -->
             <section class="kb-spread kb-section-exploring" id="kb-sec-03" data-section-idx="2">
               <div class="kb-artboard-meta-strip">
-                <span class="kb-meta-left">Design Direction</span>
+                <span class="kb-meta-left">A Closer Look</span>
                 <span class="kb-meta-right">Sections / 03</span>
               </div>
               <div class="kb-heading-group">
-                <h2 class="kb-heading">From Idea to Interface</h2>
+                <h2 class="kb-heading">A Closer Look at GluSight</h2>
                 <div class="kb-orange-bar kb-bar-idea"></div>
               </div>
               <p class="kb-lead-text">
-                GluSight began with a question about what glucose monitoring could offer beyond showing the current reading. I explored different ways to communicate possible future glucose changes before developing the interface concept.
+                GluSight&rsquo;s interface is built around three screens: Home, Log Meal and Settings. This section explains what each one is intended to do and the design thinking behind it. They are concept screens showing sample data, and they have not been tested with users.
               </p>
 
-              <!-- Process Progression -->
+              <!-- Early sketches -->
+              <div class="kb-sub-block kb-sketch-block">
+                <div class="kb-sub-header-group">
+                  <span class="kb-sub-tag">EARLY SKETCHES</span>
+                  <h3 class="kb-sub-heading">Where the Screens Started</h3>
+                  <div class="kb-orange-bar kb-bar-accent-sm"></div>
+                </div>
+                <p class="kb-body-text">
+                  Before the concept screens, I drew three rough pencil sketches. They are shown here as drawn, in the order I drew them, and are lightly cropped and brightened only so they can be read.
+                </p>
+                <div class="kb-sketch-row">
+                  <figure class="kb-sketch-fig">
+                    <img src="Media/GluSight/glusight_sketch_1_first_idea.jpg" alt="Pencil sketch of a phone screen with a large glucose reading and rising arrow, a note on how far above normal it is, a log meal button, two suggested actions and a graph" class="kb-sketch-img" loading="lazy">
+                    <figcaption class="kb-caption-sub"><strong>Sketch 1.</strong> The reading with a direction arrow, how far it sits above normal, a Log Meal button, two suggested actions (drink water, go for a walk) and a graph.</figcaption>
+                  </figure>
+                  <figure class="kb-sketch-fig">
+                    <img src="Media/GluSight/glusight_sketch_2_night_alert.jpg" alt="Pencil sketch of a phone screen showing a low glucose alert at night with a short message and the alarm set to vibrate" class="kb-sketch-img" loading="lazy">
+                    <figcaption class="kb-caption-sub"><strong>Sketch 2.</strong> A low-glucose alert at night, with a short plain message and the alarm set to vibrate.</figcaption>
+                  </figure>
+                  <figure class="kb-sketch-fig">
+                    <img src="Media/GluSight/glusight_sketch_3_latest.jpg" alt="Pencil sketch of a phone screen with a glucose reading and direction arrow, an expected range ahead, and a graph that continues forward" class="kb-sketch-img" loading="lazy">
+                    <figcaption class="kb-caption-sub"><strong>Sketch 3.</strong> The reading with its direction, an expected range ahead and a graph that continues forward.</figcaption>
+                  </figure>
+                </div>
+              </div>
+
+              <!-- The three concept screens -->
               <div class="kb-process-progression">
-                <!-- Step 01 -->
                 <div class="kb-process-row">
                   <div class="kb-process-text-col">
                     <span class="kb-process-step-num">01</span>
-                    <h3 class="kb-sub-heading">Exploring Different Possibilities</h3>
+                    <h3 class="kb-sub-heading">Home: The Present and a Possible Future</h3>
                     <div class="kb-orange-bar kb-bar-accent-sm"></div>
                     <p class="kb-body-text">
-                      I explored different ways to communicate potential future glucose changes, considering how the information could be presented clearly without creating unnecessary confusion.
+                      The Home screen puts the current glucose reading at the centre, with its time and a trend label, and places a graph beneath it. Recorded glucose is drawn as a solid line and a predicted continuation as a dashed line, with the target range shaded so values can be read against it.
+                    </p>
+                    <p class="kb-body-text">
+                      <strong>Design decision:</strong> Two different line styles keep what has been measured visibly separate from what is estimated. A short note and a confidence indicator beneath the graph frame the prediction as an estimate based on past patterns, not a certainty.
                     </p>
                   </div>
                   <div class="kb-process-visual-col">
                     <div class="kb-process-asset-wrap">
-                      <img src="Media/GluSight/glusight_opportunity_sketchbook.png" alt="Early sketchbook exploration of predictive glucose trajectories" class="kb-process-asset-img">
-                      <p class="kb-caption-sub">Early sketchbook explorations: investigating how predictive glucose trajectories can be visualized.</p>
+                      <img src="Media/GluSight/glusight_screen_home.png" alt="GluSight Home screen with the current glucose reading, a trend label, a prediction graph and a confidence indicator" class="kb-process-asset-img">
+                      <p class="kb-caption-sub">Home: current reading, trend, and a prediction graph with a confidence indicator.</p>
                     </div>
                   </div>
                 </div>
 
-                <!-- Step 02 -->
                 <div class="kb-process-row kb-row-reverse">
                   <div class="kb-process-text-col">
                     <span class="kb-process-step-num">02</span>
-                    <h3 class="kb-sub-heading">Making the Future Easier to Understand</h3>
+                    <h3 class="kb-sub-heading">Log Meal: Adding Context</h3>
                     <div class="kb-orange-bar kb-bar-accent-sm"></div>
                     <p class="kb-body-text">
-                      The focus shifted towards presenting current glucose information alongside a possible future trend, making the relationship between the present reading and what might happen next easier to understand.
+                      The Log Meal screen lets someone record what they ate by choosing a quick category (Sugary, Heavy Meal or Light Meal) or describing the meal in their own words. The time of logging is shown and can be changed.
+                    </p>
+                    <p class="kb-body-text">
+                      <strong>Design decision:</strong> The concept explores how meal context could sit alongside glucose readings, so a change might be understood in relation to what happened rather than as a number on its own. Quick categories are intended to keep logging fast.
                     </p>
                   </div>
                   <div class="kb-process-visual-col">
                     <div class="kb-process-asset-wrap">
-                      <img src="Media/GluSight/glusight_wireframe_notes.png" alt="Wireframe layout notes for glucose trend presentation" class="kb-process-asset-img">
-                      <p class="kb-caption-sub">Wireframe layout annotations: establishing hierarchy between immediate telemetry and forward projections.</p>
+                      <img src="Media/GluSight/glusight_screen_log_meal.png" alt="GluSight Log Meal screen with quick meal categories, a description field and a Log Meal button" class="kb-process-asset-img">
+                      <p class="kb-caption-sub">Log Meal: quick categories and a free-text description.</p>
                     </div>
                   </div>
                 </div>
 
-                <!-- Step 03 -->
                 <div class="kb-process-row">
                   <div class="kb-process-text-col">
                     <span class="kb-process-step-num">03</span>
-                    <h3 class="kb-sub-heading">Designing for Anticipation</h3>
+                    <h3 class="kb-sub-heading">Settings: Personalisation and Control</h3>
                     <div class="kb-orange-bar kb-bar-accent-sm"></div>
                     <p class="kb-body-text">
-                      The concept explores how a visual prediction, presented as an estimate rather than a certainty, could help users interpret possible glucose changes.
+                      Settings groups three things: health setup details (diabetes type, target range, weight and age) that are intended to personalise predictions; alert controls for predicted high and low alerts, silent mode and alert sensitivity; and preferences such as how often to be asked about food.
+                    </p>
+                    <p class="kb-body-text">
+                      <strong>Design decision:</strong> The concept treats prediction alerts as optional and adjustable, so people can decide how and when predictions reach them.
                     </p>
                   </div>
                   <div class="kb-process-visual-col">
                     <div class="kb-process-asset-wrap">
-                      <img src="Media/GluSight/glusight_process_ui_screens.png" alt="Interface screen iterations for GluSight anticipation concept" class="kb-process-asset-img">
-                      <p class="kb-caption-sub">Interface design progression: translating predictive range concepts into balanced mobile screen telemetry.</p>
+                      <img src="Media/GluSight/glusight_screen_settings.png" alt="GluSight Settings screen with health setup, alerts and preferences" class="kb-process-asset-img">
+                      <p class="kb-caption-sub">Settings: health setup, alert controls and preferences.</p>
                     </div>
                   </div>
                 </div>
+
               </div>
             </section>
 
@@ -606,8 +653,21 @@
                 <div class="kb-orange-bar kb-bar-research"></div>
               </div>
               <p class="kb-lead-text">
-                To understand the challenges surrounding glucose monitoring, I combined secondary research with conversations with people living with diabetes. The research helped me explore how people interpret glucose readings, experience uncertainty, and respond to changing levels.
+                Three short interviews and some published research, kept separate from my own interpretations. The sample is small and the concept is untested.
               </p>
+
+              <!-- Primary research: three interviews -->
+              <div class="kb-sub-block kb-interview-block">
+                <div class="kb-sub-header-group">
+                  <span class="kb-sub-tag">PRIMARY RESEARCH &bull; THREE INTERVIEWS</span>
+                  <h3 class="kb-sub-heading">Type 1, Type 2 and Prediabetes</h3>
+                  <div class="kb-orange-bar kb-bar-accent-sm"></div>
+                </div>
+                <p class="kb-body-text">
+                  Three consenting, anonymised interviews: type 1, type 2 and prediabetic. The type 2 participant spoke Hindi, so those quotes are my translation. A very small sample that shaped my thinking but does not validate the concept.
+                </p>
+                <div class="kb-int-list"><div class="kb-int-row"><span class="kb-int-num">01</span><div class="kb-int-main"><h4 class="kb-int-title">Highs cause stress, and worrying seems to make it worse</h4><div class="kb-int-quotes"><blockquote class="kb-int-quote"><p>&ldquo;Stress is the only thing that goes through my mind.&rdquo;</p></blockquote><blockquote class="kb-int-quote"><p>&ldquo;When I thought about it too much, my sugar would go up. It&rsquo;s all a game of the mind.&rdquo;</p><cite>Translated from Hindi</cite></blockquote><blockquote class="kb-int-quote"><p>&ldquo;Now I&rsquo;m not conscious about it, but earlier, I used to be.&rdquo;</p></blockquote></div><p class="kb-int-note"><span class="kb-int-label">Takeaway</span>This pointed toward keeping the main screen calm and avoiding wording that adds to worry.</p></div></div><div class="kb-int-row"><span class="kb-int-num">02</span><div class="kb-int-main"><h4 class="kb-int-title">Lows cause panic, especially outdoors</h4><div class="kb-int-quotes"><blockquote class="kb-int-quote"><p>&ldquo;It can cause a moment of panic, especially when I&rsquo;m outdoors.&rdquo;</p></blockquote></div><p class="kb-int-context">Another participant also described dizziness from lows and keeping a toffee at hand.</p><p class="kb-int-note"><span class="kb-int-label">Takeaway</span>This pointed toward a low alert that is short, plain and quick to act on.</p></div></div><div class="kb-int-row"><span class="kb-int-num">03</span><div class="kb-int-main"><h4 class="kb-int-title">Night checking varies</h4><div class="kb-int-quotes"><blockquote class="kb-int-quote"><p>&ldquo;Every night, I have to make sure it&rsquo;s normal.&rdquo;</p></blockquote></div><p class="kb-int-context">Another participant said she has never done this.</p><p class="kb-int-note"><span class="kb-int-label">Takeaway</span>Habits differed a lot, so night behaviour could not be assumed to be the same for everyone.</p></div></div><div class="kb-int-row"><span class="kb-int-num">04</span><div class="kb-int-main"><h4 class="kb-int-title">Re-checking to see the direction</h4><div class="kb-int-quotes"><blockquote class="kb-int-quote"><p>&ldquo;I had to keep checking the monitor to see if it&rsquo;s getting worse or if it&rsquo;s getting better.&rdquo;</p></blockquote><blockquote class="kb-int-quote"><p>&ldquo;I have to make sure that whatever I&rsquo;m going to have next is not going to make my levels worse.&rdquo;</p></blockquote></div><p class="kb-int-note"><span class="kb-int-label">Takeaway</span>This pointed toward showing direction of change alongside the number.</p></div></div><div class="kb-int-row"><span class="kb-int-num">05</span><div class="kb-int-main"><h4 class="kb-int-title">Distrust of accuracy</h4><div class="kb-int-quotes"><blockquote class="kb-int-quote"><p>&ldquo;No machine is accurate. The lab test is the best.&rdquo;</p><cite>Translated from Hindi</cite></blockquote></div><p class="kb-int-context">One participant compared a home reading of 150 with a lab result of 120.</p><p class="kb-int-note"><span class="kb-int-label">Takeaway</span>This pointed toward being honest that readings are estimates.</p></div></div></div>
+              </div>
 
               <!-- 04A: Secondary Research -->
               <div class="kb-sub-block kb-secondary-research-block">
@@ -617,13 +677,13 @@
                   <div class="kb-orange-bar kb-bar-accent-sm"></div>
                 </div>
                 <p class="kb-body-text">
-                  I reviewed research on continuous glucose monitoring, glucose variability, and the challenges people face when interpreting glucose information. The findings helped establish the context for exploring how predictive insights might support a clearer understanding of glucose changes.
+                  Published research on glucose monitoring and variability gave context. None of it evaluates GluSight.
                 </p>
 
                 <!-- Lifestyle & Contextual Factors Integrated Visual -->
                 <div class="kb-banner-full-wrap">
                   <img src="Media/GluSight/ref_04_banner_integrated.png" alt="Lifestyle factors and glucose variability diagram" class="kb-banner-full-img">
-                  <p class="kb-caption-sub">Physiological and lifestyle drivers of glucose variability: meals, physical exertion, medication, and sleep.</p>
+                  <p class="kb-caption-sub">Illustration of lifestyle factors that can influence glucose: meals, physical activity, medication and sleep.</p>
                 </div>
 
                 <!-- Verified Papers Editorial List (Newspaper clippings matching Reference/NewspaperClippings.jpg) -->
@@ -634,132 +694,67 @@
                       <span class="kb-paper-tag">CLINICAL</span>
                     </div>
                     <h4 class="kb-paper-title">&ldquo;Continuous glucose monitoring in adults with type 2 diabetes: A systematic review and meta-analysis.&rdquo;</h4>
-                    <p class="kb-paper-desc">
-                      Provides systematic clinical evidence on how continuous glucose tracking supports glycemic awareness and management in everyday life.
-                    </p>
                   </article>
 
                   <article class="kb-paper-item">
                     <div class="kb-paper-header">
-                      <span class="kb-paper-journal">JCEM &bull; 2023</span>
-                      <span class="kb-paper-tag">EVIDENCE</span>
-                    </div>
-                    <h4 class="kb-paper-title">&ldquo;Effects of Continuous Glucose Monitoring on Glycemic Control in Patients With Diabetes Mellitus: A Systematic Review and Meta-analysis.&rdquo;</h4>
-                    <p class="kb-paper-desc">
-                      Demonstrates the measurable impact of real-time trend awareness on time in range and glycemic variability reduction.
-                    </p>
-                  </article>
-
-                  <article class="kb-paper-item">
-                    <div class="kb-paper-header">
-                      <span class="kb-paper-journal">JDST &bull; 2023</span>
-                      <span class="kb-paper-tag">BEHAVIORAL</span>
+                      <span class="kb-paper-journal">Published 2023</span>
+                      <span class="kb-paper-tag">PATIENT-REPORTED</span>
                     </div>
                     <h4 class="kb-paper-title">&ldquo;Patient-Reported Usefulness and Challenges in Using Hypoglycemia-Informing Features of Continuous Glucose Monitors to Manage Hypoglycemia.&rdquo;</h4>
-                    <p class="kb-paper-desc">
-                      Illuminates user experiences, behavioral trust, and the psychological challenge of acting on alert-based uncertainty.
-                    </p>
                   </article>
 
                   <article class="kb-paper-item">
                     <div class="kb-paper-header">
-                      <span class="kb-paper-journal">Sports Med &amp; Health Science &bull; 2022</span>
+                      <span class="kb-paper-journal">Sports Medicine &amp; Health Science &bull; 2021</span>
                       <span class="kb-paper-tag">PHYSIOLOGY</span>
                     </div>
                     <h4 class="kb-paper-title">&ldquo;Glycemic variability: Importance, relationship with physical activity, and the influence of exercise.&rdquo;</h4>
-                    <p class="kb-paper-desc">
-                      Highlights how contextual factors like activity and physiological exertion drive fluctuations that single point readings fail to explain.
-                    </p>
                   </article>
                 </div>
 
 
               </div>
 
-              <!-- 04B: Primary Research -->
-              <div class="kb-sub-block kb-primary-research-block">
-                <div class="kb-sub-header-group">
-                  <span class="kb-sub-tag">04B &bull; PRIMARY RESEARCH</span>
-                  <h3 class="kb-sub-heading">Beyond My Own Experience</h3>
-                  <div class="kb-orange-bar kb-bar-accent-sm"></div>
-                </div>
-                <p class="kb-body-text">
-                  My own experience was only one perspective. To understand the broader challenges of diabetes management, I explored how others monitor their glucose, interpret changing readings, and navigate the uncertainties of everyday life.
-                </p>
-
-                <!-- Participant Cards -->
-                <div class="kb-participants-row">
-                  <div class="kb-participant-card">
-                    <div class="kb-participant-photo-wrap">
-                      <img src="Media/GluSight/haider_avatar.jpg" alt="Haider" class="kb-participant-photo">
-                    </div>
-                    <h4 class="kb-participant-name">Haider</h4>
-                    <p class="kb-participant-desc">
-                      Experienced avoidance when numbers caused distress, disengaging when readings felt unpredictable.
-                    </p>
-                  </div>
-
-                  <div class="kb-participant-card">
-                    <div class="kb-participant-photo-wrap">
-                      <img src="Media/GluSight/riddhi_avatar.jpg" alt="Riddhi" class="kb-participant-photo">
-                    </div>
-                    <h4 class="kb-participant-name">Riddhi</h4>
-                    <p class="kb-participant-desc">
-                      Engaged in hyper-monitoring, frequently scanning due to fear of sudden fluctuations.
-                    </p>
-                  </div>
-
-                  <div class="kb-participant-card">
-                    <div class="kb-participant-photo-wrap">
-                      <img src="Media/GluSight/chelcyka_avatar.jpg" alt="Chelcyka" class="kb-participant-photo">
-                    </div>
-                    <h4 class="kb-participant-name">Chelcyka</h4>
-                    <p class="kb-participant-desc">
-                      Experienced fatigue with constant numbers without actionable guidance on what would happen next.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 04C: Key Insights -->
+              <!-- 04B: Working assumptions (interpretations, not findings) -->
               <div class="kb-sub-block kb-insights-block">
                 <div class="kb-sub-header-group">
-                  <span class="kb-sub-tag">04C &bull; KEY INSIGHTS</span>
-                  <h3 class="kb-sub-heading">What I Learned From People</h3>
+                  <span class="kb-sub-tag">04B &bull; WORKING ASSUMPTIONS</span>
+                  <h3 class="kb-sub-heading">What Shaped the Concept</h3>
                   <div class="kb-orange-bar kb-bar-accent-sm"></div>
                 </div>
                 <p class="kb-body-text">
-                  Looking across the research helped me consider how people experience glucose information differently, while highlighting the importance of understanding what those readings mean and what might happen next.
+                  My interpretations, not findings. They still need testing with more people.
                 </p>
 
                 <!-- The Three Connected Themes (Integrated Layout matching Project DetailedLayout-08.png) -->
                 <div class="kb-themes-integrated-container">
-                  <img src="Media/GluSight/themes_3_complete_flow.png" alt="Connected themes: Understanding the Numbers, Uncertainty About What's Next, and Turning Information Into Action" class="kb-themes-canvas-art">
+                  <img src="Media/GluSight/themes_3_complete_flow.png" alt="Illustration of three connected ideas: understanding the numbers, uncertainty about what's next, and turning information into action" class="kb-themes-canvas-art">
                   
                   <!-- Insight 01: Different Responses, Shared Uncertainty -->
                   <div class="kb-theme-callout kb-theme-1-callout">
-                    <span class="kb-insight-tag">INSIGHT 01</span>
-                    <h4 class="kb-insight-title">Different Responses, Shared Uncertainty</h4>
+                    <span class="kb-insight-tag">ASSUMPTION 01</span>
+                    <h4 class="kb-insight-title">People May Respond Differently</h4>
                     <p class="kb-body-text">
-                      People can respond to glucose management in different ways. Understanding these differences is important when exploring how glucose information could support people in their everyday lives.
+                      Everyone lives with glucose differently.
                     </p>
                   </div>
 
                   <!-- Insight 02: Understanding What Comes Next -->
                   <div class="kb-theme-callout kb-theme-2-callout">
-                    <span class="kb-insight-tag">INSIGHT 02</span>
-                    <h4 class="kb-insight-title">Understanding What Comes Next</h4>
+                    <span class="kb-insight-tag">ASSUMPTION 02</span>
+                    <h4 class="kb-insight-title">The Current Reading May Not Be Enough</h4>
                     <p class="kb-body-text">
-                      Knowing the current glucose reading does not necessarily resolve uncertainty about how glucose levels may change afterwards.
+                      Knowing the number does not say where it is heading.
                     </p>
                   </div>
 
                   <!-- Insight 03: Information Needs Interpretation -->
                   <div class="kb-theme-callout kb-theme-3-callout">
-                    <span class="kb-insight-tag">INSIGHT 03</span>
-                    <h4 class="kb-insight-title">Information Needs Interpretation</h4>
+                    <span class="kb-insight-tag">ASSUMPTION 03</span>
+                    <h4 class="kb-insight-title">Information May Need Interpretation</h4>
                     <p class="kb-body-text">
-                      Glucose information is most useful when people can understand what it represents and consider how to respond appropriately.
+                      A number helps most when it comes with meaning.
                     </p>
                   </div>
                 </div>
@@ -768,11 +763,11 @@
               <!-- 04D: Connecting the Research to GluSight -->
               <div class="kb-bridge-block">
                 <div class="kb-bridge-content">
-                  <span class="kb-sub-tag">04D &bull; OPPORTUNITY BRIDGE</span>
+                  <span class="kb-sub-tag">04C &bull; OPPORTUNITY BRIDGE</span>
                   <h3 class="kb-sub-heading">From Insight to Opportunity</h3>
                   <div class="kb-orange-bar kb-bar-accent-sm"></div>
                   <p class="kb-lead-text kb-bridge-lead">
-                    The research helped frame the design opportunity: exploring how possible future glucose trends could be communicated in a way that supports understanding without presenting uncertainty as a certainty.
+                    The opportunity: showing where glucose may be heading, without presenting an estimate as a certainty.
                   </p>
                 </div>
               </div>
@@ -875,6 +870,23 @@
           </article>
         </main>
 
+        <!-- Visual-project stories (built by stories.js): one visual + one poem or story per slide -->
+        <main class="kb-story-main" id="kb-story-main" aria-label="Project stories"></main>
+
+        <!-- Slide pager: one case-study section per page -->
+        <div class="kb-pager" id="kb-pager" role="group" aria-label="Case study pages">
+          <button type="button" class="kb-pager-btn" id="kb-prev" aria-label="Previous page">&larr; Prev</button>
+          <span class="kb-pager-count" id="kb-pager-count" aria-live="polite">01 / 05</span>
+          <button type="button" class="kb-pager-btn" id="kb-next" aria-label="Next page">Next &rarr;</button>
+        </div>
+
+        <aside class="kb-rail kb-rail-right kb-rail-story" id="kb-story-rail" aria-label="Story slides">
+          <div class="kb-rail-inner">
+            <div class="kb-rail-title">Slides</div>
+            <nav class="kb-rail-tabs" id="kb-story-tabs" aria-label="Project slides"></nav>
+          </div>
+        </aside>
+
         <!-- Right Editorial Rail (Section Tab Matching preview_detailed_layout.jpg) -->
         <aside class="kb-rail kb-rail-right" aria-label="Section Tabs">
           <div class="kb-rail-inner">
@@ -886,8 +898,8 @@
               <button type="button" class="kb-rail-tab" data-section="1" data-target="kb-sec-02" aria-label="Section 2: Introducing GluSight" title="02. Introducing GluSight">
                 <span class="kb-tab-num">02.</span> <span class="kb-tab-name">Introducing GluSight</span>
               </button>
-              <button type="button" class="kb-rail-tab" data-section="2" data-target="kb-sec-03" aria-label="Section 3: Exploring the Idea" title="03. Exploring the Idea">
-                <span class="kb-tab-num">03.</span> <span class="kb-tab-name">Exploring the Idea</span>
+              <button type="button" class="kb-rail-tab" data-section="2" data-target="kb-sec-03" aria-label="Section 3: A Closer Look at GluSight" title="03. A Closer Look at GluSight">
+                <span class="kb-tab-num">03.</span> <span class="kb-tab-name">A Closer Look</span>
               </button>
               <button type="button" class="kb-rail-tab" data-section="3" data-target="kb-sec-04" aria-label="Section 4: Research &amp; Insights" title="04. Research &amp; Insights">
                 <span class="kb-tab-num">04.</span> <span class="kb-tab-name">Research &amp; Insights</span>
@@ -907,7 +919,9 @@
 
   <!-- Parallax.js Library by Matthew Wagerfield -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/parallax/3.1.0/parallax.min.js"></script>
-  <script src="script.js?v=20261022_tabs_v13"></script>
+  <script src="script.js?v=20261029_table_v1"></script>
+  <script src="stories.js?v=20261028_stories_v1"></script>
+  <script src="table.js?v=20261029_table_v1"></script>
 </body>
 
 </html>

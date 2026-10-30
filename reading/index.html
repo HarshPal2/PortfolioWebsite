@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harsh — Visual Designer & 3D Artist (Reading version)</title>
+<meta name="description" content="A fast, text-first version of Harsh's portfolio: about, projects, case study and contact.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Belleza&family=GFS+Didot&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f3ee; --ink:#1d1b18; --muted:#7a746b; --line:#ddd6ca; --accent:#8a5a2b; --note:#ece6db;
+    --font-heading:'GFS Didot','Didot','Playfair Display',serif;
+    --font-body:'Belleza','Optima','Montserrat',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#161412; --ink:#efe9df; --muted:#9a9388; --line:#2f2b26; --accent:#d3a36a; --note:#211e1a;}
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-underline-offset:3px}
+  a:hover{text-decoration-thickness:2px}
+  .wrap{max-width:680px;margin:0 auto;padding:0 20px}
+  html{scroll-padding-top:76px}
+  header{position:sticky;top:0;z-index:20;padding:14px 0;background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:baseline;justify-content:space-between}
+  .brand{font-family:var(--font-heading);font-size:20px;color:var(--ink);text-decoration:none}
+  nav{display:flex;flex-wrap:wrap;gap:6px 22px}
+  nav a{color:var(--muted);text-decoration:none;font-size:16px}
+  nav a:hover{color:var(--ink)}
+  .notice{background:var(--note);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:28px 0 8px;font-size:15px;color:var(--muted)}
+  .btn{display:inline-block;margin-top:10px;padding:10px 18px;border:1px solid var(--ink);border-radius:999px;color:var(--ink);text-decoration:none;font-size:15px;transition:background .2s,color .2s}
+  .btn:hover,.btn:focus-visible{background:var(--ink);color:var(--bg)}
+  h1,h2{font-family:var(--font-heading);font-weight:400;line-height:1.1;margin:0}
+  h1{font-size:clamp(40px,8vw,64px);margin:56px 0 20px}
+  h2{font-size:clamp(30px,5vw,40px);margin:0 0 24px}
+  section{padding:56px 0 8px;border-top:1px solid var(--line);margin-top:56px}
+  .lede{font-size:21px;color:var(--ink)}
+  .item{margin:0 0 30px}
+  .item h3{margin:0;font-size:19px;font-weight:400;font-family:var(--font-heading)}
+  .meta{color:var(--muted);font-size:15px}
+  .item p{margin:6px 0 0}
+  ol.list,ul.list{list-style:none;padding:0;margin:0}
+  .list li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .list li span{color:var(--muted);font-size:15px}
+  .contact-row{display:flex;flex-wrap:wrap;gap:10px 14px;margin:20px 0}
+  form{display:grid;gap:14px;margin-top:24px}
+  label{font-size:14px;color:var(--muted);display:block;margin-bottom:4px}
+  input,textarea{width:100%;font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+  input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+  textarea{min-height:130px;resize:vertical}
+  button.btn{background:transparent;cursor:pointer;font:inherit;font-size:15px;justify-self:start}
+  .fine{font-size:14px;color:var(--muted)}
+
+  .deck{margin:0 -20px}
+  .track{list-style:none;margin:0;padding:4px 20px 8px;display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 20px;-webkit-overflow-scrolling:touch;scrollbar-width:none;outline-offset:2px}
+  .track::-webkit-scrollbar{display:none}
+  .slide{flex:0 0 88%;scroll-snap-align:start}
+  .card{display:flex;flex-direction:column;height:100%;color:inherit;text-decoration:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--note);transition:transform .25s,border-color .25s}
+  .card:hover,.card:focus-visible{transform:translateY(-3px);border-color:var(--accent);outline:none}
+  .card-img{display:block;aspect-ratio:4/3;background:var(--line);overflow:hidden}
+  .card-img img{display:block;width:100%;height:100%;object-fit:cover}
+  .card-body{display:flex;flex-direction:column;gap:6px;padding:18px 20px 22px;flex:1}
+  .card-no{font-size:13px;letter-spacing:.12em;color:var(--muted)}
+  .card-title{font-family:var(--font-heading);font-size:26px;line-height:1.15}
+  .card-meta{font-size:14px;color:var(--muted)}
+  .card-desc{font-size:16px;line-height:1.55}
+  .card-cta{margin-top:auto;padding-top:10px;color:var(--accent);font-size:15px}
+  .deck-ui{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px 0}
+  .arrow{width:42px;height:42px;border-radius:50%;border:1px solid var(--ink);background:transparent;color:var(--ink);font:inherit;font-size:18px;cursor:pointer;transition:background .2s,color .2s}
+  .arrow:hover,.arrow:focus-visible{background:var(--ink);color:var(--bg);outline:none}
+  .arrow[disabled]{opacity:.3;cursor:default;background:transparent;color:var(--ink)}
+  .dots{display:flex;gap:8px}
+  .dot{width:9px;height:9px;padding:0;border-radius:50%;border:1px solid var(--ink);background:transparent;cursor:pointer}
+  .dot[aria-selected="true"]{background:var(--ink)}
+  @media (prefers-reduced-motion:no-preference){.track{scroll-behavior:smooth}}
+  @media (min-width:720px){.deck{margin:0}.track{padding-left:0;padding-right:0;scroll-padding:0}.slide{flex-basis:84%}.deck-ui{padding:12px 0 0}}
+  footer{margin:72px 0 48px;padding-top:24px;border-top:1px solid var(--line);font-size:15px;color:var(--muted)}
+  footer nav{margin-bottom:14px}
+  .skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;background:var(--bg);padding:8px;z-index:9}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header>
+  <div class="wrap">
+    <div class="bar">
+      <a class="brand" href="#top" id="top">Harsh</a>
+      <nav aria-label="Sections">
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#case-study">Case study</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+    
+  </div>
+</header>
+<div class="wrap">
+  <div class="notice">
+      This is the plain, fast version of my portfolio. The full experience is an interactive 3D house.
+      <br><a class="btn" href="../" id="enter-3d">Enter the 3D house</a>
+    </div>
+
+  <main id="main">
+    <h1>I’m Harsh, a visual designer and 3D artist.</h1>
+    <p class="lede">I create experiences through emotions, motion, and storytelling. Curious by nature. Experimental by choice.</p>
+    <p>From constructed worlds to digital experiences, my work moves between disciplines, ideas, and ways of seeing without staying in one place for too long.</p>
+
+    <section id="about">
+      <h2>About</h2>
+      <p>I’m a designer and 3D artist interested in creating environments and experiences that sit between the physical and digital.</p>
+      <p>My work moves between 3D environments, visualisation, interaction design, and immersive experiences. I’m interested in not only building a space, but shaping how someone experiences it, and how technology can make that interaction more meaningful.</p>
+      <p class="meta">Designer · 3D Artist · Experience Builder · Based in India</p>
+    </section>
+
+    <section id="projects">
+      <h2>Projects</h2>
+      <div class="deck" role="region" aria-roledescription="carousel" aria-label="Projects">
+        <ul class="track" id="track" tabindex="0">
+        <li class="slide" id="slide-1" role="group" aria-roledescription="slide" aria-label="1 of 5">
+          <a class="card" href="glusight/">
+            <span class="card-img"><img src="img/glusight-ref-01-hero-phone.webp" alt="GluSight predictive glucose interface on a mobile phone" loading="eager" decoding="async" style="object-position:center top;transform:scale(1.2);transform-origin:center top"></span>
+            <span class="card-body">
+              <span class="card-no">01 / 05</span>
+              <span class="card-title">GluSight</span>
+              <span class="card-meta">Medical UX/UI concept · 2026</span>
+              <span class="card-desc">A concept exploring how predictive glucose insights could help people understand possible changes in their glucose levels and prepare for what’s ahead.</span>
+              <span class="card-cta">View project &rarr;</span>
+            </span>
+          </a>
+        </li>
+        <li class="slide" id="slide-2" role="group" aria-roledescription="slide" aria-label="2 of 5">
+          <a class="card" href="cabin-in-the-woods/">
+            <span class="card-img"><img src="img/cabin-cabin-hero.webp" alt="Cabin in the Woods architectural master perspective" loading="lazy" decoding="async" style="object-position:center center"></span>
+            <span class="card-body">
+              <span class="card-no">02 / 05</span>
+              <span class="card-title">Cabin in the Woods</span>
+              <span class="card-meta">Architectural visualisation · 2026</span>
+              <span class="card-desc">A study of stillness, materiality, and light, exploring how a small woodland retreat can feel part of its landscape rather than placed within it.</span>
+              <span class="card-cta">View project &rarr;</span>
+            </span>
+          </a>
+        </li>
+        <li class="slide" id="slide-3" role="group" aria-roledescription="slide" aria-label="3 of 5">
+          <a class="card" href="product-renders/">
+            <span class="card-img"><img src="img/product-renders-harsh-pal-finalrender.webp" alt="Polaroid camera 3D look-development on wet pavement" loading="lazy" decoding="async" style="object-position:center center"></span>
+            <span class="card-body">
+              <span class="card-no">03 / 05</span>
+              <span class="card-title">Product Renders</span>
+              <span class="card-meta">3D look development · 2025–2026</span>
+              <span class="card-desc">Look-development, hard-surface detailing, and photorealistic material studies.</span>
+              <span class="card-cta">View project &rarr;</span>
+            </span>
+          </a>
+        </li>
+        <li class="slide" id="slide-4" role="group" aria-roledescription="slide" aria-label="4 of 5">
+          <a class="card" href="biophilic-interior/">
+            <span class="card-img"><img src="img/biophilic-environment-img.webp" alt="Biophilic interior with indoor pool and slatted divider" loading="lazy" decoding="async" style="object-position:center center"></span>
+            <span class="card-body">
+              <span class="card-no">04 / 05</span>
+              <span class="card-title">Biophilic Interior</span>
+              <span class="card-meta">Spatial &amp; interior visualisation · 2025</span>
+              <span class="card-desc">An interior exploration of how raw timber, still water, and living plants can soften contemporary spaces into calm, contemplative ones.</span>
+              <span class="card-cta">View project &rarr;</span>
+            </span>
+          </a>
+        </li>
+        <li class="slide" id="slide-5" role="group" aria-roledescription="slide" aria-label="5 of 5">
+          <a class="card" href="poster-collection/">
+            <span class="card-img"><img src="img/posters-poster-1iteration-1.webp" alt="SOMNIA speculative sci-fi poster" loading="lazy" decoding="async" style="object-position:center top"></span>
+            <span class="card-body">
+              <span class="card-no">05 / 05</span>
+              <span class="card-title">Poster Collection</span>
+              <span class="card-meta">Graphic design · 2025–2026</span>
+              <span class="card-desc">A poster collection exploring speculative cinema, lucid dreamscapes, and whimsical character typography.</span>
+              <span class="card-cta">View project &rarr;</span>
+            </span>
+          </a>
+        </li>
+        </ul>
+        <div class="deck-ui">
+          <button class="arrow" id="prev" type="button" aria-label="Previous project">&larr;</button>
+          <div class="dots" id="dots" role="tablist" aria-label="Choose project"></div>
+          <button class="arrow" id="next" type="button" aria-label="Next project">&rarr;</button>
+        </div>
+      </div>
+      <p class="fine">Swipe, use the arrows, or press the left and right keys. Films and full galleries are in the <a href="../projects/">3D project gallery</a>.</p>
+    </section>
+
+    <section id="case-study">
+      <h2>Case study: GluSight</h2>
+      <p class="lede">What if your glucose monitor could tell you what happens next?</p>
+      <p>Living with diabetes means more than keeping track of numbers. GluSight is a design concept that explores how presenting current glucose information alongside a possible future trend could help people anticipate changes and better understand what they are seeing.</p>
+      <ul class="list">
+        <li>Current glucose <span>Present reading and its trend</span></li>
+        <li>Predicted trend <span>A possible future, shown as an estimate</span></li>
+        <li>Communicating uncertainty <span>Observed vs estimated values</span></li>
+        <li>Contextual information <span>Meals, activity, medication, stress, sleep</span></li>
+      </ul>
+      <p class="fine" style="margin-top:14px">GluSight is an independent concept and has not been clinically validated. The full write-up is in the Kitchen of the 3D house: <a href="../#blog">read the full case study</a>.</p>
+    </section>
+
+    <section id="contact">
+      <h2>Contact me</h2>
+      <p>Have a project in mind, an inquiry, or want to collaborate? Reach out directly or connect through my profiles.</p>
+      <div class="contact-row">
+        <a class="btn" href="mailto:harshpal.contact@gmail.com">Email me</a>
+        <a class="btn" href="https://www.linkedin.com/in/harsh-pal-42b174205/" rel="noopener">LinkedIn</a>
+        <a class="btn" href="https://www.artstation.com/harshpal" rel="noopener">ArtStation</a>
+      </div>
+      <form id="contact-form">
+        <div><label for="n">Name</label><input id="n" name="name" required autocomplete="name"></div>
+        <div><label for="e">Email</label><input id="e" name="email" type="email" required autocomplete="email"></div>
+        <div><label for="m">Message</label><textarea id="m" name="message" required></textarea></div>
+        <button class="btn" type="submit">Send message</button>
+        <p class="fine">This opens your email app with the message filled in.</p>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <nav aria-label="Footer">
+      <a href="#about">About</a><a href="#projects">Projects</a><a href="#case-study">Case study</a><a href="#contact">Contact</a><a href="../">3D house</a>
+    </nav>
+    © 2026 Harsh
+  </footer>
+</div>
+<script>
+  document.getElementById('contact-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var f = ev.target, name = f.name.value.trim(), email = f.email.value.trim(), msg = f.message.value.trim();
+    var subject = encodeURIComponent('Portfolio Inquiry from ' + name);
+    var body = encodeURIComponent('Hi Harsh,\n\n' + msg + '\n\nFrom: ' + name + ' (' + email + ')');
+    window.location.href = 'mailto:harshpal.contact@gmail.com?subject=' + subject + '&body=' + body;
+  });
+</script>
+<script>
+(function(){
+  var track=document.getElementById('track'),slides=[].slice.call(track.children),dots=document.getElementById('dots'),prev=document.getElementById('prev'),next=document.getElementById('next'),cur=0;
+  slides.forEach(function(_,i){var b=document.createElement('button');b.type='button';b.className='dot';b.setAttribute('role','tab');b.setAttribute('aria-label','Project '+(i+1));b.onclick=function(){go(i)};dots.appendChild(b)});
+  function go(i){i=Math.max(0,Math.min(slides.length-1,i));track.scrollTo({left:slides[i].offsetLeft-track.firstElementChild.offsetLeft,behavior:'smooth'})}
+  function sync(){var x=track.scrollLeft+1,best=0,d=1e9;slides.forEach(function(s,i){var k=Math.abs(s.offsetLeft-track.firstElementChild.offsetLeft-track.scrollLeft);if(k<d){d=k;best=i}});
+    if(track.scrollLeft+track.clientWidth>=track.scrollWidth-2)best=slides.length-1;cur=best;
+    [].forEach.call(dots.children,function(b,i){b.setAttribute('aria-selected',i===cur)});prev.disabled=cur===0;next.disabled=cur===slides.length-1}
+  prev.onclick=function(){go(cur-1)};next.onclick=function(){go(cur+1)};
+  track.addEventListener('scroll',function(){window.requestAnimationFrame(sync)},{passive:true});
+  track.addEventListener('keydown',function(e){if(e.key==='ArrowRight'){e.preventDefault();go(cur+1)}else if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1)}});
+  sync();
+})();
+</script>
+</body>
+</html>
