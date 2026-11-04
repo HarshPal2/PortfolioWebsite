@@ -1,32 +1,8 @@
-# OS metadata files
+node_modules/
+.next/
+out/
 .DS_Store
 Thumbs.db
-Desktop.ini
-
-# Editor & IDE files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Temporary / log files
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Test artifacts & scratch
-scratch/
-/*.png
-Explainations/
-
-
-
-.vercel
 .env*
-
-*.pptx
-Reference/Screen Recording*.mp4
+.vercel
