@@ -16,19 +16,42 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/alyamama/index.css">
 
-  <link rel="preload" as="image" type="image/avif" href="Media/Living_Bedroom/LivingToBedroom0097.avif">
   <link rel="prefetch" href="projects/">
   <link rel="prefetch" href="Media/BedroomToPCScreen/BedroomtoPc0562.avif">
 
   <link rel="stylesheet" href="styles.css?v=20261029_table_v1">
 
-  <!-- Instant Pre-Render Check: hide the Freedom splash on first paint once the intro has already played this session -->
+  <!-- Instant Pre-Render Check, before first paint:
+       - hide the Freedom splash once the intro has already played this session;
+       - mark which room the page will open on (html[data-room]) so the placeholder picture behind the
+         canvas is that room, not the Entrance or the Living room, and preload that one picture. -->
   <script>
-    try {
-      if (sessionStorage.getItem('portfolioIntroCompleted') === 'true') {
-        document.documentElement.classList.add('intro-completed');
-      }
-    } catch (e) { }
+    (function () {
+      var room = 'living', intro = false;
+      try {
+        intro = sessionStorage.getItem('portfolioIntroCompleted') === 'true';
+        if (sessionStorage.getItem('returnFromProjectsToLiving') === 'true' ||
+            sessionStorage.getItem('returnFromProjects') === 'true') {
+          room = 'pc';                     // the page opens on the PC screen and zooms back out
+        } else {
+          var h = (location.hash || '').replace('#', '').toLowerCase();
+          var map = { home: 'living', about: 'living', living: 'living', projects: 'bedroom', bedroom: 'bedroom',
+            blog: 'kitchen', blogs: 'kitchen', kitchen: 'kitchen', 'about-me': 'poolroom', aboutme: 'poolroom',
+            reviews: 'poolroom', poolroom: 'poolroom', contact: 'office', office: 'office' };
+          room = map[h] || 'living';
+        }
+      } catch (e) { }
+      var d = document.documentElement;
+      if (intro) d.classList.add('intro-completed');
+      if (intro || room === 'pc') d.setAttribute('data-room', room);
+      var frames = { living: 'Media/Living_Bedroom/LivingToBedroom0097.avif', bedroom: 'Media/Living_Bedroom/LivingToBedroom0144.avif',
+        kitchen: 'Media/Living_Kitchen/LivingToKitchen0169.avif', poolroom: 'Media/Living_Pool/LivingToPool0218.avif',
+        office: 'Media/Living_Office/LivingToOffice0267.avif', pc: 'Media/BedroomToPCScreen/BedroomtoPc0562.avif' };
+      var l = document.createElement('link');
+      l.rel = 'preload'; l.as = 'image'; l.type = 'image/avif';
+      l.href = (intro || room === 'pc') ? frames[room] : 'Media/Entrance/Entrance0001.avif';
+      document.head.appendChild(l);
+    })();
   </script>
 </head>
 
@@ -439,7 +462,7 @@
                 </div>
                 <div class="kb-hero-visual-col">
                   <div class="kb-hero-img-wrap">
-                    <img src="Media/GluSight/ref_01_hero_phone.jpg" alt="GluSight predictive glucose telemetry interface on mobile device" class="kb-hero-img">
+                    <img loading="lazy" decoding="async" src="Media/GluSight/ref_01_hero_phone.jpg" alt="GluSight predictive glucose telemetry interface on mobile device" class="kb-hero-img">
                   </div>
                 </div>
               </div>
@@ -463,7 +486,7 @@
 
               <!-- System Hero Visual -->
               <div class="kb-system-hero-wrap">
-                <img src="Media/GluSight/glusight_hero_full.png" alt="Concept visualisation of the GluSight system: a sensor disc and the mobile interface" class="kb-system-hero-img">
+                <img loading="lazy" decoding="async" src="Media/GluSight/glusight_hero_full.png" alt="Concept visualisation of the GluSight system: a sensor disc and the mobile interface" class="kb-system-hero-img">
                 <p class="kb-caption-sub">Concept visualisation of the GluSight system: a sensor disc and the mobile interface.</p>
               </div>
 
@@ -494,7 +517,7 @@
                     Understand the present through a clear view of the current glucose reading and its trend.
                   </p>
                   <div class="kb-feature-asset-wrap">
-                    <img src="Media/GluSight/glusight_ui_reading_crop.png" alt="GluSight current glucose reading display" class="kb-feature-asset-img">
+                    <img loading="lazy" decoding="async" src="Media/GluSight/glusight_ui_reading_crop.png" alt="GluSight current glucose reading display" class="kb-feature-asset-img">
                   </div>
                 </div>
 
@@ -505,7 +528,7 @@
                     Explore how glucose levels might change over the coming period through a visual projection of a possible future trend.
                   </p>
                   <div class="kb-feature-asset-wrap">
-                    <img src="Media/GluSight/glusight_crop_prediction_graph.png" alt="Prediction graph from the GluSight Home screen: recorded glucose as a solid line and a predicted continuation as a dashed line" class="kb-feature-asset-img">
+                    <img loading="lazy" decoding="async" src="Media/GluSight/glusight_crop_prediction_graph.png" alt="Prediction graph from the GluSight Home screen: recorded glucose as a solid line and a predicted continuation as a dashed line" class="kb-feature-asset-img">
                   </div>
                 </div>
 
@@ -516,7 +539,7 @@
                     Distinguish observed readings from estimated future values, helping users recognise that predictions are not guarantees.
                   </p>
                   <div class="kb-feature-asset-wrap">
-                    <img src="Media/GluSight/glusight_crop_confidence_note.png" alt="Confidence indicator and a note saying the prediction is based on past patterns, from the GluSight Home screen" class="kb-feature-asset-img">
+                    <img loading="lazy" decoding="async" src="Media/GluSight/glusight_crop_confidence_note.png" alt="Confidence indicator and a note saying the prediction is based on past patterns, from the GluSight Home screen" class="kb-feature-asset-img">
                   </div>
                 </div>
 
@@ -527,7 +550,7 @@
                     Explore how relevant factors, such as meals, physical activity, medication, stress, and sleep, could help users make sense of changing glucose patterns.
                   </p>
                   <div class="kb-feature-asset-wrap">
-                    <img src="Media/GluSight/glusight_screen_log_meal.png" alt="GluSight Log Meal screen with quick meal categories and a free-text description" class="kb-feature-asset-img">
+                    <img loading="lazy" decoding="async" src="Media/GluSight/glusight_screen_log_meal.png" alt="GluSight Log Meal screen with quick meal categories and a free-text description" class="kb-feature-asset-img">
                   </div>
                 </div>
               </div>
@@ -591,7 +614,7 @@
                   </div>
                   <div class="kb-process-visual-col">
                     <div class="kb-process-asset-wrap">
-                      <img src="Media/GluSight/glusight_screen_home.png" alt="GluSight Home screen with the current glucose reading, a trend label, a prediction graph and a confidence indicator" class="kb-process-asset-img">
+                      <img loading="lazy" decoding="async" src="Media/GluSight/glusight_screen_home.png" alt="GluSight Home screen with the current glucose reading, a trend label, a prediction graph and a confidence indicator" class="kb-process-asset-img">
                       <p class="kb-caption-sub">Home: current reading, trend, and a prediction graph with a confidence indicator.</p>
                     </div>
                   </div>
@@ -611,7 +634,7 @@
                   </div>
                   <div class="kb-process-visual-col">
                     <div class="kb-process-asset-wrap">
-                      <img src="Media/GluSight/glusight_screen_log_meal.png" alt="GluSight Log Meal screen with quick meal categories, a description field and a Log Meal button" class="kb-process-asset-img">
+                      <img loading="lazy" decoding="async" src="Media/GluSight/glusight_screen_log_meal.png" alt="GluSight Log Meal screen with quick meal categories, a description field and a Log Meal button" class="kb-process-asset-img">
                       <p class="kb-caption-sub">Log Meal: quick categories and a free-text description.</p>
                     </div>
                   </div>
@@ -631,7 +654,7 @@
                   </div>
                   <div class="kb-process-visual-col">
                     <div class="kb-process-asset-wrap">
-                      <img src="Media/GluSight/glusight_screen_settings.png" alt="GluSight Settings screen with health setup, alerts and preferences" class="kb-process-asset-img">
+                      <img loading="lazy" decoding="async" src="Media/GluSight/glusight_screen_settings.png" alt="GluSight Settings screen with health setup, alerts and preferences" class="kb-process-asset-img">
                       <p class="kb-caption-sub">Settings: health setup, alert controls and preferences.</p>
                     </div>
                   </div>
@@ -682,7 +705,7 @@
 
                 <!-- Lifestyle & Contextual Factors Integrated Visual -->
                 <div class="kb-banner-full-wrap">
-                  <img src="Media/GluSight/ref_04_banner_integrated.png" alt="Lifestyle factors and glucose variability diagram" class="kb-banner-full-img">
+                  <img loading="lazy" decoding="async" src="Media/GluSight/ref_04_banner_integrated.png" alt="Lifestyle factors and glucose variability diagram" class="kb-banner-full-img">
                   <p class="kb-caption-sub">Illustration of lifestyle factors that can influence glucose: meals, physical activity, medication and sleep.</p>
                 </div>
 
@@ -729,7 +752,7 @@
 
                 <!-- The Three Connected Themes (Integrated Layout matching Project DetailedLayout-08.png) -->
                 <div class="kb-themes-integrated-container">
-                  <img src="Media/GluSight/themes_3_complete_flow.png" alt="Illustration of three connected ideas: understanding the numbers, uncertainty about what's next, and turning information into action" class="kb-themes-canvas-art">
+                  <img loading="lazy" decoding="async" src="Media/GluSight/themes_3_complete_flow.png" alt="Illustration of three connected ideas: understanding the numbers, uncertainty about what's next, and turning information into action" class="kb-themes-canvas-art">
                   
                   <!-- Insight 01: Different Responses, Shared Uncertainty -->
                   <div class="kb-theme-callout kb-theme-1-callout">
@@ -852,7 +875,7 @@
                 </div>
                 <div class="kb-reflection-visual-col">
                   <div class="kb-reflection-asset-wrap">
-                    <img src="Media/GluSight/glusight_sensor_disc_closeup.png" alt="GluSight companion sensor device hardware puck" class="kb-reflection-hardware-img">
+                    <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sensor_disc_closeup.png" alt="GluSight companion sensor device hardware puck" class="kb-reflection-hardware-img">
                     <p class="kb-caption-sub">Hardware companion concept: discreet, calm wearable telemetry.</p>
                   </div>
                 </div>

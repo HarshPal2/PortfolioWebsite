@@ -875,6 +875,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Waits until the frames still downloading will arrive before playback reaches them, so the
+  // animation plays through without stalling. The download speed is measured while waiting; on a fast
+  // connection (or when everything is already loaded) this returns at once. Capped by maxExtraMs.
+  //   ordered:   frames in playback order
+  //   leadMs:    time between now and the first frame being drawn (e.g. a fade still running)
+  //   onProgress(fraction): optional, for a loading label
+  function awaitSmoothPlayback(ordered, leadMs, maxExtraMs, onProgress) {
+    return new Promise((resolve) => {
+      const n = ordered.length;
+      const FRAME_MS = 1000 / 24;
+      const ready = (img) => img && img.complete && img.naturalWidth > 0;
+      const prefix = () => { let k = 0; while (k < n && ready(ordered[k])) k++; return k; };
+      const countReady = () => ordered.reduce((c, img) => c + (ready(img) ? 1 : 0), 0);
+      const t0 = performance.now();
+      const ready0 = countReady();
+      const check = () => {
+        const L = prefix();
+        const elapsed = performance.now() - t0;
+        if (L >= n || elapsed >= maxExtraMs) { resolve(); return; }
+        const gained = countReady() - ready0;
+        // Need a little time to measure the speed before deciding.
+        if (gained < 2 && elapsed < 400) { setTimeout(check, 50); return; }
+        const msPerFrame = elapsed / Math.max(1, gained);
+        // Last frame arrives after (n - L) more downloads; it is drawn at lead + (n - 1) frames.
+        const neededFrames = Math.ceil(n - (leadMs + (n - 1) * FRAME_MS) / msPerFrame);
+        if (onProgress) onProgress(Math.min(1, L / Math.max(1, neededFrames)));
+        if (msPerFrame <= FRAME_MS || L >= neededFrames) { resolve(); return; }
+        setTimeout(check, 50);
+      };
+      check();
+    });
+  }
+
   // Decodes the first few frames of a transition while the old room's UI is still fading out, so the
   // first draws of the animation are cheap. Fire-and-forget; failures are harmless.
   function warmSequenceHead(frames, reverse, count) {
@@ -931,6 +964,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start fetching this transition's frames immediately (they download while the
     // UI fades out) and stop background prefetch from competing with them.
     BackgroundAssetQueue.pause();
+    // The destination room's own picture is requested first and at high priority, so that even when
+    // the animation has to be skipped on a slow connection, the room can still be shown quickly.
+    const destBase = getRoomBaseFrame(destRoom);
+    if (destBase) destBase.fetchPriority = 'high';
     warmSequenceHead(preloadSequence(conn.seq), conn.reverse, 4);
 
     let hasCompletedTransition = false;
@@ -944,6 +981,26 @@ document.addEventListener('DOMContentLoaded', () => {
         safetyTimer = null;
       }
 
+      // On a slow connection the animation can be skipped before the destination room's picture has
+      // arrived. Never show the new room's text over the old room: wait for that one picture first
+      // (capped, so a failed download cannot lock the page).
+      const destFrame = getRoomBaseFrame(destRoom);
+      if (destFrame && !(destFrame.complete && destFrame.naturalWidth > 0)) {
+        let proceeded = false;
+        const proceed = () => {
+          if (proceeded) return;
+          proceeded = true;
+          clearTimeout(capTimer);
+          finishRoomChange();
+        };
+        const capTimer = setTimeout(proceed, 12000);
+        whenFrameReady(destFrame, proceed);
+        return;
+      }
+      finishRoomChange();
+    };
+
+    const finishRoomChange = () => {
       currentRoom = destRoom;
 
       const baseFrame = getRoomBaseFrame(destRoom);
@@ -1027,11 +1084,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hasCompletedTransition) return;
         if (!headReady) {
           console.warn(`[Transition] ${connKey}: opening frames not loaded — skipping animation`);
+          // Too slow to animate: stop downloading the rest of this sequence so the connection is free
+          // for the destination picture. The frames are requested again the next time they are needed.
+          frames.forEach((img) => {
+            if (img === destBase || (img.complete && img.naturalWidth > 0)) return;
+            if (img.src) img.removeAttribute('src');
+          });
           completeTransition();
           return;
         }
-        playImageSequence(activeCanvas, frames, startIdx, endIdx, () => {
-          completeTransition();
+        // The opening frames are in. If the rest are still arriving more slowly than the animation
+        // plays, wait a moment longer so it does not stall halfway (at most 1.5 s).
+        const ordered = conn.reverse ? frames.slice().reverse() : frames;
+        awaitSmoothPlayback(ordered, 0, 1500).then(() => {
+          if (hasCompletedTransition) return;
+          playImageSequence(activeCanvas, frames, startIdx, endIdx, () => {
+            completeTransition();
+          });
         });
       });
     };
@@ -2720,6 +2789,15 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       pumpStream();
 
+      // Keep "Freedom" and its loading percentage up until the remaining frames will arrive in time
+      // for a smooth walkthrough (on a fast connection this is immediate; at most 5 s more).
+      const percentEl = document.getElementById('freedom-loading-percent');
+      awaitSmoothPlayback(entranceFrames, ENTRANCE_START_DELAY, 5000, (f) => {
+        if (percentEl) percentEl.textContent = `${Math.max(90, Math.round(90 + f * 10))}%`;
+      }).then(startEntrance);
+    }
+
+    function startEntrance() {
       // The Freedom splash (with its loading label) fades out in one step, then the walkthrough starts.
       if (freedomSplash) {
         freedomSplash.style.transition = `opacity ${FREEDOM_FADE_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;

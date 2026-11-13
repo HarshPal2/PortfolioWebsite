@@ -101,6 +101,21 @@ body {
   height: 100%;
 }
 
+/* Placeholder pictures behind the canvas, before the first frame is drawn. A first visit shows the
+   Entrance; a later visit or reload shows only the room the page opens on (html[data-room], set before
+   first paint in index.html). */
+html[data-room],
+html[data-room] body {
+  background-image: none;
+}
+html[data-room] .video-wrapper { background-image: none; }
+html[data-room="living"] .video-wrapper { background-image: url('Media/Living_Bedroom/LivingToBedroom0097.avif'); }
+html[data-room="bedroom"] .video-wrapper { background-image: url('Media/Living_Bedroom/LivingToBedroom0144.avif'); }
+html[data-room="kitchen"] .video-wrapper { background-image: url('Media/Living_Kitchen/LivingToKitchen0169.avif'); }
+html[data-room="poolroom"] .video-wrapper { background-image: url('Media/Living_Pool/LivingToPool0218.avif'); }
+html[data-room="office"] .video-wrapper { background-image: url('Media/Living_Office/LivingToOffice0267.avif'); }
+html[data-room="pc"] .video-wrapper { background-image: url('Media/BedroomToPCScreen/BedroomtoPc0562.avif'); }
+
 /* --- Fullscreen Video Background --- */
 .video-wrapper {
   position: fixed;
