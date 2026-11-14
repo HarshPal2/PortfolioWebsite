@@ -167,19 +167,21 @@ body {
 }
 
 .freedom-splash-text {
-  font-family: var(--font-heading);
-  font-size: clamp(3.5rem, 12vw, 11rem);
-  font-weight: 600;
   color: #ffffff;
-  letter-spacing: -2px;
-  text-align: center;
-  line-height: 1;
+  line-height: 0;
   margin: 0;
   padding: 0;
-  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
 }
 
-/* Minimal editorial loading indicator — sits naturally below "Freedom" */
+/* The Harsh Pal mark (replaces the old "Freedom" wordmark on the loading screen) */
+.site-mark {
+  display: block;
+  height: clamp(9rem, 30vh, 17rem);
+  width: auto;
+  filter: drop-shadow(0 4px 24px rgba(0, 0, 0, 0.35));
+}
+
+/* Minimal editorial loading indicator — sits naturally below the mark */
 .freedom-loading-indicator {
   display: flex;
   align-items: center;
@@ -3740,7 +3742,7 @@ body {
   .kitchen-blog-window.is-retracting { transform: translateY(-100%); opacity: 0; }
 }
 
-/* Room title ("Freedom", "Projects", ...) is no longer shown; kept in the DOM for screen readers */
+/* Room title ("Harsh Pal", "Projects", ...) is no longer shown; kept in the DOM for screen readers */
 .freedom-title { clip: rect(0 0 0 0); clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; white-space: nowrap; }
 
 /* ---- Process evidence: sketches + interviews ---- */
