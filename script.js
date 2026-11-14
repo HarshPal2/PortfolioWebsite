@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const backdropRect = document.querySelector('.fullscreen-backdrop-rect');
   const sceneElement = document.getElementById('parallax-scene');
   const navLinks = document.querySelectorAll('.nav-link');
-  const roomTitleEl = document.querySelector('.freedom-title h1');
+  const roomTitleEl = document.querySelector('.freedom-title .room-title-text');
 
   // --- Entrance Sequence Timing Constants ---
   const FREEDOM_FADE_DURATION = 500;    // Duration (ms) for Freedom title to smoothly fade out to 0 opacity
