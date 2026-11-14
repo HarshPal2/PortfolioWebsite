@@ -615,7 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const roomTitles = {
-    'living': 'Freedom',
+    'living': 'Harsh Pal',
     'bedroom': 'Projects',
     'kitchen': 'Case Study',
     'poolroom': 'About Me',
