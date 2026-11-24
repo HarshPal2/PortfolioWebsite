@@ -1604,20 +1604,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
           }; // end doPlay
 
-          // Pre-decode the final frame before playback starts.
-          // If the last frame hasn't finished downloading yet, wait for it first.
-          // This prevents the sequence from stalling on the very last frame.
-          if (lastFrame && lastFrame.complete && lastFrame.naturalWidth > 0) {
-            doPlay();
-          } else if (lastFrame && typeof lastFrame.decode === 'function') {
-            lastFrame.decode().then(doPlay).catch(doPlay);
-          } else if (lastFrame) {
-            const onLastFrameReady = () => doPlay();
-            lastFrame.addEventListener('load', onLastFrameReady, { once: true });
-            lastFrame.addEventListener('error', onLastFrameReady, { once: true });
-          } else {
-            doPlay();
-          }
+          // Start only once the frames will keep up with playback (immediate when they are already
+          // loaded, at most 2.5 s), then decode the opening frames, so the zoom plays smoothly instead
+          // of jumping over frames that are still downloading.
+          const warm = (img) => (img && typeof img.decode === 'function') ? img.decode().catch(() => {}) : Promise.resolve();
+          awaitSmoothPlayback(frames, 0, 2500)
+            .then(() => Promise.all([frames[0], frames[1], frames[2], lastFrame].map(warm)))
+            .then(doPlay, doPlay);
         }; // end startAnim
 
         fadeUIOut();
