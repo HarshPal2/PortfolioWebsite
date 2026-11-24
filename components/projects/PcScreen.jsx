@@ -22,7 +22,7 @@ function PcScreen() {
             <div id="project-loading-overlay" className="project-loading-overlay">
               {/* Layer 1: Screen Wallpaper */}{' '}
               <div className="loading-wallpaper-layer">
-                <img src="Media/1314645.jpg" alt="Wallpaper Background" className="loading-wallpaper-img" />
+                <img src="Media/1314645.webp" alt="Wallpaper Background" className="loading-wallpaper-img" />
               </div>{' '}
               {/* Layer 2: 25% Black Transparent Film */}{' '}
               <div className="loading-dark-film" />{' '}
@@ -66,7 +66,7 @@ function PcScreen() {
       <div className="cinematic-black-curtain" id="cinematic-curtain" />{' '}
       {/* Video player container */}{' '}
       <div className="cinematic-video-container" id="cinematic-video-container">
-        <video id="cinematic-video-element" className="cinematic-video-player" playsInline preload="auto">
+        <video id="cinematic-video-element" className="cinematic-video-player" playsInline preload="none">
           <source src="Media/TreeHouseWithout.mp4" type="video/mp4" />{' '}
           Your browser does not support HTML5 video.{' '}
         </video>{' '}

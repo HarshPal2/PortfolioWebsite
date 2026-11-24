@@ -22,6 +22,8 @@ export default function ProjectsLayout({ children }) {
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/Media/logo/apple-touch-icon.png" />
         <script dangerouslySetInnerHTML={{ __html: PRE_PAINT }} />
+        {/* Desktop wallpaper of the PC screen: fetched first, so it does not pop in late. */}
+        <link rel="preload" as="image" type="image/webp" href="/projects/Media/os/wallpaper.webp" media="(min-width: 901px)" />
         {/* Fonts: GFS Didot (headings) & Belleza (body) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />

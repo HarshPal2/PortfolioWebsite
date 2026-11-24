@@ -180,7 +180,7 @@ export default function ProjectsEditorial() {
                       <div className="opening-visual-col span-7">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-hero">
-                            <img src="Media/GluSight/ref_01_hero_phone.jpg" alt="GluSight predictive glucose telemetry interface on mobile device" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/glusight-ref-01-hero-phone.webp" alt="GluSight predictive glucose telemetry interface on mobile device" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -327,7 +327,7 @@ export default function ProjectsEditorial() {
                       <div className="opening-visual-col span-7">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-hero">
-                            <img src="Media/Cabin/cabin_hero.jpg" alt="Cabin in the Woods architectural master perspective" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/cabin-cabin-hero.webp" alt="Cabin in the Woods architectural master perspective" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -368,7 +368,7 @@ export default function ProjectsEditorial() {
                       <div className="duo-dominant-col span-7">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-tall">
-                            <img src="Media/Cabin/cabin_detail_canopy.jpg" alt="Morning sun filtering through maple leaves onto timber siding" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/cabin-cabin-detail-canopy.webp" alt="Morning sun filtering through maple leaves onto timber siding" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -384,7 +384,7 @@ export default function ProjectsEditorial() {
                       <div className="duo-offset-col span-5">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-square">
-                            <img src="Media/Cabin/cabin_detail_gable.jpg" alt="Pitched roof gable and handcrafted decorative floral frieze" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/cabin-cabin-detail-gable.webp" alt="Pitched roof gable and handcrafted decorative floral frieze" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -402,7 +402,7 @@ export default function ProjectsEditorial() {
                       <div className="cinema-card-col span-12">
                         <div className="cabin-film-card">
                           <div className="cabin-film-bg-preview">
-                            <img src="Media/Cabin/cabin_hero.jpg" alt="Cinematic Film Preview" className="film-bg-img" />{' '}
+                            <img loading="lazy" decoding="async" src="/reading/img/cabin-cabin-hero.webp" alt="Cinematic Film Preview" className="film-bg-img" />{' '}
                             <div className="film-bg-gradient" />
                           </div>{' '}
                           <button className="cabin-film-trigger" id="cabin-film-btn" aria-label="Watch Cabin in the Woods Cinematic Film">{' '}
@@ -439,7 +439,7 @@ export default function ProjectsEditorial() {
                       <div className="tactile-col span-6">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-landscape">
-                            <img src="Media/Cabin/cabin_detail_windows.jpg" alt="Diamond leaded glazing and timber entrance doorway" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/cabin-cabin-detail-windows.webp" alt="Diamond leaded glazing and timber entrance doorway" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -454,7 +454,7 @@ export default function ProjectsEditorial() {
                       <div className="tactile-col span-6">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-landscape">
-                            <img src="Media/Cabin/cabin_detail_porch.jpg" alt="Weathered timber porch railing and mossy forest floor" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/cabin-cabin-detail-porch.webp" alt="Weathered timber porch railing and mossy forest floor" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -543,7 +543,7 @@ export default function ProjectsEditorial() {
                       <div className="opening-visual-col span-7">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-hero">
-                            <img src="Media/Product Renders/harsh-pal-finalrender.jpg" alt="Polaroid camera 3D look-development on wet pavement with foliage reflections" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/product-renders-harsh-pal-finalrender.webp" alt="Polaroid camera 3D look-development on wet pavement with foliage reflections" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -584,7 +584,7 @@ export default function ProjectsEditorial() {
                       <div className="duo-dominant-col span-7">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-square">
-                            <img src="Media/Product Renders/1Psed.png" alt="Handcrafted ceramic lighthouse candleholder with flame and dappled leaf shadows" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/product-renders-1psed.webp" alt="Handcrafted ceramic lighthouse candleholder with flame and dappled leaf shadows" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -600,7 +600,7 @@ export default function ProjectsEditorial() {
                       <div className="duo-offset-col span-5">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-square">
-                            <img src="Media/Product Renders/harsh-pal-image0001.jpg" alt="Macro 3D render showcasing micro polymer roughness and optical lens coatings" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/product-renders-harsh-pal-image0001.webp" alt="Macro 3D render showcasing micro polymer roughness and optical lens coatings" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -618,7 +618,7 @@ export default function ProjectsEditorial() {
                       <div className="cinema-widescreen-col span-12">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-widescreen">
-                            <img src="Media/Product Renders/img (9).png" alt="Atmospheric widescreen product look-development scene" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/product-renders-img-9.webp" alt="Atmospheric widescreen product look-development scene" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -634,7 +634,7 @@ export default function ProjectsEditorial() {
                       <div className="cinema-card-col span-12">
                         <div className="cabin-film-card product-film-card">
                           <div className="cabin-film-bg-preview">
-                            <img src="Media/Product Renders/harsh-pal-finalrender.jpg" alt="Product Motion Turntable Preview" className="film-bg-img" />{' '}
+                            <img loading="lazy" decoding="async" src="/reading/img/product-renders-harsh-pal-finalrender.webp" alt="Product Motion Turntable Preview" className="film-bg-img" />{' '}
                             <div className="film-bg-gradient" />
                           </div>{' '}
                           <button className="cabin-film-trigger" id="product-film-btn" aria-label="Watch Product Motion Breakdown">{' '}
@@ -671,7 +671,7 @@ export default function ProjectsEditorial() {
                       <div className="spatial-portrait-col span-5">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-tall">
-                            <img src="Media/Product Renders/img (11).png" alt="Vertical spatial product lighting study with architectural contrast" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/product-renders-img-11.webp" alt="Vertical spatial product lighting study with architectural contrast" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -686,7 +686,7 @@ export default function ProjectsEditorial() {
                       <div className="spatial-sculptural-col span-7">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-landscape">
-                            <img src="Media/Product Renders/img (3).jpg" alt="Sculptural product study examining geometric curvature and directional highlights" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/product-renders-img-3.webp" alt="Sculptural product study examining geometric curvature and directional highlights" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -777,7 +777,7 @@ export default function ProjectsEditorial() {
                       <div className="opening-visual-col span-7">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-hero">
-                            <img src="Media/Biophilic environment/img.png" alt="Biophilic Interior master perspective with indoor pool and slatted divider" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/biophilic-environment-img.webp" alt="Biophilic Interior master perspective with indoor pool and slatted divider" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -818,7 +818,7 @@ export default function ProjectsEditorial() {
                       <div className="duo-dominant-col span-7">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-landscape">
-                            <img src="Media/Biophilic environment/img (8).png" alt="Elevated architectural study of the lounge and garden veranda" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/biophilic-environment-img-8.webp" alt="Elevated architectural study of the lounge and garden veranda" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -834,7 +834,7 @@ export default function ProjectsEditorial() {
                       <div className="duo-offset-col span-5">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-landscape">
-                            <img src="Media/Biophilic environment/img (4).png" alt="Suspended timber daybed swing with botanical upholstery" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/biophilic-environment-img-4.webp" alt="Suspended timber daybed swing with botanical upholstery" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -852,7 +852,7 @@ export default function ProjectsEditorial() {
                       <div className="tactile-col span-6">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-landscape">
-                            <img src="Media/Biophilic environment/img (3).png" alt="Spindle armchair and teak tea table" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/biophilic-environment-img-3.webp" alt="Spindle armchair and teak tea table" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -867,7 +867,7 @@ export default function ProjectsEditorial() {
                       <div className="tactile-col span-6">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-landscape">
-                            <img src="Media/Biophilic environment/img (6).png" alt="Curved tambour oak credenza with ambient backlighting" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/biophilic-environment-img-6.webp" alt="Curved tambour oak credenza with ambient backlighting" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -885,7 +885,7 @@ export default function ProjectsEditorial() {
                       <div className="duo-dominant-col span-7">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-landscape">
-                            <img src="Media/Biophilic environment/img (9).png" alt="Ceramic still life with meadow wildflowers and doughnut vase" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/biophilic-environment-img-9.webp" alt="Ceramic still life with meadow wildflowers and doughnut vase" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -990,7 +990,7 @@ export default function ProjectsEditorial() {
                       <div className="opening-visual-col span-7">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-poster">
-                            <img src="Media/Posters/Poster_1Iteration_1.png" alt="SOMNIA speculative sci-fi poster" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/posters-poster-1iteration-1.webp" alt="SOMNIA speculative sci-fi poster" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -1030,7 +1030,7 @@ export default function ProjectsEditorial() {
                       <div className="poster-col-6 span-6">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-poster">
-                            <img src="Media/Posters/Harsh_590028088_4_5.png" alt="SOMNIUM Dreams cosmic illustration poster" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/posters-harsh-590028088-4-5.webp" alt="SOMNIUM Dreams cosmic illustration poster" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -1045,7 +1045,7 @@ export default function ProjectsEditorial() {
                       <div className="poster-col-6 span-6">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-poster">
-                            <img src="Media/Posters/Poster_4Somnium4.png" alt="SOMNIUM Dreamplay surrealist architectural reflection poster" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/posters-poster-4somnium4.webp" alt="SOMNIUM Dreamplay surrealist architectural reflection poster" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -1085,7 +1085,7 @@ export default function ProjectsEditorial() {
                       <div className="poster-col-4 span-4">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-poster">
-                            <img src="Media/Posters/Poster_1_Harsh.png" alt="You Make My Heart Go Quack character poster" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/posters-poster-1-harsh.webp" alt="You Make My Heart Go Quack character poster" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -1100,7 +1100,7 @@ export default function ProjectsEditorial() {
                       <div className="poster-col-4 span-4">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-poster">
-                            <img src="Media/Posters/Poster_2_Harsh.png" alt="Cat-itude is everything character poster" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/posters-poster-2-harsh.webp" alt="Cat-itude is everything character poster" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
@@ -1115,7 +1115,7 @@ export default function ProjectsEditorial() {
                       <div className="poster-col-4 span-4">
                         <figure className="editorial-figure">
                           <div className="editorial-img-wrap frame-poster">
-                            <img src="Media/Posters/Poster_3_Harsh.png" alt="Too Cool to Fall character poster" className="editorial-img" />
+                            <img loading="lazy" decoding="async" src="/reading/img/posters-poster-3-harsh.webp" alt="Too Cool to Fall character poster" className="editorial-img" />
                           </div>{' '}
                           <figcaption className="editorial-caption">
                             <span className="caption-idx">
