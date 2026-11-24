@@ -121,9 +121,12 @@ document.addEventListener('DOMContentLoaded', () => {
     return frames;
   }
 
-  function preloadSequence(key) {
+  // Requests every frame of a sequence, in playback order: when it will be played backwards
+  // (reverse = true), its last frames are requested first, so playback can start without waiting
+  // for the whole sequence.
+  function preloadSequence(key, reverse) {
     const frames = initSequenceFrames(key);
-    frames.forEach((img) => {
+    (reverse ? frames.slice().reverse() : frames).forEach((img) => {
       if (!img.src && img._targetSrc) {
         img.src = img._targetSrc;
       }
@@ -1028,7 +1031,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // the animation has to be skipped on a slow connection, the room can still be shown quickly.
     const destBase = getRoomBaseFrame(destRoom);
     if (destBase) destBase.fetchPriority = 'high';
-    warmSequenceHead(preloadSequence(conn.seq), conn.reverse, 4);
+    warmSequenceHead(preloadSequence(conn.seq, conn.reverse), conn.reverse, 4);
 
     let hasCompletedTransition = false;
     let safetyTimer = null;
@@ -1128,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (hasCompletedTransition || animationStarted) return;
       animationStarted = true;
 
-      const frames = preloadSequence(conn.seq);
+      const frames = preloadSequence(conn.seq, conn.reverse);
       const activeCanvas = getActiveCanvas();
 
       const startIdx = conn.reverse ? frames.length - 1 : 0;
@@ -1512,7 +1515,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const hoverConnKey = `${currentRoom}-${config.action.targetRoom}`;
               const hoverConn = roomConnections[hoverConnKey];
               if (hoverConn && hoverConn.seq) {
-                preloadSequence(hoverConn.seq);
+                preloadSequence(hoverConn.seq, hoverConn.reverse);
               }
             }
             if (typeof config.onHover === 'function') config.onHover(config, objEl, e);
@@ -2099,7 +2102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function playCounterWalk(forward, done) {
     counterBusy = true;
-    const frames = preloadSequence('kitchen_counter');
+    const frames = preloadSequence('kitchen_counter', !forward);
     const ordered = forward ? frames : frames.slice().reverse();
     warmSequenceHead(frames, !forward, 6);
     const canvas = getActiveCanvas();
@@ -2680,8 +2683,8 @@ document.addEventListener('DOMContentLoaded', () => {
     hasRevealed = true;
     InteractiveObjectManager.setInteractiveEnabled(false);
 
-    const pcFrames = preloadSequence('bedroom_pc');
-    const bedroomLivingFrames = toLiving ? preloadSequence('living_bedroom') : null;
+    const pcFrames = preloadSequence('bedroom_pc', true);
+    const bedroomLivingFrames = toLiving ? preloadSequence('living_bedroom', true) : null;
     // Frame shown once the reverse animation has finished (only this one frame is requested
     // for the Bedroom case; the Living case already holds the whole living_bedroom sequence).
     const finalFrame = toLiving ? bedroomLivingFrames[0] : getRoomBaseFrame('bedroom');
