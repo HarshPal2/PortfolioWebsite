@@ -150,15 +150,15 @@ body {
 }
 
 
-/* Exact monitor screen region inside BedroomtoPc0562.avif (1920x1920)
-   Display panel bounds: x: 206px - 1721px (width 1515px), y: 501px - 1329px (height 828px)
-   Aligns flush with the top bezel and rests directly on the brushed silver bottom chin */
+/* Exact monitor screen region inside BedroomToPc0562.avif (1920x1920)
+   Display panel bounds (2026-11-24 render): x: 280px - 1670px (width 1390px), y: 540px - 1300px (height 760px)
+   Aligns flush with the top bezel and rests directly on the bottom chin */
 .monitor-content-viewport {
   position: absolute;
-  left: 10.7292%;
-  top: 26.0938%;
-  width: 78.9062%;
-  height: 43.125%;
+  left: 14.5833%;
+  top: 28.125%;
+  width: 72.3958%;
+  height: 39.5833%;
   background-color: #ffffff;
   overflow-y: auto;
   overflow-x: hidden;

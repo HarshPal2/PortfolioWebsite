@@ -28,7 +28,7 @@ export default function GlusightCaseStudy() {
           </div>{' '}
           <div className="kb-hero-visual-col">
             <div className="kb-hero-img-wrap">
-              <img src="Media/GluSight/ref_01_hero_phone.jpg" alt="GluSight predictive glucose telemetry interface on mobile device" className="kb-hero-img" />
+              <img loading="lazy" decoding="async" src="Media/GluSight/ref_01_hero_phone.jpg" alt="GluSight predictive glucose telemetry interface on mobile device" className="kb-hero-img" />
             </div>
           </div>
         </div>
@@ -56,7 +56,7 @@ export default function GlusightCaseStudy() {
         </p>{' '}
         {/* System Hero Visual */}{' '}
         <div className="kb-system-hero-wrap">
-          <img src="Media/GluSight/glusight_hero_full.png" alt="Concept visualisation of the GluSight system: a sensor disc and the mobile interface" className="kb-system-hero-img" />{' '}
+          <img loading="lazy" decoding="async" src="Media/GluSight/glusight_hero_full.png" alt="Concept visualisation of the GluSight system: a sensor disc and the mobile interface" className="kb-system-hero-img" />{' '}
           <p className="kb-caption-sub">
             Concept visualisation of the GluSight system: a sensor disc and the mobile interface.
           </p>
@@ -95,7 +95,7 @@ export default function GlusightCaseStudy() {
               Understand the present through a clear view of the current glucose reading and its trend.{' '}
             </p>{' '}
             <div className="kb-feature-asset-wrap">
-              <img src="Media/GluSight/glusight_ui_reading_crop.png" alt="GluSight current glucose reading display" className="kb-feature-asset-img" />
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_ui_reading_crop.png" alt="GluSight current glucose reading display" className="kb-feature-asset-img" />
             </div>
           </div>{' '}
           <div className="kb-feature-editorial-item">
@@ -109,7 +109,7 @@ export default function GlusightCaseStudy() {
               Explore how glucose levels might change over the coming period through a visual projection of a possible future trend.{' '}
             </p>{' '}
             <div className="kb-feature-asset-wrap">
-              <img src="Media/GluSight/glusight_crop_prediction_graph.png" alt="Prediction graph from the GluSight Home screen: recorded glucose as a solid line and a predicted continuation as a dashed line" className="kb-feature-asset-img" />
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_crop_prediction_graph.png" alt="Prediction graph from the GluSight Home screen: recorded glucose as a solid line and a predicted continuation as a dashed line" className="kb-feature-asset-img" />
             </div>
           </div>{' '}
           <div className="kb-feature-editorial-item">
@@ -123,7 +123,7 @@ export default function GlusightCaseStudy() {
               Distinguish observed readings from estimated future values, helping users recognise that predictions are not guarantees.{' '}
             </p>{' '}
             <div className="kb-feature-asset-wrap">
-              <img src="Media/GluSight/glusight_crop_confidence_note.png" alt="Confidence indicator and a note saying the prediction is based on past patterns, from the GluSight Home screen" className="kb-feature-asset-img" />
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_crop_confidence_note.png" alt="Confidence indicator and a note saying the prediction is based on past patterns, from the GluSight Home screen" className="kb-feature-asset-img" />
             </div>
           </div>{' '}
           <div className="kb-feature-editorial-item">
@@ -137,7 +137,7 @@ export default function GlusightCaseStudy() {
               Explore how relevant factors, such as meals, physical activity, medication, stress, and sleep, could help users make sense of changing glucose patterns.{' '}
             </p>{' '}
             <div className="kb-feature-asset-wrap">
-              <img src="Media/GluSight/glusight_screen_log_meal.png" alt="GluSight Log Meal screen with quick meal categories and a free-text description" className="kb-feature-asset-img" />
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_screen_log_meal.png" alt="GluSight Log Meal screen with quick meal categories and a free-text description" className="kb-feature-asset-img" />
             </div>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function GlusightCaseStudy() {
           </p>{' '}
           <div className="kb-sketch-row">
             <figure className="kb-sketch-fig">
-              <img src="Media/GluSight/glusight_sketch_1_first_idea.jpg" alt="Pencil sketch of a phone screen with a large glucose reading and rising arrow, a note on how far above normal it is, a log meal button, two suggested actions and a graph" className="kb-sketch-img" loading="lazy" />{' '}
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sketch_1_first_idea.jpg" alt="Pencil sketch of a phone screen with a large glucose reading and rising arrow, a note on how far above normal it is, a log meal button, two suggested actions and a graph" className="kb-sketch-img" loading="lazy" />{' '}
               <figcaption className="kb-caption-sub">
                 <strong>
                   Sketch 1.
@@ -188,7 +188,7 @@ export default function GlusightCaseStudy() {
               </figcaption>
             </figure>{' '}
             <figure className="kb-sketch-fig">
-              <img src="Media/GluSight/glusight_sketch_2_night_alert.jpg" alt="Pencil sketch of a phone screen showing a low glucose alert at night with a short message and the alarm set to vibrate" className="kb-sketch-img" loading="lazy" />{' '}
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sketch_2_night_alert.jpg" alt="Pencil sketch of a phone screen showing a low glucose alert at night with a short message and the alarm set to vibrate" className="kb-sketch-img" loading="lazy" />{' '}
               <figcaption className="kb-caption-sub">
                 <strong>
                   Sketch 2.
@@ -197,7 +197,7 @@ export default function GlusightCaseStudy() {
               </figcaption>
             </figure>{' '}
             <figure className="kb-sketch-fig">
-              <img src="Media/GluSight/glusight_sketch_3_latest.jpg" alt="Pencil sketch of a phone screen with a glucose reading and direction arrow, an expected range ahead, and a graph that continues forward" className="kb-sketch-img" loading="lazy" />{' '}
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sketch_3_latest.jpg" alt="Pencil sketch of a phone screen with a glucose reading and direction arrow, an expected range ahead, and a graph that continues forward" className="kb-sketch-img" loading="lazy" />{' '}
               <figcaption className="kb-caption-sub">
                 <strong>
                   Sketch 3.
@@ -230,7 +230,7 @@ export default function GlusightCaseStudy() {
             </div>{' '}
             <div className="kb-process-visual-col">
               <div className="kb-process-asset-wrap">
-                <img src="Media/GluSight/glusight_screen_home.png" alt="GluSight Home screen with the current glucose reading, a trend label, a prediction graph and a confidence indicator" className="kb-process-asset-img" />{' '}
+                <img loading="lazy" decoding="async" src="Media/GluSight/glusight_screen_home.png" alt="GluSight Home screen with the current glucose reading, a trend label, a prediction graph and a confidence indicator" className="kb-process-asset-img" />{' '}
                 <p className="kb-caption-sub">
                   Home: current reading, trend, and a prediction graph with a confidence indicator.
                 </p>
@@ -258,7 +258,7 @@ export default function GlusightCaseStudy() {
             </div>{' '}
             <div className="kb-process-visual-col">
               <div className="kb-process-asset-wrap">
-                <img src="Media/GluSight/glusight_screen_log_meal.png" alt="GluSight Log Meal screen with quick meal categories, a description field and a Log Meal button" className="kb-process-asset-img" />{' '}
+                <img loading="lazy" decoding="async" src="Media/GluSight/glusight_screen_log_meal.png" alt="GluSight Log Meal screen with quick meal categories, a description field and a Log Meal button" className="kb-process-asset-img" />{' '}
                 <p className="kb-caption-sub">
                   Log Meal: quick categories and a free-text description.
                 </p>
@@ -286,7 +286,7 @@ export default function GlusightCaseStudy() {
             </div>{' '}
             <div className="kb-process-visual-col">
               <div className="kb-process-asset-wrap">
-                <img src="Media/GluSight/glusight_screen_settings.png" alt="GluSight Settings screen with health setup, alerts and preferences" className="kb-process-asset-img" />{' '}
+                <img loading="lazy" decoding="async" src="Media/GluSight/glusight_screen_settings.png" alt="GluSight Settings screen with health setup, alerts and preferences" className="kb-process-asset-img" />{' '}
                 <p className="kb-caption-sub">
                   Settings: health setup, alert controls and preferences.
                 </p>
@@ -494,7 +494,7 @@ export default function GlusightCaseStudy() {
           </p>{' '}
           {/* Lifestyle & Contextual Factors Integrated Visual */}{' '}
           <div className="kb-banner-full-wrap">
-            <img src="Media/GluSight/ref_04_banner_integrated.png" alt="Lifestyle factors and glucose variability diagram" className="kb-banner-full-img" />{' '}
+            <img loading="lazy" decoding="async" src="Media/GluSight/ref_04_banner_integrated.png" alt="Lifestyle factors and glucose variability diagram" className="kb-banner-full-img" />{' '}
             <p className="kb-caption-sub">
               Illustration of lifestyle factors that can influence glucose: meals, physical activity, medication and sleep.
             </p>
@@ -558,7 +558,7 @@ export default function GlusightCaseStudy() {
           </p>{' '}
           {/* The Three Connected Themes (Integrated Layout matching Project DetailedLayout-08.png) */}{' '}
           <div className="kb-themes-integrated-container">
-            <img src="Media/GluSight/themes_3_complete_flow.png" alt="Illustration of three connected ideas: understanding the numbers, uncertainty about what's next, and turning information into action" className="kb-themes-canvas-art" />{' '}
+            <img loading="lazy" decoding="async" src="Media/GluSight/themes_3_complete_flow.png" alt="Illustration of three connected ideas: understanding the numbers, uncertainty about what's next, and turning information into action" className="kb-themes-canvas-art" />{' '}
             {/* Insight 01: Different Responses, Shared Uncertainty */}{' '}
             <div className="kb-theme-callout kb-theme-1-callout">
               <span className="kb-insight-tag">
@@ -715,7 +715,7 @@ export default function GlusightCaseStudy() {
           </div>{' '}
           <div className="kb-reflection-visual-col">
             <div className="kb-reflection-asset-wrap">
-              <img src="Media/GluSight/glusight_sensor_disc_closeup.png" alt="GluSight companion sensor device hardware puck" className="kb-reflection-hardware-img" />{' '}
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sensor_disc_closeup.png" alt="GluSight companion sensor device hardware puck" className="kb-reflection-hardware-img" />{' '}
               <p className="kb-caption-sub">
                 Hardware companion concept: discreet, calm wearable telemetry.
               </p>

@@ -18,7 +18,7 @@ export default function House() {
     ui: useRef(null), tooltip: useRef(null), contactModal: useRef(null), kitchen: useRef(null),
   };
   const [controller, setController] = useState(null);
-  const [roomState, setRoomState] = useState({ title: 'Freedom', nav: 'home' });
+  const [roomState, setRoomState] = useState({ title: 'Harsh Pal', nav: 'home' });
   const [hotspots, setHotspots] = useState({ room: null, epoch: 0 });
 
   useEffect(() => {

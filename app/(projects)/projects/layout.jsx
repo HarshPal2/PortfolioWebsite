@@ -18,6 +18,9 @@ export default function ProjectsLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="48x48" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/Media/logo/apple-touch-icon.png" />
         <script dangerouslySetInnerHTML={{ __html: PRE_PAINT }} />
         {/* Fonts: GFS Didot (headings) & Belleza (body) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

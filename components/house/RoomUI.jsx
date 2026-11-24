@@ -7,6 +7,7 @@ import BedroomIntro from './rooms/BedroomIntro';
 import KitchenIntro from './rooms/KitchenIntro';
 import PoolIntro from './rooms/PoolIntro';
 import OfficeIntro from './rooms/OfficeIntro';
+import Mark from '../Mark';
 
 const NAV = [
   { key: 'home', label: 'Home' },
@@ -58,10 +59,10 @@ export default function RoomUI({ refs, title, activeNav, controller }) {
         </header>
       </div>{' '}
 
-      {/* Room title ("Freedom", "Projects", ...) */}
+      {/* Harsh Pal mark, top-right corner (room name kept for screen readers) */}
       <div className="parallax-layer layer-title" data-depth="0.26">
         <div className="freedom-title stagger-2">
-          <h1>{title}</h1>
+          <h1><Mark className="corner-mark" /><span className="room-title-text">{title}</span></h1>
         </div>
       </div>{' '}
 
