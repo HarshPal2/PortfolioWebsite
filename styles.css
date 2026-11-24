@@ -115,6 +115,44 @@ html[data-room="kitchen"] .video-wrapper { background-image: url('Media/Living_K
 html[data-room="poolroom"] .video-wrapper { background-image: url('Media/Living_Pool/LivingToPool0218.avif'); }
 html[data-room="office"] .video-wrapper { background-image: url('Media/Living_Office/LivingToOffice0267.avif'); }
 html[data-room="pc"] .video-wrapper { background-image: url('Media/BedroomToPCScreen/BedroomToPc0562.avif'); }
+/* Once the canvas has drawn its first frame the placeholder is out of date: never let it show through. */
+html.canvas-live .video-wrapper { background-image: none !important; }
+
+/* "Loading" pill while a click waits for animation frames (script.js TransitionLoader). */
+.transition-loader {
+  position: fixed;
+  left: 50%;
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(16, 12, 10, 0.6);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #f3ece4;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+.transition-loader.is-visible { opacity: 1; transform: translate(-50%, 0); }
+.transition-loader-ring {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(243, 236, 228, 0.3);
+  border-top-color: #ff7a18;
+  animation: transition-loader-spin 0.8s linear infinite;
+}
+@keyframes transition-loader-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .transition-loader-ring { animation-duration: 2.4s; } }
+html.is-transition-loading,
+html.is-transition-loading * { cursor: progress !important; }
 
 /* --- Fullscreen Video Background --- */
 .video-wrapper {

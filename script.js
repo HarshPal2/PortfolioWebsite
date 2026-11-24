@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentRoom = 'living';
   let currentAnimId = null;
   let currentActiveFrameImg = null;
+  let canvasLive = false;
   let parallaxInstance = null;
 
   function getActiveCanvas() {
@@ -475,8 +476,15 @@ document.addEventListener('DOMContentLoaded', () => {
       offsetY = 0;
     }
 
-    ctx.clearRect(0, 0, width, height);
+    // No clearRect: every frame covers the whole canvas, so the previous frame stays visible if a draw
+    // comes up empty (frame not decoded yet) instead of the canvas flashing transparent.
     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+    // From the first real frame on, the placeholder picture behind the canvas (the room the page was
+    // opened on) is no longer correct, so it is removed; it must never show through mid-animation.
+    if (!canvasLive) {
+      canvasLive = true;
+      document.documentElement.classList.add('canvas-live');
+    }
 
     if (typeof InteractiveObjectManager !== 'undefined' && InteractiveObjectManager.updateStageBounds) {
       InteractiveObjectManager.updateStageBounds({
@@ -487,6 +495,55 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
+
+  // If the browser drops the canvas (graphics memory pressure), redraw the current frame when it is back.
+  [canvasA, canvasB].forEach((c) => {
+    if (!c) return;
+    c.addEventListener('contextrestored', () => {
+      if (currentActiveFrameImg && c === getActiveCanvas()) drawFrameToCanvas(c, currentActiveFrameImg);
+    });
+  });
+
+  // Small "Loading" pill shown while a click waits for animation frames to download, so a click
+  // always gets visible feedback. Appears only if the wait lasts longer than 200 ms.
+  const TransitionLoader = (() => {
+    let el = null;
+    let timer = null;
+    let depth = 0;
+    const ensure = () => {
+      if (el) return el;
+      el = document.createElement('div');
+      el.className = 'transition-loader';
+      el.setAttribute('role', 'status');
+      el.innerHTML = '<span class="transition-loader-ring" aria-hidden="true"></span><span class="transition-loader-text">Loading</span>';
+      document.body.appendChild(el);
+      return el;
+    };
+    return {
+      show() {
+        depth++;
+        if (timer || (el && el.classList.contains('is-visible'))) return;
+        timer = setTimeout(() => {
+          timer = null;
+          ensure().classList.add('is-visible');
+          document.documentElement.classList.add('is-transition-loading');
+        }, 200);
+      },
+      hide() {
+        depth = Math.max(0, depth - 1);
+        if (depth > 0) return;
+        if (timer) { clearTimeout(timer); timer = null; }
+        if (el) el.classList.remove('is-visible');
+        document.documentElement.classList.remove('is-transition-loading');
+      }
+    };
+  })();
+  const withLoader = (promise) => {
+    TransitionLoader.show();
+    const done = () => TransitionLoader.hide();
+    promise.then(done, done);
+    return promise;
+  };
 
   window.addEventListener('resize', () => {
     if (currentActiveFrameImg) {
@@ -1083,7 +1140,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // the sequence only partly downloaded. The animation starts as soon as its opening frames are
       // in (the rest stream in behind it); if even those do not arrive in time (very slow connection),
       // cut straight to the destination room instead of freezing the canvas until the 6 s safety timer.
-      awaitSequenceHead(frames, startIdx, endIdx, SEQUENCE_HEAD_FRAMES, SEQUENCE_READY_TIMEOUT_MS).then((headReady) => {
+      withLoader(awaitSequenceHead(frames, startIdx, endIdx, SEQUENCE_HEAD_FRAMES, SEQUENCE_READY_TIMEOUT_MS)).then((headReady) => {
         if (hasCompletedTransition) return;
         if (!headReady) {
           console.warn(`[Transition] ${connKey}: opening frames not loaded — skipping animation`);
@@ -1099,7 +1156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // The opening frames are in. If the rest are still arriving more slowly than the animation
         // plays, wait a moment longer so it does not stall halfway (at most 1.5 s).
         const ordered = conn.reverse ? frames.slice().reverse() : frames;
-        awaitSmoothPlayback(ordered, 0, 1500).then(() => {
+        withLoader(awaitSmoothPlayback(ordered, 0, 1500)).then(() => {
           if (hasCompletedTransition) return;
           playImageSequence(activeCanvas, frames, startIdx, endIdx, () => {
             completeTransition();
@@ -1608,8 +1665,8 @@ document.addEventListener('DOMContentLoaded', () => {
           // loaded, at most 2.5 s), then decode the opening frames, so the zoom plays smoothly instead
           // of jumping over frames that are still downloading.
           const warm = (img) => (img && typeof img.decode === 'function') ? img.decode().catch(() => {}) : Promise.resolve();
-          awaitSmoothPlayback(frames, 0, 2500)
-            .then(() => Promise.all([frames[0], frames[1], frames[2], lastFrame].map(warm)))
+          withLoader(awaitSmoothPlayback(frames, 0, 2500)
+            .then(() => Promise.all([frames[0], frames[1], frames[2], lastFrame].map(warm))))
             .then(doPlay, doPlay);
         }; // end startAnim
 
@@ -2046,7 +2103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ordered = forward ? frames : frames.slice().reverse();
     warmSequenceHead(frames, !forward, 6);
     const canvas = getActiveCanvas();
-    awaitSmoothPlayback(ordered, 300, 1500).then(() => {
+    withLoader(awaitSmoothPlayback(ordered, 300, 1500)).then(() => {
       playImageSequence(canvas, frames, forward ? 0 : frames.length - 1, forward ? frames.length - 1 : 0, () => {
         counterBusy = false;
         if (done) done();
