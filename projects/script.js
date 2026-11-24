@@ -58,8 +58,8 @@
 
   const pcImage = new Image();
   const pcBaseSrc = (window.location.protocol === 'file:')
-    ? '../Media/BedroomToPCScreen/BedroomtoPc0562.avif'
-    : '/Media/BedroomToPCScreen/BedroomtoPc0562.avif';
+    ? '../Media/BedroomToPCScreen/BedroomToPc0562.avif'
+    : '/Media/BedroomToPCScreen/BedroomToPc0562.avif';
   pcImage.src = pcBaseSrc;
 
   // --- Forward PC animation for history arrivals ---------------------------------
@@ -131,7 +131,7 @@
     const frames = [];
     for (let i = 0; i < PC_FRAME_COUNT; i++) {
       const img = new Image();
-      img.src = `${pcFrameBase}BedroomtoPc${String(PC_FRAME_START + i).padStart(4, '0')}.avif`;
+      img.src = `${pcFrameBase}BedroomToPc${String(PC_FRAME_START + i).padStart(4, '0')}.avif`;
       frames.push(img);
     }
 

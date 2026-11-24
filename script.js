@@ -56,9 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
     'bedroom_kitchen': { folder: 'Media/Bedroom_Kitchen/', prefix: 'BedroomToKitchen', start: 318, count: 24 },
     'kitchen_pool': { folder: 'Media/Kitchen_Pool/', prefix: 'KitchenToPool', start: 343, count: 48 },
     'pool_office': { folder: 'Media/Pool_Office/', prefix: 'PoolToOffice', start: 392, count: 48 },
-    'office_kitchen': { folder: 'Media/Office_Kitchen/', prefix: 'OfficetoKitchen', start: 441, count: 48 },
+    'office_kitchen': { folder: 'Media/Office_Kitchen/', prefix: 'OfficeToKitchen', start: 441, count: 48 },
     'pool_bedroom': { folder: 'Media/Pool_Bedroom/', prefix: 'PoolToBedroom', start: 490, count: 48 },
-    'bedroom_pc': { folder: 'Media/BedroomToPCScreen/', prefix: 'BedroomtoPc', start: 539, count: 24 }
+    'bedroom_pc': { folder: 'Media/BedroomToPCScreen/', prefix: 'BedroomToPc', start: 539, count: 24 },
+    // Kitchen -> counter (top-down marble table where the case study is read). Played forward when the
+    // case study opens and backwards when it closes. Desktop only (the table view is desktop only).
+    'kitchen_counter': { folder: 'Media/KitchenToCounter/', prefix: 'KitchenToCounter', start: 563, count: 49 }
   };
 
   // Format extension for sequence frames (all media navigation assets are .avif)
@@ -173,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     _roomAdjacency: {
       'living': ['living_bedroom', 'living_office', 'living_kitchen', 'living_pool'],
       'bedroom': ['bedroom_pc', 'bedroom_kitchen', 'office_bedroom', 'pool_bedroom', 'living_bedroom'],
-      'kitchen': ['bedroom_kitchen', 'office_kitchen', 'kitchen_pool', 'living_kitchen'],
+      'kitchen': ['kitchen_counter', 'bedroom_kitchen', 'office_kitchen', 'kitchen_pool', 'living_kitchen'],
       'poolroom': ['pool_bedroom', 'kitchen_pool', 'pool_office', 'living_pool'],
       'office': ['living_office', 'office_bedroom', 'office_kitchen', 'pool_office']
     },
@@ -2032,9 +2035,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- Kitchen -> counter walk ------------------------------------------------
+  // Opening the case study from the Kitchen first walks to the marble counter (KitchenToCounter
+  // frames on the room canvas), then the table view fades in over the last frame. Closing plays the
+  // walk backwards. Only in the desktop table view; phones, reduced motion and history re-opens skip it.
+  let counterBusy = false;
+  let counterAtTable = false;
+  const prefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  function shouldWalkToCounter() {
+    return currentRoom === 'kitchen' && isKitchenTableMode() && !prefersReducedMotion && !!sequences.kitchen_counter;
+  }
+
+  function playCounterWalk(forward, done) {
+    counterBusy = true;
+    const frames = preloadSequence('kitchen_counter');
+    const ordered = forward ? frames : frames.slice().reverse();
+    warmSequenceHead(frames, !forward, 6);
+    const canvas = getActiveCanvas();
+    awaitSmoothPlayback(ordered, 300, 1500).then(() => {
+      playImageSequence(canvas, frames, forward ? 0 : frames.length - 1, forward ? frames.length - 1 : 0, () => {
+        counterBusy = false;
+        if (done) done();
+      });
+    });
+  }
+
   function openKitchenBlog(opts) {
     if (!kitchenBlogStage) return;
     const fromHistory = !!(opts && opts.fromHistory === true);
+    if (!fromHistory && !(opts && opts.atCounter) && !isKitchenBlogOpen() && shouldWalkToCounter()) {
+      if (counterBusy) return;
+      isScrollLocked = true;
+      InteractiveObjectManager.hideTooltip();
+      InteractiveObjectManager.setInteractiveEnabled(false);
+      fadeUIOut();
+      playCounterWalk(true, () => {
+        counterAtTable = true;
+        openKitchenBlog({ atCounter: true });
+      });
+      return;
+    }
     InteractiveObjectManager.hideTooltip();
     isScrollLocked = true;
     isKitchenRetracting = false;
@@ -2079,8 +2120,23 @@ document.addEventListener('DOMContentLoaded', () => {
       if (floatingWindow) {
         floatingWindow.classList.remove('is-retracting');
       }
-      isScrollLocked = false;
       isKitchenRetracting = false;
+      if (counterAtTable) {
+        // Walk back from the counter to the Kitchen, then bring the room UI back.
+        counterAtTable = false;
+        playCounterWalk(false, () => {
+          const base = getRoomBaseFrame(currentRoom);
+          if (base && base.complete && base.naturalWidth > 0) drawFrameToCanvas(getActiveCanvas(), base);
+          isScrollLocked = false;
+          fadeUIIn();
+          if (typeof InteractiveObjectManager !== 'undefined') {
+            InteractiveObjectManager.renderObjects();
+            if (!interactionGateClosed && hasRevealed) InteractiveObjectManager.setInteractiveEnabled(true);
+          }
+        });
+        return;
+      }
+      isScrollLocked = false;
       if (typeof InteractiveObjectManager !== 'undefined') {
         InteractiveObjectManager.renderObjects();
         // The room-ready gate may have opened while the Blog was up (it skips enabling then),

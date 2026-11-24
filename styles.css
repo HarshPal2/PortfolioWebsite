@@ -114,7 +114,7 @@ html[data-room="bedroom"] .video-wrapper { background-image: url('Media/Living_B
 html[data-room="kitchen"] .video-wrapper { background-image: url('Media/Living_Kitchen/LivingToKitchen0169.avif'); }
 html[data-room="poolroom"] .video-wrapper { background-image: url('Media/Living_Pool/LivingToPool0218.avif'); }
 html[data-room="office"] .video-wrapper { background-image: url('Media/Living_Office/LivingToOffice0267.avif'); }
-html[data-room="pc"] .video-wrapper { background-image: url('Media/BedroomToPCScreen/BedroomtoPc0562.avif'); }
+html[data-room="pc"] .video-wrapper { background-image: url('Media/BedroomToPCScreen/BedroomToPc0562.avif'); }
 
 /* --- Fullscreen Video Background --- */
 .video-wrapper {
