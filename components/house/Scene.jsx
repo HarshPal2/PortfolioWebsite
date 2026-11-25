@@ -8,6 +8,7 @@ export default function Scene({ refs, children }) {
         <div className="video-wrapper">
           <canvas id="sequence-canvas" className="bg-video active-video" ref={refs.canvasA} />{' '}
           <canvas id="sequence-canvas-secondary" className="bg-video" ref={refs.canvasB} />
+          <div className="room-grade" aria-hidden="true" />
         </div>
       </div>{' '}
       {/* Layer 2: backdrop overlay */}
