@@ -541,6 +541,64 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
   })();
+  // Keeps keyboard focus inside an open window (case study, contact): focus moves in when it opens,
+  // Tab and Shift+Tab cycle within it, and focus goes back to where it was when it closes.
+  function createFocusTrap(container) {
+    const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    let previous = null;
+    let onKey = null;
+    const visible = (el) => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length) && getComputedStyle(el).visibility !== 'hidden';
+    return {
+      activate(initial, returnTo) {
+        if (!container) return;
+        if (!onKey) previous = returnTo || document.activeElement;
+        if (onKey) document.removeEventListener('keydown', onKey, true);
+        onKey = (e) => {
+          if (e.key !== 'Tab') return;
+          const items = Array.prototype.filter.call(container.querySelectorAll(FOCUSABLE), visible);
+          if (!items.length) { e.preventDefault(); return; }
+          const first = items[0];
+          const last = items[items.length - 1];
+          const active = document.activeElement;
+          if (!container.contains(active)) { e.preventDefault(); first.focus(); }
+          else if (e.shiftKey && (active === first || active === container)) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+        };
+        document.addEventListener('keydown', onKey, true);
+        const target = initial || container;
+        if (target === container && !container.hasAttribute('tabindex')) container.setAttribute('tabindex', '-1');
+        // The window may still be fading in; retry briefly until it can take focus.
+        let tries = 0;
+        const tryFocus = () => {
+          if (!onKey) return;
+          try { target.focus({ preventScroll: true }); } catch (err) {}
+          if (document.activeElement !== target && ++tries < 15) setTimeout(tryFocus, 100);
+        };
+        tryFocus();
+      },
+      release() {
+        if (onKey) document.removeEventListener('keydown', onKey, true);
+        onKey = null;
+        const opener = previous;
+        const openerId = opener && opener.id;
+        previous = null;
+        // React may re-create the opener while the room text comes back, so look it up again by id.
+        const current = () => (openerId && document.getElementById(openerId)) || opener;
+        if (opener && opener !== document.body && typeof opener.focus === 'function') {
+          // The opener may still be fading back in; retry briefly until it can take focus.
+          let tries = 0;
+          const tryBack = () => {
+            const back = current();
+            if (onKey || !back || !document.contains(back)) return;
+            try { back.focus({ preventScroll: true }); } catch (err) {}
+            if (document.activeElement !== back && ++tries < 60) setTimeout(tryBack, 120);
+          };
+          tryBack();
+        }
+      }
+    };
+  }
+
   const withLoader = (promise) => {
     TransitionLoader.show();
     const done = () => TransitionLoader.hide();
@@ -1807,6 +1865,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const contactForm = document.getElementById('contact-form');
   const contactFormStatus = document.getElementById('contact-form-status');
 
+  let contactFocusTrap = null;
   function isContactInterfaceOpen() {
     return contactModal && contactModal.classList.contains('is-open');
   }
@@ -1818,15 +1877,15 @@ document.addEventListener('DOMContentLoaded', () => {
     contactModal.classList.add('is-open');
     contactModal.setAttribute('aria-hidden', 'false');
     const firstInput = contactModal.querySelector('input:not([type="hidden"]), textarea, button');
-    if (firstInput) {
-      setTimeout(() => firstInput.focus(), 150);
-    }
+    if (!contactFocusTrap) contactFocusTrap = createFocusTrap(contactModal);
+    setTimeout(() => { if (isContactInterfaceOpen()) contactFocusTrap.activate(firstInput); }, 150);
   }
 
   function closeContactInterface() {
     if (!contactModal) return;
     contactModal.classList.remove('is-open');
     contactModal.setAttribute('aria-hidden', 'true');
+    if (contactFocusTrap) contactFocusTrap.release();
     isScrollLocked = false;
     InteractiveObjectManager.renderObjects();
   }
@@ -2114,7 +2173,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  let kitchenFocusTrap = null;
+  let kitchenOpener = null;
   function openKitchenBlog(opts) {
+    if (!(opts && opts.atCounter)) kitchenOpener = document.activeElement;
     if (!kitchenBlogStage) return;
     const fromHistory = !!(opts && opts.fromHistory === true);
     if (!fromHistory && !(opts && opts.atCounter) && !isKitchenBlogOpen() && shouldWalkToCounter()) {
@@ -2155,6 +2217,8 @@ document.addEventListener('DOMContentLoaded', () => {
     showKitchenPage(0, false);
     if (contentBody) contentBody.scrollTop = 0;
     updateKitchenUI();
+    if (!kitchenFocusTrap) kitchenFocusTrap = createFocusTrap(kitchenBlogStage);
+    setTimeout(() => { if (kitchenBlogStage.classList.contains('is-open')) kitchenFocusTrap.activate(null, kitchenOpener); }, 150);
   }
 
   // Visual close only (the original close animation). Does not touch history.
@@ -2170,6 +2234,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       kitchenBlogStage.classList.remove('is-open');
       kitchenBlogStage.setAttribute('aria-hidden', 'true');
+      if (kitchenFocusTrap) kitchenFocusTrap.release();
       if (floatingWindow) {
         floatingWindow.classList.remove('is-retracting');
       }
