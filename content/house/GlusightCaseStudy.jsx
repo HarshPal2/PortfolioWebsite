@@ -179,7 +179,7 @@ export default function GlusightCaseStudy() {
           </p>{' '}
           <div className="kb-sketch-row">
             <figure className="kb-sketch-fig">
-              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sketch_1_first_idea.jpg" alt="Pencil sketch of a phone screen with a large glucose reading and rising arrow, a note on how far above normal it is, a log meal button, two suggested actions and a graph" className="kb-sketch-img" loading="lazy" />{' '}
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sketch_1_first_idea.jpg" alt="Pencil sketch of a phone screen with a large glucose reading and rising arrow, a note on how far above normal it is, a log meal button, two suggested actions and a graph" className="kb-sketch-img" />{' '}
               <figcaption className="kb-caption-sub">
                 <strong>
                   Sketch 1.
@@ -188,7 +188,7 @@ export default function GlusightCaseStudy() {
               </figcaption>
             </figure>{' '}
             <figure className="kb-sketch-fig">
-              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sketch_2_night_alert.jpg" alt="Pencil sketch of a phone screen showing a low glucose alert at night with a short message and the alarm set to vibrate" className="kb-sketch-img" loading="lazy" />{' '}
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sketch_2_night_alert.jpg" alt="Pencil sketch of a phone screen showing a low glucose alert at night with a short message and the alarm set to vibrate" className="kb-sketch-img" />{' '}
               <figcaption className="kb-caption-sub">
                 <strong>
                   Sketch 2.
@@ -197,7 +197,7 @@ export default function GlusightCaseStudy() {
               </figcaption>
             </figure>{' '}
             <figure className="kb-sketch-fig">
-              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sketch_3_latest.jpg" alt="Pencil sketch of a phone screen with a glucose reading and direction arrow, an expected range ahead, and a graph that continues forward" className="kb-sketch-img" loading="lazy" />{' '}
+              <img loading="lazy" decoding="async" src="Media/GluSight/glusight_sketch_3_latest.jpg" alt="Pencil sketch of a phone screen with a glucose reading and direction arrow, an expected range ahead, and a graph that continues forward" className="kb-sketch-img" />{' '}
               <figcaption className="kb-caption-sub">
                 <strong>
                   Sketch 3.

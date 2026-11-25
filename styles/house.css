@@ -117,6 +117,7 @@ html[data-room="office"] .video-wrapper { background-image: url('/Media/Living_O
 html[data-room="pc"] .video-wrapper { background-image: url('/Media/BedroomToPCScreen/BedroomToPc0562.avif'); }
 /* Once the canvas has drawn its first frame the placeholder is out of date: never let it show through. */
 html.canvas-live .video-wrapper { background-image: none !important; }
+#kitchen-blog-stage:focus, #contact-modal:focus { outline: none; }
 
 /* Living room grade: while the Living room text is showing, the room is a little darker with a soft
    vignette behind the text, so the headline reads against the bright window. Fades with the room text,

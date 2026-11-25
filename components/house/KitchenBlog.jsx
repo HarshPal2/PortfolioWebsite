@@ -6,7 +6,7 @@ import GlusightCaseStudy from '@/content/house/GlusightCaseStudy';
 
 function KitchenBlog({ stageRef }) {
   return (
-    <div ref={stageRef} id="kitchen-blog-stage" className="kitchen-blog-stage" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Interactive Kitchen Blog">
+    <div ref={stageRef} id="kitchen-blog-stage" className="kitchen-blog-stage" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Case study">
       <div className="kitchen-stage-backdrop" id="kitchen-stage-backdrop" />{' '}
       {/* Edge-to-Edge 3D Kitchen Canvas Environment (Matching PC Screen Section) */}{' '}
       <div className="kitchen-canvas-wrapper" id="kitchen-canvas-wrapper">
@@ -83,11 +83,11 @@ function KitchenBlog({ stageRef }) {
               </div>
             </aside>{' '}
             {/* Main Scrollable Case Study Content (Open Editorial Architecture) */}{' '}
-            <main className="kitchen-content-scroll content-body-scrollable" id="content-body-scrollable">
+            <section className="kitchen-content-scroll content-body-scrollable" id="content-body-scrollable">
               <GlusightCaseStudy />
-            </main>{' '}
+            </section>{' '}
             {/* Visual-project stories (built by stories.js): one visual + one poem or story per slide */}{' '}
-            <main className="kb-story-main" id="kb-story-main" aria-label="Project stories" />{' '}
+            <section className="kb-story-main" id="kb-story-main" aria-label="Project stories" />{' '}
             {/* Slide pager: one case-study section per page */}{' '}
             <div className="kb-pager" id="kb-pager" role="group" aria-label="Case study pages">
               <button type="button" className="kb-pager-btn" id="kb-prev" aria-label="Previous page">
