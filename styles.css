@@ -118,6 +118,23 @@ html[data-room="pc"] .video-wrapper { background-image: url('Media/BedroomToPCSc
 /* Once the canvas has drawn its first frame the placeholder is out of date: never let it show through. */
 html.canvas-live .video-wrapper { background-image: none !important; }
 
+/* Living room grade: while the Living room text is showing, the room is a little darker with a soft
+   vignette behind the text, so the headline reads against the bright window. Fades with the room text,
+   so the walks keep their full brightness. */
+.room-grade {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  background: radial-gradient(ellipse 70% 90% at 12% 45%, rgba(60, 50, 40, 0.55) 0%, rgba(120, 110, 100, 0.25) 45%, rgba(255, 255, 255, 0) 75%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.layer-bg .bg-video { transition: filter 0.6s ease; }
+body:has(.ui-container.room-living:not(.ui-hidden)) .room-grade { opacity: 1; }
+body:has(.ui-container.room-living:not(.ui-hidden)) .layer-bg .bg-video { filter: brightness(0.82) contrast(1.05) saturate(0.96); }
+
 /* "Loading" pill while a click waits for animation frames (script.js TransitionLoader). */
 .transition-loader {
   position: fixed;
